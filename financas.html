@@ -64,6 +64,12 @@
     cursor:pointer; transition:.18s ease; white-space:nowrap;
   }
   .nav button.active{ background:var(--lilac); color:var(--ink); }
+  .nav a{
+    flex:none; border:none; background:transparent; padding:8px 12px; border-radius:999px;
+    font-family:var(--font-display); font-weight:700; font-size:.9rem; color:var(--ink-soft);
+    cursor:pointer; transition:.18s ease; white-space:nowrap; text-decoration:none; display:inline-block;
+  }
+  .nav a:hover{ background:var(--lilac); color:var(--ink); }
   .nav-updated{ display:none; }
 
   .card{
@@ -211,6 +217,7 @@
     .app-layout{ display:grid; grid-template-columns:190px minmax(0,1fr); gap:16px; align-items:stretch; }
     .nav{ flex-direction:column; align-items:stretch; padding:8px; border-radius:20px; margin:0; }
     .nav button{ width:100%; text-align:left; padding:9px 11px; }
+    .nav a{ width:100%; text-align:left; padding:9px 11px; }
   .nav-updated{ display:block; margin-top:auto; padding:14px 10px 6px; border-top:1px solid var(--line); color:var(--ink-soft); font-size:.72rem; }
     .nav-updated strong{ display:block; margin-top:4px; color:var(--ink); font-size:.8rem; }
     #dashboard{ display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:10px; }
@@ -259,6 +266,8 @@
     <button data-tab="analises">🔎 Análises</button>
     <button data-tab="milhas">✈️ Milhas</button>
     <button data-tab="lancamentos">🧾 Lançamentos</button>
+    <a href="index.html">🏠 Página inicial</a>
+    <a href="life-dashboard.html">🌸 Life Dashboard</a>
     <div class="nav-updated">
       <span>última atualização</span>
       <strong id="lastUpdated">—</strong>
@@ -2232,4 +2241,4 @@ function wire(){
 })();
 </script>
 </body>
-</html>
+</html>g
