@@ -2169,8 +2169,8 @@ function bindEvents(){
 
   // Menu mobile
   $('#menuBtn').addEventListener('click', ()=>{
-    $('#sidebar').classList.add('open');
-    $('#sidebarOverlay').classList.add('show');
+    const isOpen = $('#sidebar').classList.toggle('open');
+    $('#sidebarOverlay').classList.toggle('show', isOpen);
   });
   $('#sidebarOverlay').addEventListener('click', ()=>{
     $('#sidebar').classList.remove('open');
