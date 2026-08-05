@@ -176,6 +176,7 @@
   .investment-chart-row small{ display:block; color:var(--ink-soft); margin-top:2px; }
   .cute-footer{ width:100%; margin-top:14px; padding:16px 16px; text-align:center; color:var(--ink-soft); font-size:.82rem; background:rgba(255,255,255,.6); border-top:1px solid var(--line); border-bottom:1px solid var(--line); }
   .cute-footer span{ display:inline-block; }
+  .version-tag{ margin-left:8px; padding:2px 8px; border-radius:999px; background:var(--bg2); font-weight:700; font-size:.72rem; letter-spacing:.02em; }
 
   .launch-shell{ display:grid; gap:12px; }
   .launch-grid{ display:grid; grid-template-columns:1fr; gap:12px; }
@@ -590,10 +591,21 @@
 </main>
 </div>
 </div>
-<footer class="cute-footer"><span>feito com carinho para seus sonhos florescerem 🌷✨</span></footer>
+<footer class="cute-footer"><span>feito com carinho para seus sonhos florescerem 🌷✨</span><span class="version-tag" id="appVersion"></span></footer>
 
 <script>
 const money = new Intl.NumberFormat('pt-BR', { style:'currency', currency:'BRL' });
+const moneyCompact = new Intl.NumberFormat('pt-BR', { style:'currency', currency:'BRL', notation:'compact', maximumFractionDigits:1 });
+const APP_VERSION = '1.6.0';
+const APP_CHANGELOG = [
+  { version:'1.6.0', note:'marcações de valor nos gráficos de fatura e tendências' },
+  { version:'1.5.0', note:'ajuste de espaçamento entre os blocos de análises' },
+  { version:'1.4.0', note:'remoção dos cards de dólar e Selic da aba Investimentos' },
+  { version:'1.3.0', note:'gráficos de rosca, histórico de fatura e deep dive em tendências' },
+  { version:'1.2.0', note:'filtro de fatura x débito na aba Lançamentos' },
+  { version:'1.1.0', note:'dashboard simplificado com leitura rápida do mês' },
+  { version:'1.0.0', note:'versão inicial' }
+];
 const KEY = 'finance-state-cute';
 
 const defaults = {
@@ -1800,17 +1812,21 @@ function renderInvoiceHistoryChart(months){
   if(!container) return;
   const data = months.map(m=>({ month:m, ...computeMonthTotals(m) }));
   const max = Math.max(1, ...data.flatMap(d=>[d.fatura01,d.fatura15]));
-  const width = 560, height = 190, padding = 26;
-  const chartHeight = height - padding*2;
-  const groupWidth = (width - padding*2) / data.length;
+  const width = 560, height = 210, paddingTop = 30, paddingBottom = 26, paddingSide = 16;
+  const chartHeight = height - paddingTop - paddingBottom;
+  const groupWidth = (width - paddingSide*2) / data.length;
   const barWidth = Math.min(20, groupWidth/3);
   let bars = '';
   data.forEach((d,i)=>{
-    const groupX = padding + i*groupWidth + groupWidth/2;
+    const groupX = paddingSide + i*groupWidth + groupWidth/2;
     const h01 = (d.fatura01/max)*chartHeight;
     const h15 = (d.fatura15/max)*chartHeight;
-    bars += `<rect x="${(groupX-barWidth-2).toFixed(1)}" y="${(height-padding-h01).toFixed(1)}" width="${barWidth}" height="${h01.toFixed(1)}" rx="4" fill="var(--sky-deep)"/>`;
-    bars += `<rect x="${(groupX+2).toFixed(1)}" y="${(height-padding-h15).toFixed(1)}" width="${barWidth}" height="${h15.toFixed(1)}" rx="4" fill="var(--lilac-deep)"/>`;
+    const x01 = groupX-barWidth-2, x15 = groupX+2;
+    const y01 = height-paddingBottom-h01, y15 = height-paddingBottom-h15;
+    bars += `<rect x="${x01.toFixed(1)}" y="${y01.toFixed(1)}" width="${barWidth}" height="${h01.toFixed(1)}" rx="4" fill="var(--sky-deep)"/>`;
+    bars += `<rect x="${x15.toFixed(1)}" y="${y15.toFixed(1)}" width="${barWidth}" height="${h15.toFixed(1)}" rx="4" fill="var(--lilac-deep)"/>`;
+    if(d.fatura01>0) bars += `<text x="${(x01+barWidth/2).toFixed(1)}" y="${(y01-4).toFixed(1)}" text-anchor="middle" font-size="9" font-weight="700" fill="var(--sky-deep)">${moneyCompact.format(d.fatura01)}</text>`;
+    if(d.fatura15>0) bars += `<text x="${(x15+barWidth/2).toFixed(1)}" y="${(y15-4).toFixed(1)}" text-anchor="middle" font-size="9" font-weight="700" fill="var(--lilac-deep)">${moneyCompact.format(d.fatura15)}</text>`;
     bars += `<text x="${groupX.toFixed(1)}" y="${height-7}" text-anchor="middle" font-size="10" fill="var(--ink-soft)">${monthShortLabel(d.month)}</text>`;
   });
   const hasData = data.some(d=>d.fatura01>0 || d.fatura15>0);
@@ -1823,20 +1839,26 @@ function renderTrendsChart(months){
   const container = document.getElementById('analysisTrends');
   if(!container) return;
   const data = months.map(m=>({ month:m, ...computeMonthTotals(m) }));
-  const width = 560, height = 190, padding = 26;
-  const chartWidth = width - padding*2, chartHeight = height - padding*2;
+  const width = 560, height = 210, paddingTop = 26, paddingBottom = 26, paddingSide = 16;
+  const chartWidth = width - paddingSide*2, chartHeight = height - paddingTop - paddingBottom;
   const maxVal = Math.max(1, ...data.flatMap(d=>[d.income, d.expense]));
   const xStep = data.length>1 ? chartWidth/(data.length-1) : 0;
-  const toPoint = (value,i) => [padding + i*xStep, height-padding-(value/maxVal)*chartHeight];
+  const toPoint = (value,i) => [paddingSide + i*xStep, height-paddingBottom-(value/maxVal)*chartHeight];
   const incomePoints = data.map((d,i)=>toPoint(d.income,i));
   const expensePoints = data.map((d,i)=>toPoint(d.expense,i));
   const toPolyline = pts => pts.map(([x,y])=>`${x.toFixed(1)},${y.toFixed(1)}`).join(' ');
   const dots = (pts,color) => pts.map(([x,y])=>`<circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="3" fill="${color}"/>`).join('');
+  const valueLabels = (pts, values, color, offsetY) => pts.map(([x,y],i)=> values[i]>0
+    ? `<text x="${x.toFixed(1)}" y="${(y+offsetY).toFixed(1)}" text-anchor="middle" font-size="9" font-weight="700" fill="${color}">${moneyCompact.format(values[i])}</text>`
+    : '').join('');
   const labels = data.map((d,i)=>{ const [x] = toPoint(0,i); return `<text x="${x.toFixed(1)}" y="${height-7}" text-anchor="middle" font-size="10" fill="var(--ink-soft)">${monthShortLabel(d.month)}</text>`; }).join('');
   const svg = `<svg viewBox="0 0 ${width} ${height}" style="width:100%; height:auto;">
     <polyline points="${toPolyline(incomePoints)}" fill="none" stroke="var(--mint-deep)" stroke-width="2.5"/>
     <polyline points="${toPolyline(expensePoints)}" fill="none" stroke="var(--peach-deep)" stroke-width="2.5"/>
-    ${dots(incomePoints,'var(--mint-deep)')}${dots(expensePoints,'var(--peach-deep)')}${labels}
+    ${dots(incomePoints,'var(--mint-deep)')}${dots(expensePoints,'var(--peach-deep)')}
+    ${valueLabels(incomePoints, data.map(d=>d.income), 'var(--mint-deep)', -8)}
+    ${valueLabels(expensePoints, data.map(d=>d.expense), 'var(--peach-deep)', 14)}
+    ${labels}
   </svg>`;
 
   const expenses = data.map(d=>d.expense);
@@ -1931,6 +1953,14 @@ function renderMiles(){
   document.getElementById('milesBreakdown').innerHTML = Object.entries(balances)
     .filter(([source,value])=>source!=='Outros' || Number(value)>0)
     .map(([source,value])=>`<div class="row between" style="margin:6px 0; font-size:.84rem;"><span class="muted">${source}</span><strong>${formatMiles(value)} milhas</strong></div>`).join('');
+}
+
+function renderVersion(){
+  const target = document.getElementById('appVersion');
+  if(!target) return;
+  target.textContent = `v${APP_VERSION}`;
+  const tooltip = APP_CHANGELOG.map(entry=>`v${entry.version} — ${entry.note}`).join('\n');
+  target.title = tooltip;
 }
 
 function renderAll(){
@@ -2197,6 +2227,7 @@ function wire(){
   if(scheduledChanged || recurringChanged) save();
   wire();
   renderAll();
+  renderVersion();
   document.getElementById('loading').style.display='none';
 })();
 </script>
