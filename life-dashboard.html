@@ -737,6 +737,7 @@
             <button class="icon-btn" id="dailyPrevBtn">←</button>
             <input type="date" class="search-input" id="dailyDateInput" style="width:auto; padding:10px 12px;">
             <button class="icon-btn" id="dailyNextBtn">→</button>
+            <button class="btn btn-primary btn-sm" id="dailySaveBtnTop">💾 Salvar</button>
           </div>
         </div>
 
@@ -843,6 +844,7 @@
             <button class="icon-btn" id="weeklyPrevBtn">←</button>
             <span class="badge" id="weeklyLabel" style="font-size:12.5px; padding:10px 16px;">-</span>
             <button class="icon-btn" id="weeklyNextBtn">→</button>
+            <button class="btn btn-primary btn-sm" id="weeklySaveBtnTop">💾 Salvar</button>
           </div>
         </div>
 
@@ -966,6 +968,7 @@
             <button class="icon-btn" id="reviewPrevBtn">←</button>
             <span class="badge" id="reviewLabel" style="font-size:12.5px; padding:10px 16px;">-</span>
             <button class="icon-btn" id="reviewNextBtn">→</button>
+            <button class="btn btn-primary btn-sm" id="reviewSaveBtnTop">💾 Salvar</button>
           </div>
         </div>
 
@@ -2217,6 +2220,7 @@ function bindEvents(){
   });
 
   $('#dailySaveBtn').addEventListener('click', saveDailyData);
+  $('#dailySaveBtnTop').addEventListener('click', saveDailyData);
   function saveDailyData(){
     const rec = getDaily(dateKey(appState.dailyDate));
     rec.meals.cafe = $('#mealCafe').value;
@@ -2257,7 +2261,9 @@ function bindEvents(){
   // ---- Weekly Planner ----
   $('#weeklyPrevBtn').addEventListener('click', ()=>{ appState.weeklyDate = addDays(appState.weeklyDate,-7); renderWeekly(); });
   $('#weeklyNextBtn').addEventListener('click', ()=>{ appState.weeklyDate = addDays(appState.weeklyDate,7); renderWeekly(); });
-  $('#weeklySaveBtn').addEventListener('click', ()=>{
+  $('#weeklySaveBtn').addEventListener('click', saveWeeklyData);
+  $('#weeklySaveBtnTop').addEventListener('click', saveWeeklyData);
+  function saveWeeklyData(){
     const rec = getWeekly(weekKey(appState.weeklyDate));
     rec.mainObjective = $('#weekMainObjective').value;
     rec.studyHours = Number($('#weekStudyHours').value)||0;
@@ -2269,7 +2275,7 @@ function bindEvents(){
     rec.lesson = $('#weekLesson').value;
     saveData();
     renderDashboardIfActive();
-  });
+  }
 
   // ---- Monthly Planner ----
   $('#calPrevBtn').addEventListener('click', ()=>{ appState.monthlyDate = addMonths(appState.monthlyDate,-1); renderMonthly(); });
@@ -2298,7 +2304,9 @@ function bindEvents(){
   // ---- Monthly Review ----
   $('#reviewPrevBtn').addEventListener('click', ()=>{ appState.reviewDate = addMonths(appState.reviewDate,-1); renderReview(); });
   $('#reviewNextBtn').addEventListener('click', ()=>{ appState.reviewDate = addMonths(appState.reviewDate,1); renderReview(); });
-  $('#reviewSaveBtn').addEventListener('click', ()=>{
+  $('#reviewSaveBtn').addEventListener('click', saveReviewData);
+  $('#reviewSaveBtnTop').addEventListener('click', saveReviewData);
+  function saveReviewData(){
     const rec = getReview(monthKey(appState.reviewDate));
     rec.achievements = $('#revAchievements').value;
     rec.challenges = $('#revChallenges').value;
@@ -2318,7 +2326,7 @@ function bindEvents(){
     rec.nextGoal = $('#revNextGoal').value;
     saveData();
     renderDashboardIfActive();
-  });
+  }
 
   // ---- Settings ----
   $('#exportBtn').addEventListener('click', exportJSON);
