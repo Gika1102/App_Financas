@@ -770,11 +770,19 @@
             <div class="card">
               <div class="card-title"><span class="em">🏃</span> Atividade física hoje</div>
               <div class="mini-stat-row">
-                <span class="mini-stat-label">🏋️ Treinos</span>
+                <span class="mini-stat-label">🏋️ Treino de Força</span>
                 <div class="flex gap-8" style="align-items:center;">
-                  <button class="icon-btn btn-sm" data-activity-minus="workouts">−</button>
-                  <span class="slider-value" id="dailyWorkoutsVal">0</span>
-                  <button class="icon-btn btn-sm" data-activity-plus="workouts">+</button>
+                  <button class="icon-btn btn-sm" data-activity-minus="strengthWorkouts">−</button>
+                  <span class="slider-value" id="dailyStrengthVal">0</span>
+                  <button class="icon-btn btn-sm" data-activity-plus="strengthWorkouts">+</button>
+                </div>
+              </div>
+              <div class="mini-stat-row">
+                <span class="mini-stat-label">🧘 Pilates</span>
+                <div class="flex gap-8" style="align-items:center;">
+                  <button class="icon-btn btn-sm" data-activity-minus="pilatesWorkouts">−</button>
+                  <span class="slider-value" id="dailyPilatesVal">0</span>
+                  <button class="icon-btn btn-sm" data-activity-plus="pilatesWorkouts">+</button>
                 </div>
               </div>
               <div class="mini-stat-row">
@@ -1203,7 +1211,8 @@ function getDaily(key){
       energy:3,
       gratitude:'',
       notes:'',
-      workouts:0,
+      strengthWorkouts:0,
+      pilatesWorkouts:0,
       runs:0
     };
   }
@@ -1220,7 +1229,13 @@ function getDaily(key){
       rec.agenda = [];
     }
   }
-  if(typeof rec.workouts !== 'number') rec.workouts = 0;
+  // migra o contador único de treinos para o de Treino de Força
+  if(typeof rec.workouts === 'number' && typeof rec.strengthWorkouts !== 'number'){
+    rec.strengthWorkouts = rec.workouts;
+    delete rec.workouts;
+  }
+  if(typeof rec.strengthWorkouts !== 'number') rec.strengthWorkouts = 0;
+  if(typeof rec.pilatesWorkouts !== 'number') rec.pilatesWorkouts = 0;
   if(typeof rec.runs !== 'number') rec.runs = 0;
   return rec;
 }
@@ -1359,7 +1374,7 @@ function computeWeekStatsUpTo(refDate){
       tasksDone += rec.tasks.filter(t=>t.done).length;
       if(rec.mood){ moodCount++; }
       if(rec.energy){ energySum += Number(rec.energy); energyCount++; }
-      workouts += Number(rec.workouts)||0;
+      workouts += (Number(rec.strengthWorkouts)||0) + (Number(rec.pilatesWorkouts)||0);
     }
   }
   return {tasksTotal, tasksDone, moodCount, energyAvg: energyCount? (energySum/energyCount):0, workouts};
@@ -1371,7 +1386,7 @@ function computeMonthActivity(refDate){
   let runs = 0, workouts = 0;
   for(let d=1; d<=total; d++){
     const rec = plannerData.daily[dateKey(new Date(y,m,d))];
-    if(rec){ runs += Number(rec.runs)||0; workouts += Number(rec.workouts)||0; }
+    if(rec){ runs += Number(rec.runs)||0; workouts += (Number(rec.strengthWorkouts)||0) + (Number(rec.pilatesWorkouts)||0); }
   }
   return {runs, workouts};
 }
@@ -1549,7 +1564,8 @@ function renderDaily(){
   renderDailyAgenda(rec);
 
   // Atividade física
-  $('#dailyWorkoutsVal').textContent = rec.workouts || 0;
+  $('#dailyStrengthVal').textContent = rec.strengthWorkouts || 0;
+  $('#dailyPilatesVal').textContent = rec.pilatesWorkouts || 0;
   $('#dailyRunsKm').value = rec.runs || '';
 
   // Refeições
