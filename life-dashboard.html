@@ -423,9 +423,6 @@
   }
   .hour-input:focus{ outline:none; box-shadow: 0 0 0 3px rgba(var(--lavender),0.25); }
 
-  /* Meals */
-  .meal-grid{ display:grid; grid-template-columns: repeat(2,1fr); gap:12px; }
-  .meal-item label{ font-size:12px; font-weight:600; color:var(--text-secondary); display:block; margin-bottom:6px; }
 
   /* ---------- 8. WEEKLY ---------- */
   .weekly-days-grid{
@@ -557,7 +554,6 @@
     .grid-2, .grid-3, .grid-4{ grid-template-columns: repeat(2,1fr); }
     .page-area{ padding: 20px 16px 50px; }
     .app-header{ padding:16px 18px; }
-    .meal-grid{ grid-template-columns: 1fr; }
   }
   @media (max-width: 480px){
     .grid-2, .grid-3, .grid-4{ grid-template-columns: 1fr; }
@@ -774,7 +770,9 @@
                 <button class="btn btn-primary btn-sm" id="dailyAgendaAddBtn">+ Adicionar</button>
               </div>
             </div>
+          </div>
 
+          <div class="flex-col gap-16">
             <div class="card">
               <div class="card-title"><span class="em">🏃</span> Atividade física hoje</div>
               <div class="mini-stat-row">
@@ -798,22 +796,10 @@
                 <input type="number" min="0" step="0.1" class="hour-input" id="dailyRunsKm" placeholder="0.0" style="max-width:100px; text-align:right;">
               </div>
             </div>
-          </div>
-
-          <div class="flex-col gap-16">
-            <div class="card">
-              <div class="card-title"><span class="em">🍽️</span> Refeições</div>
-              <div class="meal-grid">
-                <div class="meal-item"><label>☕ Café</label><input type="text" class="hour-input" id="mealCafe" placeholder="O que você comeu?"></div>
-                <div class="meal-item"><label>🍛 Almoço</label><input type="text" class="hour-input" id="mealAlmoco" placeholder="O que você comeu?"></div>
-                <div class="meal-item"><label>🍎 Lanche</label><input type="text" class="hour-input" id="mealLanche" placeholder="O que você comeu?"></div>
-                <div class="meal-item"><label>🍽️ Jantar</label><input type="text" class="hour-input" id="mealJantar" placeholder="O que você comeu?"></div>
-              </div>
-            </div>
 
             <div class="grid grid-2" style="gap:16px;">
               <div class="card">
-                <div class="card-title"><span class="em">💧</span> Água (copos de 250ml)</div>
+                <div class="card-title"><span class="em">💧</span> Água (250ml)</div>
                 <div class="water-row" id="dailyWater"></div>
               </div>
 
@@ -1215,7 +1201,6 @@ function getDaily(key){
       priorities:['','',''],
       tasks:[],
       agenda:[],
-      meals:{cafe:'',almoco:'',lanche:'',jantar:''},
       water:0,
       mood:'',
       energy:3,
@@ -1578,12 +1563,6 @@ function renderDaily(){
   $('#dailyStrengthVal').textContent = rec.strengthWorkouts || 0;
   $('#dailyPilatesVal').textContent = rec.pilatesWorkouts || 0;
   $('#dailyRunsKm').value = rec.runs || '';
-
-  // Refeições
-  $('#mealCafe').value = rec.meals.cafe||'';
-  $('#mealAlmoco').value = rec.meals.almoco||'';
-  $('#mealLanche').value = rec.meals.lanche||'';
-  $('#mealJantar').value = rec.meals.jantar||'';
 
   // Água
   const waterEl = $('#dailyWater');
@@ -2257,10 +2236,6 @@ function bindEvents(){
   $('#dailySaveBtnTop').addEventListener('click', saveDailyData);
   function saveDailyData(){
     const rec = getDaily(dateKey(appState.dailyDate));
-    rec.meals.cafe = $('#mealCafe').value;
-    rec.meals.almoco = $('#mealAlmoco').value;
-    rec.meals.lanche = $('#mealLanche').value;
-    rec.meals.jantar = $('#mealJantar').value;
     rec.energy = Number($('#dailyEnergy').value);
     rec.gratitude = $('#dailyGratitude').value;
     rec.notes = $('#dailyNotes').value;
