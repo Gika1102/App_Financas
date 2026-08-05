@@ -1501,7 +1501,7 @@ function renderDebtPaymentOptions(){
 }
 
 function txOptions(){
-  const cats = ['Receitas','Compromissos', 'Vale-Refeição', 'Viagens', 'Reembolso', 'Abatimento de fatura', ...state.budgets.map(b=>b.name), 'Outros'];
+  const cats = ['Receitas','Rendimentos','Compromissos', 'Vale-Refeição', 'Viagens', 'Reembolso', 'Abatimento de fatura', ...state.budgets.map(b=>b.name), 'Outros'];
   document.getElementById('txCategory').innerHTML = cats.map(c=>`<option>${c}</option>`).join('');
   const filter = document.getElementById('txFilterCategory');
   const selected = filter.value;
@@ -1677,7 +1677,7 @@ function txRow(t, idx, removable){
   const color = t.type==='income' || t.type==='withdrawal' || t.type==='offset' ? 'var(--mint-deep)' : 'var(--peach-deep)';
   const dateLabel = t.date ? new Date(`${t.date}T12:00:00`).toLocaleDateString('pt-BR') : 'sem data';
   const cycleLabel = t.cycle ? ` • ${t.cycle}` : '';
-  const categories = ['Receitas','Compromissos', 'Vale-Refeição', 'Viagens', 'Reembolso', 'Abatimento de fatura', ...state.budgets.map(b=>b.name), 'Outros'];
+  const categories = ['Receitas','Rendimentos','Compromissos', 'Vale-Refeição', 'Viagens', 'Reembolso', 'Abatimento de fatura', ...state.budgets.map(b=>b.name), 'Outros'];
   const categoryOptions = categories.map(category=>`<option value="${category}" ${t.category===category?'selected':''}>${category}</option>`).join('');
   const label = t.type==='income' ? '✨ Receita' : t.type==='investment' ? '💼 Investimento' : t.type==='withdrawal' ? '🏦 Saque' : t.type==='offset' ? '✂️ Abatimento' : '💸 Gasto';
   const investmentHint = ['investment','withdrawal'].includes(t.type) && t.investmentName ? `<div class="muted">🎯 ${t.investmentName}</div>` : '';
