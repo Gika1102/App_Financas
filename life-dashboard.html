@@ -132,7 +132,7 @@
     scrollbar-width: none;
     -ms-overflow-style: none;
     z-index: 40;
-    transition: transform var(--transition), background var(--transition);
+    transition: transform var(--transition), background var(--transition), width var(--transition), padding var(--transition);
   }
   .sidebar::-webkit-scrollbar{ display:none; }
   .sidebar__brand{
@@ -200,7 +200,12 @@
     backdrop-filter: blur(18px); -webkit-backdrop-filter: blur(18px);
     border-bottom: 1px solid var(--card-border);
   }
-  .header__menu-btn{ display:none; font-size:22px; padding:6px; border-radius:10px; }
+  .header__menu-btn{ display:flex; align-items:center; justify-content:center; font-size:22px; padding:6px; border-radius:10px; }
+
+  /* Recolhimento do menu lateral no desktop */
+  .app.sidebar-collapsed .sidebar{
+    width:0; min-width:0; padding-left:0; padding-right:0; border-right:none; overflow:hidden;
+  }
   .header__left{ display:flex; flex-direction:column; gap:2px; }
   .header__greeting{ font-size: 20px; font-weight:700; letter-spacing:-0.02em; }
   .header__quote{ font-size:12.5px; color:var(--text-secondary); max-width:420px; }
@@ -545,7 +550,6 @@
     .sidebar.open{ transform: translateX(0); }
     .sidebar-overlay{ display:none; position:fixed; inset:0; background:rgba(0,0,0,0.35); z-index:39; }
     .sidebar-overlay.show{ display:block; }
-    .header__menu-btn{ display:flex; align-items:center; justify-content:center; }
     .header__quote{ display:none; }
     .search-input{ width:140px; }
   }
@@ -807,14 +811,16 @@
               </div>
             </div>
 
-            <div class="card">
-              <div class="card-title"><span class="em">💧</span> Água (copos)</div>
-              <div class="water-row" id="dailyWater"></div>
-            </div>
+            <div class="grid grid-2" style="gap:16px;">
+              <div class="card">
+                <div class="card-title"><span class="em">💧</span> Água (copos de 250ml)</div>
+                <div class="water-row" id="dailyWater"></div>
+              </div>
 
-            <div class="card">
-              <div class="card-title"><span class="em">😊</span> Humor</div>
-              <div class="mood-row" id="dailyMood"></div>
+              <div class="card">
+                <div class="card-title"><span class="em">😊</span> Humor</div>
+                <div class="mood-row" id="dailyMood"></div>
+              </div>
             </div>
 
             <div class="card">
@@ -2168,9 +2174,16 @@ function bindEvents(){
   });
 
   // Menu mobile
+  function isMobileLayout(){
+    return window.matchMedia && window.matchMedia('(max-width: 900px)').matches;
+  }
   $('#menuBtn').addEventListener('click', ()=>{
-    const isOpen = $('#sidebar').classList.toggle('open');
-    $('#sidebarOverlay').classList.toggle('show', isOpen);
+    if(isMobileLayout()){
+      const isOpen = $('#sidebar').classList.toggle('open');
+      $('#sidebarOverlay').classList.toggle('show', isOpen);
+    } else {
+      $('.app').classList.toggle('sidebar-collapsed');
+    }
   });
   $('#sidebarOverlay').addEventListener('click', ()=>{
     $('#sidebar').classList.remove('open');
