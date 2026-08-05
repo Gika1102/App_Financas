@@ -129,9 +129,12 @@
     top:0;
     height:100vh;
     overflow-y:auto;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
     z-index: 40;
     transition: transform var(--transition), background var(--transition);
   }
+  .sidebar::-webkit-scrollbar{ display:none; }
   .sidebar__brand{
     display:flex; align-items:center; gap:10px;
     padding: 6px 10px 24px 10px;
@@ -376,7 +379,7 @@
   .add-row input:focus{ outline:none; box-shadow: 0 0 0 3px rgba(var(--lavender),0.25); }
 
   /* Water drops */
-  .water-row{ display:flex; gap:8px; flex-wrap:wrap; }
+  .water-row{ display:flex; gap:8px; flex-wrap:wrap; align-items:center; min-height:48px; }
   .water-drop{
     width:38px; height:38px; border-radius:50%; display:flex; align-items:center; justify-content:center;
     background: var(--input-bg); border:1px solid var(--card-border); font-size:17px; transition: all var(--transition);
@@ -385,7 +388,7 @@
   .water-drop:hover{ transform: scale(1.12); }
 
   /* Mood */
-  .mood-row{ display:flex; gap:10px; flex-wrap:wrap; }
+  .mood-row{ display:flex; gap:10px; flex-wrap:wrap; align-items:center; min-height:48px; }
   .mood-btn{
     font-size:24px; padding:10px 14px; border-radius:16px; background:var(--input-bg); border:1px solid var(--card-border);
     transition: all var(--transition);
@@ -648,7 +651,7 @@
 
         <div class="grid grid-4" id="dashStatsGrid" style="margin-bottom:20px;"></div>
 
-        <div class="grid grid-3" style="align-items:start;">
+        <div class="grid grid-3">
           <div class="card">
             <div class="card-title"><span class="em">🎯</span> Top 3 prioridades de hoje</div>
             <div class="priority-list" id="dashPriorities"></div>
