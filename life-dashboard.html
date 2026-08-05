@@ -937,8 +937,10 @@
             </div>
 
             <div class="card">
-              <div class="card-title"><span class="em">📝</span> No que você vai focar?</div>
-              <input type="text" class="hour-input" id="pomodoroSubject" placeholder="Ex: Revisão de anatomia">
+              <div class="card-title"><span class="em">📝</span> No que você vai focar hoje?</div>
+              <div class="field"><label>Assunto</label><input type="text" class="hour-input" id="pomodoroSubject" placeholder="Ex: Revisão de anatomia"></div>
+              <div class="field"><label>Curso</label><input type="text" class="hour-input" id="pomodoroCourse" placeholder="Ex: Residência médica"></div>
+              <div class="field" style="margin-bottom:0;"><label>Categoria</label><input type="text" class="hour-input" id="pomodoroCategory" placeholder="Ex: Teoria, prática, revisão..."></div>
             </div>
           </div>
 
@@ -1911,8 +1913,12 @@ function completePomodoroPhase(){
     const dk = dateKey(new Date());
     if(!data.log[dk]) data.log[dk] = [];
     const subjectInput = $('#pomodoroSubject');
+    const courseInput = $('#pomodoroCourse');
+    const categoryInput = $('#pomodoroCategory');
     data.log[dk].push({
       subject: (subjectInput && subjectInput.value.trim()) || 'Sem assunto',
+      course: (courseInput && courseInput.value.trim()) || '',
+      category: (categoryInput && categoryInput.value.trim()) || '',
       minutes: pomodoroPhaseMinutes('work'),
       endedAt: new Date().toISOString()
     });
@@ -1954,7 +1960,11 @@ function renderPomodoroToday(){
   } else {
     logEl.innerHTML = sessions.slice().reverse().map(s=>{
       const time = new Date(s.endedAt).toLocaleTimeString('pt-BR', {hour:'2-digit', minute:'2-digit'});
-      return `<div class="mini-stat-row"><span class="mini-stat-label">🍅 ${escapeHTML(s.subject)}</span><span class="mini-stat-value">${s.minutes} min · ${time}</span></div>`;
+      const details = [s.course, s.category].filter(Boolean).map(escapeHTML).join(' · ');
+      return `<div class="mini-stat-row">
+        <span class="mini-stat-label">🍅 ${escapeHTML(s.subject)}${details ? ` <span style="color:var(--text-muted);">(${details})</span>` : ''}</span>
+        <span class="mini-stat-value">${s.minutes} min · ${time}</span>
+      </div>`;
     }).join('');
   }
 }
