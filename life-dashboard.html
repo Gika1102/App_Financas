@@ -474,8 +474,14 @@
   .tag-item{ display:flex; justify-content:space-between; align-items:center; font-size:12.5px; background:rgba(var(--lavender),0.08); padding:8px 10px; border-radius:10px; }
 
   /* ---------- 10. HABIT TRACKER ---------- */
-  .habit-card{ display:flex; flex-direction:column; gap:12px; }
-  .habit-card__head{ display:flex; align-items:center; justify-content:space-between; }
+  .habit-card{ display:flex; flex-direction:column; gap:10px; }
+  .habit-card__head{ display:flex; align-items:center; justify-content:space-between; cursor:pointer; }
+  .habit-summary-row{ display:flex; gap:14px; flex-wrap:wrap; font-size:11.5px; color:var(--text-secondary); }
+  .habit-summary-row b{ color:var(--text-primary); font-size:13px; }
+  .habit-expand{ display:flex; flex-direction:column; gap:12px; }
+  .habit-expand.hidden{ display:none; }
+  .habit-toggle-btn{ transition: transform var(--transition); }
+  .habit-toggle-btn.open{ transform: rotate(180deg); }
   .habit-card__name{ font-weight:800; font-size:15px; display:flex; align-items:center; gap:8px; }
   .habit-dot{ width:12px; height:12px; border-radius:50%; flex-shrink:0; }
   .habit-cat{ font-size:11px; color:var(--text-secondary); background:rgba(var(--lavender),0.1); padding:3px 8px; border-radius:20px; }
@@ -1252,7 +1258,8 @@ const appState = {
   weeklyDate: new Date(),
   monthlyDate: new Date(),
   reviewDate: new Date(),
-  habitModalEditingId: null
+  habitModalEditingId: null,
+  expandedHabits: new Set()
 };
 
 /* ================================================================
@@ -1853,6 +1860,7 @@ function renderHabits(){
     const y = refDate.getFullYear(), m = refDate.getMonth();
     const total = daysInMonth(y,m);
     const stats = habitStats(habit, refDate);
+    const isExpanded = appState.expandedHabits.has(id);
     const cat = HABIT_CATEGORIES.find(c=>c.id===habit.category) || HABIT_CATEGORIES[HABIT_CATEGORIES.length-1];
 
     const card = document.createElement('div');
@@ -1881,21 +1889,32 @@ function renderHabits(){
       <div class="habit-card__head">
         <div class="habit-card__name"><span class="habit-dot" style="background:${habit.color}"></span>${escapeHTML(habit.name)} <span class="habit-cat">${cat.label}</span></div>
         <div class="flex gap-8">
-          <button class="icon-btn btn-sm" data-action="edit-habit" style="width:34px;height:34px;">✏️</button>
-          <button class="icon-btn btn-sm" data-action="delete-habit" style="width:34px;height:34px;">🗑️</button>
+          <button class="icon-btn btn-sm" data-action="edit-habit" title="Editar">✏️</button>
+          <button class="icon-btn btn-sm" data-action="delete-habit" title="Excluir">🗑️</button>
+          <button class="icon-btn btn-sm habit-toggle-btn ${isExpanded?'open':''}" data-action="toggle-habit" title="${isExpanded?'Recolher':'Expandir'}">⌄</button>
         </div>
       </div>
-      <div class="habit-grid">${gridCells}</div>
       <div class="progress-track thin"><div class="progress-fill" style="width:${stats.pct}%; background: linear-gradient(90deg, ${habit.color}, rgb(var(--pink)))"></div></div>
-      <div class="habit-stats-row">
+      <div class="habit-summary-row">
         <span><b>${stats.pct}%</b> concluído</span>
         <span>🔥 <b>${stats.currentStreak}</b> seq. atual</span>
-        <span>🏆 <b>${stats.bestStreak}</b> melhor seq.</span>
         <span>✅ <b>${stats.done}</b> dias feitos</span>
-        <span>⏳ <b>${stats.remaining}</b> restantes</span>
       </div>
-      <div class="mini-bars">${miniBars}</div>
+      <div class="habit-expand ${isExpanded?'':'hidden'}">
+        <div class="habit-grid">${gridCells}</div>
+        <div class="habit-stats-row">
+          <span>🏆 <b>${stats.bestStreak}</b> melhor seq.</span>
+          <span>⏳ <b>${stats.remaining}</b> restantes</span>
+        </div>
+        <div class="mini-bars">${miniBars}</div>
+      </div>
     `;
+
+    card.querySelector('[data-action="toggle-habit"]').addEventListener('click', ()=>{
+      if(appState.expandedHabits.has(id)) appState.expandedHabits.delete(id);
+      else appState.expandedHabits.add(id);
+      renderHabits();
+    });
 
     $all('.habit-cell', card).forEach(cell=>{
       if(!cell.dataset.date) return;
