@@ -737,10 +737,11 @@
             <div class="page-subtitle">Organize seu dia com carinho</div>
           </div>
           <div class="flex gap-12" style="align-items:center;">
+            <button class="btn btn-primary btn-sm" id="dailySaveBtnTop">💾 Salvar</button>
             <button class="icon-btn" id="dailyPrevBtn">←</button>
+            <span class="badge" id="dailyWeekdayLabel" style="font-size:12.5px; padding:10px 14px;">-</span>
             <input type="date" class="search-input" id="dailyDateInput" style="width:auto; padding:10px 12px;">
             <button class="icon-btn" id="dailyNextBtn">→</button>
-            <button class="btn btn-primary btn-sm" id="dailySaveBtnTop">💾 Salvar</button>
           </div>
         </div>
 
@@ -1542,6 +1543,7 @@ function renderDaily(){
   const key = dateKey(appState.dailyDate);
   const rec = getDaily(key);
   $('#dailyDateInput').value = key;
+  $('#dailyWeekdayLabel').textContent = WEEKDAY_NAMES[appState.dailyDate.getDay()];
 
   // Prioridades
   const prEl = $('#dailyPriorities');
