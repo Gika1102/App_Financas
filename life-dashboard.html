@@ -489,6 +489,7 @@
   .cal-dot{ width:6px; height:6px; border-radius:50%; }
   .dot-task{ background: rgb(var(--lavender)); }
   .dot-habit{ background: #8FCB9B; }
+  .dot-event{ background: var(--danger); }
 
   .month-side-section{ margin-bottom:18px; }
   .month-side-section:last-child{ margin-bottom:0; }
@@ -1010,7 +1011,7 @@
             <div class="card month-side-section">
               <div class="card-title"><span class="em">🎉</span> Eventos</div>
               <div id="monthEvents" class="tag-list"></div>
-              <div class="add-row"><input type="text" id="monthNewEvent" placeholder="Ex: Aniversário da empresa"><button class="btn btn-primary btn-sm" data-list="events">+</button></div>
+              <div class="add-row"><input type="date" id="monthNewEventDate" style="flex:none; width:auto;"><input type="text" id="monthNewEvent" placeholder="Ex: Aniversário da empresa"><button class="btn btn-primary btn-sm" data-list="events">+</button></div>
             </div>
             <div class="card month-side-section">
               <div class="card-title"><span class="em">🎂</span> Aniversários</div>
@@ -1341,7 +1342,11 @@ function getMonthly(key){
   if(!plannerData.monthly[key]){
     plannerData.monthly[key] = { objectives:'', importantDates:[], bills:[], events:[], birthdays:[] };
   }
-  return plannerData.monthly[key];
+  const mrec = plannerData.monthly[key];
+  if(!Array.isArray(mrec.events)) mrec.events = [];
+  // migra eventos antigos (texto simples) para o formato com data
+  mrec.events = mrec.events.map(ev => (typeof ev === 'string') ? { id: uid(), date:'', text: ev } : ev);
+  return mrec;
 }
 function getReview(key){
   if(!plannerData.review[key]){
@@ -2023,6 +2028,16 @@ function renderMonthly(){
   const m = appState.monthlyDate.getMonth();
   $('#calTitle').textContent = `${MONTH_NAMES[m]} ${y}`;
 
+  const mk = monthKey(appState.monthlyDate);
+  const mrec = getMonthly(mk);
+  const eventsByDate = {};
+  (mrec.events||[]).forEach(ev=>{
+    if(ev.date){
+      if(!eventsByDate[ev.date]) eventsByDate[ev.date] = [];
+      eventsByDate[ev.date].push(ev.text);
+    }
+  });
+
   const first = new Date(y,m,1);
   const startOffset = first.getDay(); // 0=domingo
   const totalDays = daysInMonth(y,m);
@@ -2049,11 +2064,13 @@ function renderMonthly(){
     const dailyRec = plannerData.daily[dk];
     const hasTasks = dailyRec && dailyRec.tasks && dailyRec.tasks.length>0;
     const habitDone = Object.values(plannerData.habits).some(h=> h.completions && h.completions[dk]);
-    return `<div class="cal-day ${c.otherMonth?'other-month':''} ${isToday?'today':''}" data-date="${dk}">
+    const dayEvents = !c.otherMonth ? (eventsByDate[dk]||[]) : [];
+    return `<div class="cal-day ${c.otherMonth?'other-month':''} ${isToday?'today':''}" data-date="${dk}" ${dayEvents.length?`title="${escapeHTML(dayEvents.join(', '))}"`:''}>
       <div class="cal-day-num">${c.dayNum}</div>
       <div class="cal-dots">
         ${hasTasks? '<div class="cal-dot dot-task"></div>':''}
         ${habitDone? '<div class="cal-dot dot-habit"></div>':''}
+        ${dayEvents.length? '<div class="cal-dot dot-event"></div>':''}
       </div>
     </div>`;
   }).join('');
@@ -2067,13 +2084,32 @@ function renderMonthly(){
     });
   });
 
-  const mk = monthKey(appState.monthlyDate);
-  const mrec = getMonthly(mk);
   $('#monthObjectives').value = mrec.objectives||'';
   renderTagList('monthImportantDates', mrec.importantDates, 'importantDates');
   renderTagList('monthBills', mrec.bills, 'bills');
-  renderTagList('monthEvents', mrec.events, 'events');
+  renderMonthEvents(mrec.events);
   renderTagList('monthBirthdays', mrec.birthdays, 'birthdays');
+}
+
+function renderMonthEvents(events){
+  const el = $('#monthEvents');
+  if(!events || events.length===0){
+    el.innerHTML = `<div class="empty-state" style="padding:14px;"><div class="msg">Nada adicionado ainda.</div></div>`;
+    return;
+  }
+  const sorted = events.map((ev,idx)=>({...ev, idx})).sort((a,b)=> (a.date||'9999').localeCompare(b.date||'9999'));
+  el.innerHTML = sorted.map(ev=>{
+    const dateLabel = ev.date ? fmtDateBR(new Date(`${ev.date}T12:00:00`)) : 'sem data';
+    return `<div class="tag-item"><span><strong>${escapeHTML(dateLabel)}</strong> — ${escapeHTML(ev.text)}</span><button data-idx="${ev.idx}" data-action="remove-event">✕</button></div>`;
+  }).join('');
+  $all('[data-action="remove-event"]', el).forEach(btn=>{
+    btn.addEventListener('click', ()=>{
+      const mrec = getMonthly(monthKey(appState.monthlyDate));
+      mrec.events.splice(Number(btn.dataset.idx),1);
+      renderMonthly();
+      saveData(true);
+    });
+  });
 }
 
 function renderTagList(containerId, list, listName){
@@ -2634,7 +2670,13 @@ function bindEvents(){
       const val = input.value.trim();
       if(!val) return;
       const mrec = getMonthly(monthKey(appState.monthlyDate));
-      mrec[listName].push(val);
+      if(listName==='events'){
+        const dateInput = $('#monthNewEventDate');
+        mrec.events.push({ id: uid(), date: dateInput.value || '', text: val });
+        dateInput.value = '';
+      } else {
+        mrec[listName].push(val);
+      }
       input.value='';
       renderMonthly();
       saveData(true);
