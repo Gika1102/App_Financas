@@ -1060,11 +1060,21 @@
             <div class="card"><div class="card-title"><span class="em">🧗</span> Desafios</div><textarea class="week-mini-textarea" id="revChallenges"></textarea></div>
             <div class="card"><div class="card-title"><span class="em">💡</span> Aprendizados</div><textarea class="week-mini-textarea" id="revLearnings"></textarea></div>
             <div class="card"><div class="card-title"><span class="em">🙏</span> Gratidão</div><textarea class="week-mini-textarea" id="revGratitude"></textarea></div>
-            <div class="grid grid-2">
-              <div class="card"><div class="card-title"><span class="em">📚</span> Livros</div><input class="hour-input" type="text" id="revBooks" placeholder="Quais livros?"></div>
-              <div class="card"><div class="card-title"><span class="em">🎬</span> Filmes</div><input class="hour-input" type="text" id="revMovies" placeholder="Quais filmes?"></div>
-              <div class="card"><div class="card-title"><span class="em">📺</span> Séries</div><input class="hour-input" type="text" id="revSeries" placeholder="Quais séries?"></div>
-              <div class="card"><div class="card-title"><span class="em">🎙️</span> Podcasts</div><input class="hour-input" type="text" id="revPodcasts" placeholder="Quais podcasts?"></div>
+            <div class="card">
+              <div class="card-title"><span class="em">📚</span> Livros do mês</div>
+              <div id="revBooksList" class="flex-col gap-8"></div>
+              <div class="add-row" style="flex-wrap:wrap; margin-top:12px;">
+                <input type="text" id="revBookTitle" placeholder="Título do livro" style="flex:2; min-width:140px;">
+                <input type="text" id="revBookAuthor" placeholder="Autor" style="flex:1; min-width:100px;">
+                <select id="revBookRating" style="flex:none; width:auto;">
+                  <option value="5">★★★★★</option>
+                  <option value="4">★★★★☆</option>
+                  <option value="3">★★★☆☆</option>
+                  <option value="2">★★☆☆☆</option>
+                  <option value="1">★☆☆☆☆</option>
+                </select>
+                <button class="btn btn-primary btn-sm" id="revAddBookBtn">+ Adicionar</button>
+              </div>
             </div>
           </div>
 
@@ -1337,12 +1347,21 @@ function getReview(key){
   if(!plannerData.review[key]){
     plannerData.review[key] = {
       achievements:'', challenges:'', learnings:'', gratitude:'',
-      books:'', movies:'', series:'', podcasts:'',
+      books:[],
       workouts:0, runs:0, sleepDays:0, saved:'', biggestExpense:'', smallestExpense:'',
       rating:0, word:'', nextGoal:''
     };
   }
-  return plannerData.review[key];
+  const rec = plannerData.review[key];
+  // migra o campo antigo de livros (texto livre separado por vírgula) para a lista com título/autor/nota
+  if(typeof rec.books === 'string'){
+    rec.books = rec.books.split(',').map(t=>t.trim()).filter(Boolean).map(title=>({ id: uid(), title, author:'', rating:0 }));
+  }
+  if(!Array.isArray(rec.books)) rec.books = [];
+  delete rec.movies;
+  delete rec.series;
+  delete rec.podcasts;
+  return rec;
 }
 
 /* ================================================================
@@ -1538,7 +1557,7 @@ function renderDashboard(){
   // Stats cards principais (grid 4)
   const weekStats = computeWeekStatsUpTo(today);
   const monthKeyStr = monthKey(today);
-  const reviewRec = plannerData.review[monthKeyStr] || {};
+  const reviewRec = getReview(monthKeyStr);
   const statsGrid = $('#dashStatsGrid');
   const statCardsData = [
     {icon:'✅', label:'Tarefas de hoje', value: `${doneCount}/${totalCount}`},
@@ -1555,7 +1574,7 @@ function renderDashboard(){
 
   // Cards de estatística individuais
   const monthActivity = computeMonthActivity(today);
-  $('#cardBooks').textContent = reviewRec.books ? (reviewRec.books.split(',').filter(x=>x.trim()).length) : 0;
+  $('#cardBooks').textContent = reviewRec.books ? reviewRec.books.length : 0;
   $('#cardRuns').textContent = `${monthActivity.runs.toFixed(1)} km`;
   $('#cardWorkouts').textContent = weekStats.workouts;
   $('#cardWater').textContent = `${rec.water||0}/8`;
@@ -2284,10 +2303,7 @@ function renderReview(){
   $('#revChallenges').value = rec.challenges||'';
   $('#revLearnings').value = rec.learnings||'';
   $('#revGratitude').value = rec.gratitude||'';
-  $('#revBooks').value = rec.books||'';
-  $('#revMovies').value = rec.movies||'';
-  $('#revSeries').value = rec.series||'';
-  $('#revPodcasts').value = rec.podcasts||'';
+  renderReviewBooks(rec);
   $('#revWorkouts').value = rec.workouts||0;
   $('#revRuns').value = rec.runs||0;
   $('#revSleepDays').value = rec.sleepDays||0;
@@ -2298,6 +2314,29 @@ function renderReview(){
   $('#revNextGoal').value = rec.nextGoal||'';
 
   renderStarsRow($('#revRatingStars'), rec.rating||0, v=>{ rec.rating = v; renderReview(); });
+}
+
+function renderReviewBooks(rec){
+  const el = $('#revBooksList');
+  const books = rec.books || [];
+  if(!books.length){
+    el.innerHTML = `<div class="empty-state" style="padding:14px;"><div class="msg">Nenhum livro adicionado ainda.</div></div>`;
+    return;
+  }
+  el.innerHTML = books.map((b,idx)=>{
+    const stars = '★'.repeat(b.rating||0) + '☆'.repeat(5-(b.rating||0));
+    return `<div class="tag-item">
+      <span><strong>${escapeHTML(b.title)}</strong>${b.author ? ' — '+escapeHTML(b.author) : ''} <span style="color:var(--warning); letter-spacing:1px;">${stars}</span></span>
+      <button data-idx="${idx}" data-action="remove-book">✕</button>
+    </div>`;
+  }).join('');
+  $all('[data-action="remove-book"]', el).forEach(btn=>{
+    btn.addEventListener('click', ()=>{
+      rec.books.splice(Number(btn.dataset.idx),1);
+      renderReviewBooks(rec);
+      saveData(true);
+    });
+  });
 }
 
 /* ================================================================
@@ -2610,16 +2649,28 @@ function bindEvents(){
   $('#reviewNextBtn').addEventListener('click', ()=>{ appState.reviewDate = addMonths(appState.reviewDate,1); renderReview(); });
   $('#reviewSaveBtn').addEventListener('click', saveReviewData);
   $('#reviewSaveBtnTop').addEventListener('click', saveReviewData);
+  $('#revAddBookBtn').addEventListener('click', ()=>{
+    const title = $('#revBookTitle').value.trim();
+    if(!title) return;
+    const rec = getReview(monthKey(appState.reviewDate));
+    rec.books.push({
+      id: uid(),
+      title,
+      author: $('#revBookAuthor').value.trim(),
+      rating: Number($('#revBookRating').value)||0
+    });
+    $('#revBookTitle').value = '';
+    $('#revBookAuthor').value = '';
+    $('#revBookRating').value = '5';
+    renderReviewBooks(rec);
+    saveData(true);
+  });
   function saveReviewData(){
     const rec = getReview(monthKey(appState.reviewDate));
     rec.achievements = $('#revAchievements').value;
     rec.challenges = $('#revChallenges').value;
     rec.learnings = $('#revLearnings').value;
     rec.gratitude = $('#revGratitude').value;
-    rec.books = $('#revBooks').value;
-    rec.movies = $('#revMovies').value;
-    rec.series = $('#revSeries').value;
-    rec.podcasts = $('#revPodcasts').value;
     rec.workouts = Number($('#revWorkouts').value)||0;
     rec.runs = Number($('#revRuns').value)||0;
     rec.sleepDays = Number($('#revSleepDays').value)||0;
