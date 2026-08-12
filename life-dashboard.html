@@ -496,6 +496,18 @@
   .tag-list{ display:flex; flex-direction:column; gap:8px; }
   .tag-item{ display:flex; justify-content:space-between; align-items:center; font-size:12.5px; background:rgba(var(--lavender),0.08); padding:8px 10px; border-radius:10px; }
 
+  /* ---------- 9b. GRATIDÃO / EVENTOS SINCRONIZADOS ---------- */
+  .gratitude-list{ display:flex; flex-direction:column; gap:12px; }
+  .gratitude-entry{ display:grid; grid-template-columns:120px 1fr; gap:16px; align-items:start; }
+  .gratitude-entry__date{ font-size:12px; font-weight:800; color:var(--text-secondary); padding-top:2px; }
+  .gratitude-entry__text{ font-size:14px; line-height:1.6; white-space:pre-wrap; }
+  .synced-events{ display:flex; flex-direction:column; gap:8px; }
+  .synced-event{ display:flex; align-items:flex-start; gap:8px; padding:9px 11px; border-radius:12px; background:rgba(234,154,164,0.10); font-size:12.5px; }
+  .synced-event__time{ font-weight:800; color:var(--text-secondary); white-space:nowrap; }
+  .week-event-list{ display:flex; flex-direction:column; gap:6px; }
+  .week-event-item{ font-size:11.5px; line-height:1.4; padding:6px 8px; border-radius:9px; background:rgba(234,154,164,0.10); }
+  @media (max-width:560px){ .gratitude-entry{ grid-template-columns:1fr; gap:5px; } }
+
   /* ---------- 10. HABIT TRACKER ---------- */
   .habits-overview-card{ padding:16px 18px; }
   .habits-overview-card .card-title{ margin-bottom:10px; }
@@ -900,6 +912,7 @@
       <button class="nav-item" data-page="daily"><span class="nav-icon">📅</span> Daily Planner</button>
       <button class="nav-item" data-page="weekly"><span class="nav-icon">📆</span> Weekly Planner</button>
       <button class="nav-item" data-page="monthly"><span class="nav-icon">🗓</span> Monthly Planner</button>
+      <button class="nav-item" data-page="gratitude"><span class="nav-icon">🙏</span> Diário da Gratidão</button>
       <button class="nav-item" data-page="review"><span class="nav-icon">📖</span> Monthly Review</button>
       <button class="nav-item" data-page="habits"><span class="nav-icon">🌱</span> Habit Tracker</button>
       <button class="nav-item" data-page="pomodoro"><span class="nav-icon">🍅</span> Pomodoro</button>
@@ -1072,6 +1085,12 @@
 
           <div class="flex-col gap-16">
             <div class="card">
+              <div class="card-title"><span class="em">📌</span> Eventos do dia</div>
+              <div id="dailySyncedEvents" class="synced-events"></div>
+              <div class="text-sm mt-8">Eventos adicionados no Monthly Planner aparecem aqui automaticamente.</div>
+            </div>
+
+            <div class="card">
               <div class="card-title"><span class="em">🏃</span> Atividade física hoje</div>
               <div class="mini-stat-row">
                 <span class="mini-stat-label">🏋️ Treino de Força</span>
@@ -1116,8 +1135,12 @@
             </div>
 
             <div class="card">
-              <div class="card-title"><span class="em">🙏</span> Gratidão</div>
-              <textarea class="week-mini-textarea" id="dailyGratitude" placeholder="Pelo que você é grato hoje?" style="min-height:60px;"></textarea>
+              <div class="flex-between" style="gap:12px; align-items:flex-start;">
+                <div class="card-title" style="margin-bottom:0;"><span class="em">🙏</span> Gratidão do dia</div>
+                <button class="btn btn-secondary btn-sm" id="openGratitudeJournalBtn">📖 Ver diário</button>
+              </div>
+              <textarea class="week-mini-textarea mt-8" id="dailyGratitude" placeholder="Uma pequena coisa pela qual você é grato hoje..." style="min-height:60px;"></textarea>
+              <div class="text-sm mt-8">Ao salvar, esta entrada passa a fazer parte do seu Diário da Gratidão.</div>
             </div>
 
             <div class="card">
@@ -1131,6 +1154,7 @@
           <button class="btn btn-primary" id="dailySaveBtn">💾 Salvar</button>
           <button class="btn btn-secondary" id="dailyClearBtn">🗑️ Limpar</button>
           <button class="btn btn-secondary" id="dailyDuplicateBtn">📋 Duplicar dia anterior</button>
+          <button class="btn btn-secondary" id="dailyCarryTasksBtn">➡️ Levar pendentes para amanhã</button>
           <button class="btn btn-secondary" id="dailyTodayBtn">📍 Ir para hoje</button>
         </div>
       </section>
@@ -1305,6 +1329,21 @@
         <div class="flex-col gap-16 mt-24" id="habitsList"></div>
       </section>
 
+      <!-- ===================== DIÁRIO DA GRATIDÃO ===================== -->
+      <section class="page" id="page-gratitude">
+        <div class="flex-between" style="flex-wrap:wrap; gap:12px;">
+          <div>
+            <div class="page-title">Diário da Gratidão</div>
+            <div class="page-subtitle">As pequenas coisas boas que você registrou no Daily Planner, reunidas em um só lugar</div>
+          </div>
+          <button class="btn btn-secondary btn-sm" id="gratitudeTodayBtn">🌷 Registrar gratidão de hoje</button>
+        </div>
+        <div class="card mt-24">
+          <div class="card-title"><span class="em">🙏</span> Suas gratidões</div>
+          <div id="gratitudeJournalList" class="gratitude-list"></div>
+        </div>
+      </section>
+
       <!-- ===================== MONTHLY REVIEW ===================== -->
       <section class="page" id="page-review">
         <div class="flex-between" style="flex-wrap:wrap; gap:12px;">
@@ -1325,7 +1364,11 @@
             <div class="card"><div class="card-title"><span class="em">🏆</span> Conquistas</div><textarea class="week-mini-textarea" id="revAchievements"></textarea></div>
             <div class="card"><div class="card-title"><span class="em">🧗</span> Desafios</div><textarea class="week-mini-textarea" id="revChallenges"></textarea></div>
             <div class="card"><div class="card-title"><span class="em">💡</span> Aprendizados</div><textarea class="week-mini-textarea" id="revLearnings"></textarea></div>
-            <div class="card"><div class="card-title"><span class="em">🙏</span> Gratidão</div><textarea class="week-mini-textarea" id="revGratitude"></textarea></div>
+            <div class="card">
+              <div class="card-title"><span class="em">🙏</span> Gratidões do mês</div>
+              <div id="revGratitudeSummary" class="flex-col gap-8"></div>
+              <div class="text-sm mt-8">Preenchido automaticamente a partir das gratidões registradas no Daily Planner.</div>
+            </div>
             <div class="card">
               <div class="card-title"><span class="em">📚</span> Livros do mês</div>
               <div id="revBooksList" class="flex-col gap-8"></div>
@@ -1613,6 +1656,19 @@ function getMonthly(key){
   mrec.events = mrec.events.map(ev => (typeof ev === 'string') ? { id: uid(), date:'', text: ev } : ev);
   return mrec;
 }
+function getEventsForDate(dateKeyStr){
+  const mk = dateKeyStr.slice(0,7);
+  const mrec = getMonthly(mk);
+  return (mrec.events||[]).filter(ev=> ev.date===dateKeyStr && ev.text && String(ev.text).trim());
+}
+
+function getGratitudeEntries(){
+  return Object.keys(plannerData.daily)
+    .filter(dk=> plannerData.daily[dk] && plannerData.daily[dk].gratitude && String(plannerData.daily[dk].gratitude).trim())
+    .sort((a,b)=> b.localeCompare(a))
+    .map(dk=>({ date:dk, gratitude:String(plannerData.daily[dk].gratitude).trim() }));
+}
+
 function getReview(key){
   if(!plannerData.review[key]){
     plannerData.review[key] = {
@@ -1931,6 +1987,9 @@ function renderDaily(){
   // Agenda livre
   renderDailyAgenda(rec);
 
+  // Eventos vindos do Monthly Planner
+  renderDailySyncedEvents(key);
+
   // Atividade física
   $('#dailyStrengthVal').textContent = rec.strengthWorkouts || 0;
   $('#dailyPilatesVal').textContent = rec.pilatesWorkouts || 0;
@@ -1965,6 +2024,17 @@ function renderDaily(){
   // Gratidão / notas
   $('#dailyGratitude').value = rec.gratitude || '';
   $('#dailyNotes').value = rec.notes || '';
+}
+
+function renderDailySyncedEvents(dk){
+  const el = $('#dailySyncedEvents');
+  if(!el) return;
+  const events = getEventsForDate(dk);
+  if(!events.length){
+    el.innerHTML = `<div class="empty-state" style="padding:12px;"><div class="msg">Nenhum evento para este dia.</div></div>`;
+    return;
+  }
+  el.innerHTML = events.map(ev=>`<div class="synced-event"><span>📌</span><span>${escapeHTML(ev.text)}</span></div>`).join('');
 }
 
 function renderDailyChecklist(rec){
@@ -2069,6 +2139,7 @@ function renderWeekly(){
     const dayRec = rec.days[dk];
     const isToday = dateKey(new Date())===dk;
     const isWeekend = d.getDay()===0 || d.getDay()===6;
+    const syncedEvents = getEventsForDate(dk);
     const card = document.createElement('div');
     card.className = 'card week-day-card' + (isWeekend? ' is-weekend':'');
     card.innerHTML = `
@@ -2080,6 +2151,10 @@ function renderWeekly(){
       <textarea class="week-mini-textarea" data-field="objectives" placeholder="Objetivo do dia">${escapeHTML(dayRec.objectives)}</textarea>
       <label class="text-sm">Checklist</label>
       <textarea class="week-mini-textarea" data-field="checklist" placeholder="Uma tarefa por linha">${escapeHTML((dayRec.checklist||[]).join('\n'))}</textarea>
+      <label class="text-sm">Eventos</label>
+      <div class="week-event-list">
+        ${syncedEvents.length ? syncedEvents.map(ev=>`<div class="week-event-item">📌 ${escapeHTML(ev.text)}</div>`).join('') : '<div class="text-sm">Nenhum evento.</div>'}
+      </div>
       <label class="text-sm">Treino</label>
       <input type="text" class="hour-input" data-field="workout" value="${escapeHTML(dayRec.workout)}" placeholder="Treino planejado">
     `;
@@ -2663,6 +2738,38 @@ function openHabitModal(editId){
   });
 }
 
+function renderGratitudeJournal(){
+  const el = $('#gratitudeJournalList');
+  if(!el) return;
+  const entries = getGratitudeEntries();
+  if(!entries.length){
+    el.innerHTML = `<div class="empty-state"><div class="em">🌷</div><div class="msg">Seu diário ainda está vazio. Registre uma pequena gratidão no Daily Planner.</div></div>`;
+    return;
+  }
+  el.innerHTML = entries.map(item=>{
+    const [y,m,d] = item.date.split('-').map(Number);
+    const dt = new Date(y,m-1,d);
+    return `<div class="gratitude-entry">
+      <div class="gratitude-entry__date">${WEEKDAY_SHORT[dt.getDay()]} · ${fmtDateBR(dt)}</div>
+      <div class="gratitude-entry__text">${escapeHTML(item.gratitude)}</div>
+    </div>`;
+  }).join('<div class="divider" style="margin:2px 0;"></div>');
+}
+
+function renderMonthlyGratitudeSummary(mk){
+  const el = $('#revGratitudeSummary');
+  if(!el) return;
+  const entries = getGratitudeEntries().filter(item=> item.date.startsWith(mk));
+  if(!entries.length){
+    el.innerHTML = `<div class="empty-state" style="padding:12px;"><div class="msg">Nenhuma gratidão registrada neste mês.</div></div>`;
+    return;
+  }
+  el.innerHTML = entries.slice().reverse().map(item=>{
+    const [y,m,d] = item.date.split('-').map(Number);
+    return `<div class="tag-item"><span><strong>${pad2(d)}/${pad2(m)}</strong> — ${escapeHTML(item.gratitude)}</span></div>`;
+  }).join('');
+}
+
 /* ================================================================
    RENDERIZAÇÃO — MONTHLY REVIEW
    ================================================================ */
@@ -2674,7 +2781,7 @@ function renderReview(){
   $('#revAchievements').value = rec.achievements||'';
   $('#revChallenges').value = rec.challenges||'';
   $('#revLearnings').value = rec.learnings||'';
-  $('#revGratitude').value = rec.gratitude||'';
+  renderMonthlyGratitudeSummary(mk);
   renderReviewBooks(rec);
   $('#revWorkouts').value = rec.workouts||0;
   $('#revRuns').value = rec.runs||0;
@@ -2815,6 +2922,7 @@ function renderCurrentPageFor(pageId){
     case 'weekly': renderWeekly(); break;
     case 'pomodoro': renderPomodoroPage(); break;
     case 'monthly': renderMonthly(); break;
+    case 'gratitude': renderGratitudeJournal(); break;
     case 'habits': renderHabits(); break;
     case 'review': renderReview(); break;
     case 'settings': renderSettings(); break;
@@ -2861,6 +2969,36 @@ function bindEvents(){
   $('#dailyPrevBtn').addEventListener('click', ()=>{ appState.dailyDate = addDays(appState.dailyDate,-1); renderDaily(); });
   $('#dailyNextBtn').addEventListener('click', ()=>{ appState.dailyDate = addDays(appState.dailyDate,1); renderDaily(); });
   $('#dailyTodayBtn').addEventListener('click', ()=>{ appState.dailyDate = new Date(); renderDaily(); showToast('Voltou para hoje.'); });
+  $('#openGratitudeJournalBtn').addEventListener('click', ()=> goToPage('gratitude'));
+
+  $('#dailyCarryTasksBtn').addEventListener('click', ()=>{
+    const sourceKey = dateKey(appState.dailyDate);
+    const sourceRec = getDaily(sourceKey);
+    const pending = sourceRec.tasks.filter(t=>!t.done);
+    if(!pending.length){ showToast('Não há tarefas pendentes para mover.', 'error'); return; }
+    const nextDate = addDays(appState.dailyDate,1);
+    const nextKey = dateKey(nextDate);
+    showModal({
+      title:'Mover tarefas pendentes?',
+      text:`${pending.length} tarefa(s) não finalizada(s) serão movidas para ${fmtDateBR(nextDate)}.`,
+      confirmLabel:'Mover para amanhã',
+      onConfirm: ()=>{
+        const nextRec = getDaily(nextKey);
+        const existingTexts = new Set(nextRec.tasks.filter(t=>!t.done).map(t=>String(t.text).trim().toLowerCase()));
+        pending.forEach(t=>{
+          const normalized = String(t.text).trim().toLowerCase();
+          if(!existingTexts.has(normalized)){
+            nextRec.tasks.push({id:uid(), text:t.text, done:false, carriedFrom:sourceKey});
+            existingTexts.add(normalized);
+          }
+        });
+        sourceRec.tasks = sourceRec.tasks.filter(t=>t.done);
+        saveData(true);
+        renderDaily();
+        showToast(`Pendências movidas para ${fmtDateBR(nextDate)}.`, 'success');
+      }
+    });
+  });
 
   $('#dailyAddTaskBtn').addEventListener('click', addDailyTask);
   $('#dailyNewTask').addEventListener('keydown', e=>{ if(e.key==='Enter') addDailyTask(); });
@@ -3023,6 +3161,9 @@ function bindEvents(){
   $('#monthAddImportantDateBtn').addEventListener('click', addImportantDate);
   $('#monthNewEvent').addEventListener('keydown', e=>{ if(e.key==='Enter') addImportantDate(); });
 
+  // ---- Diário da Gratidão ----
+  $('#gratitudeTodayBtn').addEventListener('click', ()=>{ appState.dailyDate = new Date(); goToPage('daily'); });
+
   // ---- Habit Tracker ----
   $('#newHabitBtn').addEventListener('click', ()=> openHabitModal(null));
 
@@ -3052,7 +3193,6 @@ function bindEvents(){
     rec.achievements = $('#revAchievements').value;
     rec.challenges = $('#revChallenges').value;
     rec.learnings = $('#revLearnings').value;
-    rec.gratitude = $('#revGratitude').value;
     rec.workouts = Number($('#revWorkouts').value)||0;
     rec.runs = Number($('#revRuns').value)||0;
     rec.sleepDays = Number($('#revSleepDays').value)||0;
@@ -3081,9 +3221,10 @@ function bindEvents(){
       if(!term) return;
       const pageMap = {
         dashboard:'dashboard', painel:'dashboard',
-        diario:'daily', daily:'daily', dia:'daily',
+        daily:'daily', dia:'daily',
         semana:'weekly', semanal:'weekly', weekly:'weekly',
         mes:'monthly', mensal:'monthly', monthly:'monthly', calendario:'monthly',
+        gratidao:'gratitude', gratitude:'gratitude', diario:'daily',
         habito:'habits', habitos:'habits', habit:'habits',
         review:'review', revisao:'review',
         config:'settings', configuracao:'settings', configuracoes:'settings', settings:'settings'
