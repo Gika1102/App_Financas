@@ -173,6 +173,13 @@
   .mini-metric{ background:var(--bg2); border-radius:14px; padding:9px; }
   .mini-metric strong{ display:block; font-family:var(--font-display); margin-top:3px; }
   .debt-tag{ display:inline-flex; align-items:center; gap:5px; padding:4px 8px; border-radius:999px; background:rgba(255,221,201,.58); color:var(--peach-deep); font-size:.72rem; font-weight:800; }
+  .reimbursement-status{display:inline-flex;align-items:center;gap:5px;padding:4px 8px;border-radius:999px;background:rgba(255,240,194,.55);color:var(--butter-deep);font-size:.72rem;font-weight:800;}
+  .reimbursement-status.paid{background:rgba(211,245,227,.65);color:var(--mint-deep);}
+  .reimbursement-status.partial{background:rgba(255,240,194,.65);color:var(--butter-deep);}
+  .reimbursement-status.pending{background:rgba(255,221,201,.5);color:var(--peach-deep);}
+  .link-box{margin-top:10px;padding:10px 12px;border-radius:14px;background:rgba(247,242,251,.72);border:1px dashed var(--line);}
+  .link-box strong{font-family:var(--font-display);}
+
 
   @media (min-width:600px){ .stat-row{ grid-template-columns:repeat(3,1fr); } .dashboard-stats{ grid-template-columns:repeat(4,1fr); } }
   @media (min-width:850px){
@@ -294,8 +301,8 @@
     <button data-tab="analises">🔎 Análises</button>
     <button data-tab="milhas">✈️ Milhas</button>
     <button data-tab="lancamentos">🧾 Lançamentos</button>
+    <a href="index.html">🏠 Página inicial</a>
     <a href="life-dashboard.html">🌸 Life Dashboard</a>
-    <a href="index.html">🧭 Página inicial</a>
     <div class="nav-updated"><span>última atualização</span><strong id="lastUpdated">—</strong></div>
   </nav>
 
@@ -315,8 +322,8 @@
       </div>
       <div class="stat-row dashboard-stats">
         <div class="stat-pill"><span class="l">💳 SALDO EM CONTA</span><span class="n" id="statPatrimonio">—</span></div>
-        <div class="stat-pill"><span class="l">💳 FATURA DIA 01</span><span class="n" id="statFatura01">—</span><small class="sub" id="statFatura01Sub"></small></div>
-        <div class="stat-pill"><span class="l">💳 FATURA DIA 15</span><span class="n" id="statFatura15">—</span><small class="sub" id="statFatura15Sub"></small></div>
+        <div class="stat-pill"><span class="l">💳 PRÓX. FATURA</span><span class="n" id="statFatura01">—</span><small class="sub" id="statFatura01Sub"></small></div>
+        <div class="stat-pill"><span class="l">💳 OUTRA FATURA</span><span class="n" id="statFatura15">—</span><small class="sub" id="statFatura15Sub"></small></div>
         <div class="stat-pill"><span class="l">🌱 INVESTIDO</span><span class="n" id="statInvest">—</span></div>
       </div>
       <div class="quick-glance">
@@ -375,6 +382,8 @@
       <p class="eyebrow" style="margin-bottom:10px;">registrar pagamento recebido</p>
       <form id="debtPaymentForm" style="display:flex; flex-direction:column; gap:10px;">
         <select id="debtPaymentPerson" aria-label="pessoa que pagou"></select>
+        <select id="debtPaymentTarget" aria-label="compra que está sendo quitada"></select>
+        <div class="muted" style="font-size:.78rem;">Você pode escolher uma compra específica ou deixar sem vínculo para receber um valor que abate várias compras.</div>
         <div class="row gap12"><input id="debtPaymentAmount" type="number" step="0.01" placeholder="R$ 0,00" /><input id="debtPaymentDate" type="date" /></div>
         <button class="btn btn-pink" type="submit">confirmar pagamento</button>
       </form>
@@ -519,6 +528,17 @@
         </form>
       </div>
 
+      <div class="launch-card" style="background:linear-gradient(135deg, rgba(255,255,255,.96), rgba(255,250,234,.94));">
+        <div class="launch-card-header"><p class="eyebrow" style="margin:0;">reembolso recebido</p><span class="launch-pill">↩️ vincular despesa</span></div>
+        <form id="reimbursementPaymentForm" style="display:flex;flex-direction:column;gap:10px;">
+          <select id="txReimbursementTarget" aria-label="despesa reembolsável"></select>
+          <div class="row gap12"><input id="reimbursementAmount" type="number" step="0.01" placeholder="valor recebido" /><input id="reimbursementDate" type="date" /></div>
+          <input id="reimbursementDescription" placeholder="ex.: reembolso psicóloga" />
+          <div class="muted" style="font-size:.78rem;">O vínculo permite acompanhar reembolso parcial e o custo líquido da despesa.</div>
+          <button class="btn btn-pink" type="submit">registrar reembolso</button>
+        </form>
+      </div>
+
       <div class="launch-card">
         <div class="launch-card-header"><p class="eyebrow" style="margin:0;">histórico</p><span class="launch-pill">🧾 recente</span></div>
         <div class="launch-filters">
@@ -559,8 +579,9 @@
 <script>
 const money = new Intl.NumberFormat('pt-BR', { style:'currency', currency:'BRL' });
 const moneyCompact = new Intl.NumberFormat('pt-BR', { style:'currency', currency:'BRL', notation:'compact', maximumFractionDigits:1 });
-const APP_VERSION = '3.0.0';
+const APP_VERSION = '4.0.0';
 const APP_CHANGELOG = [
+  { version:'4.0.0', note:'reembolsos e pagamentos de dívidas podem ser vinculados a uma despesa específica, com pagamentos parciais e custo líquido' },
   { version:'3.0.0', note:'novo design: menos cards, mais hierarquia visual e dashboard orientado a decisões' },
   { version:'2.0.0', note:'separa consumo próprio, empréstimos/reembolsáveis e parcelamentos; inclui custo líquido e total a receber' },
   { version:'1.7.0', note:'separação visual entre gastos próprios e dívidas nos gráficos de fatura por cartão' },
@@ -611,6 +632,163 @@ function isThirdParty(t){ return t.type==='expense' && t.debtor; }
 function isReimbursable(t){ return t.type==='expense' && (t.ownerType==='reimbursable' || t.category==='Reembolso'); }
 function isOwnSpend(t){ return t.type==='expense' && !t.debtor && !isReimbursable(t); }
 function isInstallment(t){ return t.type==='expense' && !!String(t.installment||'').trim(); }
+
+
+function ensureTransactionIds(){
+  let changed = false;
+  state.tx.forEach((t,index)=>{
+    if(!t.id){
+      t.id = `tx-${Date.now()}-${index}-${Math.random().toString(36).slice(2,8)}`;
+      changed = true;
+    }
+    if(!Array.isArray(t.linkedTransactionIds)) t.linkedTransactionIds = [];
+  });
+  return changed;
+}
+
+function getLinkedPayments(expenseId){
+  return state.tx.filter(t =>
+    t.type === 'income' &&
+    (t.category === 'Reembolso' || t.category === 'Pagamento de dívida') &&
+    Array.isArray(t.linkedTransactionIds) &&
+    t.linkedTransactionIds.includes(expenseId)
+  );
+}
+
+function getLinkedAmount(expenseId){
+  return getLinkedPayments(expenseId)
+    .reduce((sum,t)=>sum+Math.abs(Number(t.amount||0)),0);
+}
+
+function getReimbursementStatus(tx){
+  if(!tx || tx.type !== 'expense') return {gross:0,paid:0,remaining:0,status:'none'};
+  const gross = Math.abs(Number(tx.amount||0));
+  const paid = Math.min(gross,getLinkedAmount(tx.id));
+  const remaining = Math.max(0,gross-paid);
+  return {gross,paid,remaining,status:paid<=0?'pending':remaining<=0?'paid':'partial'};
+}
+
+function getOpenReimbursables(){
+  return state.tx
+    .filter(t=>t.type==='expense' && isReimbursable(t))
+    .map(t=>({...t,reimbursement:getReimbursementStatus(t)}))
+    .filter(t=>t.reimbursement.remaining>0);
+}
+
+function getOpenDebtsByPerson(person){
+  return state.tx
+    .filter(t=>isThirdParty(t) && t.debtor===person)
+    .map(t=>({...t,debt:getReimbursementStatus(t)}))
+    .filter(t=>t.debt.remaining>0);
+}
+
+function reimbursementBadge(tx){
+  if(!isReimbursable(tx)) return '';
+  const info = getReimbursementStatus(tx);
+  if(info.status==='paid'){
+    return `<div><span class="reimbursement-status paid">🟢 reembolsado ${money.format(info.paid)} · líquido ${money.format(info.remaining)}</span></div>`;
+  }
+  if(info.status==='partial'){
+    return `<div><span class="reimbursement-status partial">🟡 recebido ${money.format(info.paid)} · falta ${money.format(info.remaining)}</span></div>`;
+  }
+  return `<div><span class="reimbursement-status pending">🟠 aguardando ${money.format(info.remaining)}</span></div>`;
+}
+
+function renderReimbursementOptions(){
+  const select=document.getElementById('txReimbursementTarget');
+  if(!select) return;
+  const current=select.value;
+  const options=getOpenReimbursables();
+  select.innerHTML=`<option value="">não vincular a uma despesa</option>${options.map(t=>{
+    const date=t.date?new Date(`${t.date}T12:00:00`).toLocaleDateString('pt-BR'):'sem data';
+    return `<option value="${t.id}">${t.desc} · ${money.format(t.reimbursement.remaining)} em aberto · ${date}</option>`;
+  }).join('')}`;
+  if(current && Array.from(select.options).some(o=>o.value===current)) select.value=current;
+}
+
+function renderDebtPaymentTargetOptions(){
+  const select=document.getElementById('debtPaymentTarget');
+  const personSelect=document.getElementById('debtPaymentPerson');
+  if(!select || !personSelect) return;
+  const person=personSelect.value;
+  const options=person?getOpenDebtsByPerson(person):[];
+  select.innerHTML=`<option value="">não vincular a uma compra específica</option>${options.map(t=>{
+    const date=t.date?new Date(`${t.date}T12:00:00`).toLocaleDateString('pt-BR'):'sem data';
+    return `<option value="${t.id}">${t.desc} · ${money.format(t.debt.remaining)} em aberto · ${date}</option>`;
+  }).join('')}`;
+}
+
+function registerLinkedPayment({amount,date,description,targetId,category,person=''}){
+  const tx={
+    id:`tx-${Date.now()}-${Math.random().toString(36).slice(2,8)}`,
+    desc:description,
+    amount:Math.abs(amount),
+    type:'income',
+    category,
+    ownerType:'reimbursable',
+    bank:'', installment:'', installmentCurrent:0, installmentTotal:0,
+    investmentName:'', debtor:person,
+    date,
+    cycle:getCycleForDate(date,true),
+    linkedTransactionIds:targetId?[targetId]:[]
+  };
+  state.tx.push(tx);
+  return tx;
+}
+
+function wireReimbursementPaymentForm(){
+  const form=document.getElementById('reimbursementPaymentForm');
+  if(!form) return;
+  form.addEventListener('submit',e=>{
+    e.preventDefault();
+    const amount=Number(document.getElementById('reimbursementAmount').value);
+    const date=document.getElementById('reimbursementDate').value || new Date().toISOString().slice(0,10);
+    const targetId=document.getElementById('txReimbursementTarget').value;
+    const description=document.getElementById('reimbursementDescription').value.trim() || 'Reembolso recebido';
+    if(!amount || amount<=0) return;
+    if(targetId){
+      const original=state.tx.find(t=>t.id===targetId);
+      if(!original){alert('Não encontrei a despesa vinculada. Escolha novamente.');return;}
+      const openAmount=getReimbursementStatus(original).remaining;
+      if(amount>openAmount){alert(`Essa despesa ainda tem ${money.format(openAmount)} em aberto.`);return;}
+    }
+    registerLinkedPayment({amount,date,description,targetId,category:'Reembolso'});
+    form.reset();
+    document.getElementById('reimbursementDate').value=date;
+    save();renderAll();
+  });
+}
+
+function wireDebtPaymentForm(){
+  const form=document.getElementById('debtPaymentForm');
+  if(!form) return;
+  const personSelect=document.getElementById('debtPaymentPerson');
+  personSelect.addEventListener('change',renderDebtPaymentTargetOptions);
+  form.addEventListener('submit',e=>{
+    e.preventDefault();
+    const person=personSelect.value;
+    const amount=Number(document.getElementById('debtPaymentAmount').value);
+    const date=document.getElementById('debtPaymentDate').value || new Date().toISOString().slice(0,10);
+    const targetId=document.getElementById('debtPaymentTarget').value;
+    if(!person || !amount || amount<=0) return;
+    if(targetId){
+      const original=state.tx.find(t=>t.id===targetId);
+      if(!original){alert('Não encontrei a compra vinculada. Escolha novamente.');return;}
+      const openAmount=getReimbursementStatus(original).remaining;
+      if(amount>openAmount){alert(`Essa compra ainda tem ${money.format(openAmount)} em aberto.`);return;}
+    }
+    registerLinkedPayment({
+      amount,date,targetId,
+      description:`Pagamento de dívida · ${person}`,
+      category:'Pagamento de dívida',
+      person
+    });
+    document.getElementById('debtPaymentAmount').value='';
+    document.getElementById('debtPaymentDate').value=date;
+    renderDebtPaymentTargetOptions();
+    save();renderAll();
+  });
+}
 
 function ensureLegacyBudgetNames(){
   const mapping = {
@@ -1000,7 +1178,7 @@ function renderInvestmentVisuals(){
 
 function getDebtSummary(name){
   const charged=state.tx.filter(t=>isThirdParty(t)&&t.debtor===name).reduce((s,t)=>s+Math.abs(Number(t.amount||0)),0);
-  const paid=state.tx.filter(t=>t.type==='income'&&t.debtor===name&&t.category==='Reembolso').reduce((s,t)=>s+Math.abs(Number(t.amount||0)),0);
+  const paid=state.tx.filter(t=>t.type==='income'&&t.category==='Pagamento de dívida'&&t.debtor===name).reduce((s,t)=>s+Math.abs(Number(t.amount||0)),0);
   return{charged,paid,remaining:Math.max(0,charged-paid)};
 }
 function debtorCard(d,i){
@@ -1009,7 +1187,7 @@ function debtorCard(d,i){
 }
 function renderDebtTable(){
   const rows=state.tx.filter(t=>isThirdParty(t)).sort((a,b)=>(b.date||'').localeCompare(a.date||'')),container=document.getElementById('debtTable');if(!rows.length){container.innerHTML='<div class="empty">nenhuma compra atribuída a alguém ainda ✨</div>';return;}
-  container.innerHTML=`<div style="overflow-x:auto;"><table class="installment-table"><thead><tr><th>compra</th><th>pessoa</th><th>valor</th><th>data</th></tr></thead><tbody>${rows.map(t=>{const d=state.debtors.find(x=>x.name===t.debtor);const dl=t.date?new Date(`${t.date}T12:00:00`).toLocaleDateString('pt-BR'):'sem data';return`<tr><td><strong>${t.desc}</strong></td><td>${d?.emoji||'🙋'} ${t.debtor}</td><td>${money.format(Math.abs(t.amount))}</td><td>${dl}</td></tr>`;}).join('')}</tbody></table></div>`;
+  container.innerHTML=`<div style="overflow-x:auto;"><table class="installment-table"><thead><tr><th>compra</th><th>pessoa</th><th>valor</th><th>data</th></tr></thead><tbody>${rows.map(t=>{const d=state.debtors.find(x=>x.name===t.debtor);const dl=t.date?new Date(`${t.date}T12:00:00`).toLocaleDateString('pt-BR'):'sem data';const status=getReimbursementStatus(t);return`<tr><td><strong>${t.desc}</strong><span class="muted" style="font-size:.76rem;">${status.paid>0?`recebido ${money.format(status.paid)} · falta ${money.format(status.remaining)}`:'a receber integralmente'}</span></td><td>${d?.emoji||'🙋'} ${t.debtor}</td><td>${money.format(Math.abs(t.amount))}</td><td>${dl}</td></tr>`;}).join('')}</tbody></table></div>`;
 }
 function renderDebtors(){
   const openPanels=Array.from(document.querySelectorAll('#debtorCards .edit-panel:not(.hidden)')).map(panel=>panel.id),total=state.debtors.reduce((sum,d)=>sum+getDebtSummary(d.name).remaining,0);
@@ -1052,7 +1230,8 @@ function txRow(t,idx,removable){
   const categories=['Receitas','Rendimentos','Compromissos','Vale-Refeição','Viagens','Reembolso','Empréstimos','Abatimento de fatura',...state.budgets.map(b=>b.name),'Outros'];
   const categoryOptions=categories.map(c=>`<option value="${c}" ${t.category===c?'selected':''}>${c}</option>`).join('');
   const ownerText=isThirdParty(t)?` · ${t.debtor}`:isReimbursable(t)?' · aguarda reembolso':'';
-  return`<div class="tx-card"><div class="tx-meta"><div class="row gap8" style="flex-wrap:wrap;"><span class="tx-chip">${label}</span><span class="tx-chip tx-chip-muted">${t.category||'sem categoria'}</span>${isThirdParty(t)?'<span class="debt-tag">fica fora do seu orçamento</span>':''}</div><div class="tx-title">${t.desc}</div><div class="muted">${dateLabel}${ownerText}${t.cycle?' • '+t.cycle:''}</div>${t.type==='expense'&&t.bank?`<div class="muted">🏦 ${t.bank}</div>`:''}${t.type==='expense'?`<div class="muted">${t.paymentMethod==='credito'?`💳 cartão de crédito · fatura dia ${t.faturaDay||'01'}`:'🏦 débito / conta'}</div>`:''}${t.type==='expense'&&t.installment?`<div class="muted">🧾 ${t.installment}${!isThirdParty(t)&&!isReimbursable(t)?' · não conta em compras novas':''}</div>`:''}</div><div class="tx-actions"><div class="tx-amount" style="color:${color};">${sign}${money.format(Math.abs(t.amount))}</div>${removable?`<div class="row gap8"><button class="btn-text" data-edit-tx="${idx}">editar</button><button class="btn-text" data-del="${idx}">remover</button></div>`:''}</div></div>${removable?`<div class="edit-panel hidden" id="txEdit${idx}"><div class="stat-row" style="grid-template-columns:1fr 1fr;"><label><span class="eyebrow">descrição</span><input data-edit-field="desc" value="${t.desc||''}" /></label><label><span class="eyebrow">valor</span><input data-edit-field="amount" type="number" step="0.01" value="${Math.abs(Number(t.amount||0))}" /></label><label><span class="eyebrow">tipo</span><select data-edit-field="type"><option value="expense" ${t.type==='expense'?'selected':''}>Gasto</option><option value="income" ${t.type==='income'?'selected':''}>Receita</option><option value="investment" ${t.type==='investment'?'selected':''}>Investimento</option><option value="withdrawal" ${t.type==='withdrawal'?'selected':''}>Saque</option><option value="offset" ${t.type==='offset'?'selected':''}>Abatimento</option></select></label><label><span class="eyebrow">data</span><input data-edit-field="date" type="date" value="${t.date||''}" /></label></div><label style="display:block;margin-top:12px;"><span class="eyebrow">categoria</span><select data-edit-field="category">${categoryOptions}</select></label><div class="stat-row" style="grid-template-columns:1fr 1fr;margin-top:12px;"><label><span class="eyebrow">banco ou cartão</span><input data-edit-field="bank" value="${t.bank||''}" /></label><label><span class="eyebrow">parcelamento</span><input data-edit-field="installment" value="${t.installment||''}" placeholder="ex.: 1 de 12" /></label></div><label style="display:block;margin-top:12px;"><span class="eyebrow">usado por</span><select data-edit-field="debtor"><option value="">Eu</option>${state.debtors.map(d=>`<option value="${d.name}" ${t.debtor===d.name?'selected':''}>${d.emoji||'🙋'} ${d.name}</option>`).join('')}</select></label><label style="display:block;margin-top:12px;"><span class="eyebrow">classificação</span><select data-edit-field="ownerType"><option value="own" ${!t.ownerType||t.ownerType==='own'?'selected':''}>💗 meu gasto</option><option value="debtor" ${t.ownerType==='debtor'?'selected':''}>🤝 empréstimo</option><option value="reimbursable" ${t.ownerType==='reimbursable'?'selected':''}>↩️ reembolsável</option></select></label><div class="row" style="justify-content:flex-end;gap:10px;margin-top:12px;"><button class="btn-text" data-cancel-edit-tx="${idx}">cancelar</button><button class="btn btn-pink" data-save-tx="${idx}">salvar</button></div></div>`:''}`;
+  const reimbursementInfo=isReimbursable(t)?getReimbursementStatus(t):null;
+  return`<div class="tx-card"><div class="tx-meta"><div class="row gap8" style="flex-wrap:wrap;"><span class="tx-chip">${label}</span><span class="tx-chip tx-chip-muted">${t.category||'sem categoria'}</span>${isThirdParty(t)?'<span class="debt-tag">fica fora do seu orçamento</span>':''}</div><div class="tx-title">${t.desc}</div><div class="muted">${dateLabel}${ownerText}${t.cycle?' • '+t.cycle:''}</div>${t.type==='expense'&&t.bank?`<div class="muted">🏦 ${t.bank}</div>`:''}${t.type==='expense'?`<div class="muted">${t.paymentMethod==='credito'?`💳 cartão de crédito · fatura dia ${t.faturaDay||'01'}`:'🏦 débito / conta'}</div>`:''}${t.type==='expense'&&t.installment?`<div class="muted">🧾 ${t.installment}${!isThirdParty(t)&&!isReimbursable(t)?' · não conta em compras novas':''}</div>`:''}${reimbursementBadge(t)}${isReimbursable(t)&&reimbursementInfo?.paid>0?`<div class="muted">↳ ${reimbursementInfo.paid>=reimbursementInfo.gross?'cobertura completa':'reembolso parcial'} · ${getLinkedPayments(t.id).length} pagamento${getLinkedPayments(t.id).length===1?'':'s'} vinculado${getLinkedPayments(t.id).length===1?'':'s'}</div>`:''}</div><div class="tx-actions"><div class="tx-amount" style="color:${color};">${sign}${money.format(Math.abs(t.amount))}</div>${removable?`<div class="row gap8"><button class="btn-text" data-edit-tx="${idx}">editar</button><button class="btn-text" data-del="${idx}">remover</button></div>`:''}</div></div>${removable?`<div class="edit-panel hidden" id="txEdit${idx}"><div class="stat-row" style="grid-template-columns:1fr 1fr;"><label><span class="eyebrow">descrição</span><input data-edit-field="desc" value="${t.desc||''}" /></label><label><span class="eyebrow">valor</span><input data-edit-field="amount" type="number" step="0.01" value="${Math.abs(Number(t.amount||0))}" /></label><label><span class="eyebrow">tipo</span><select data-edit-field="type"><option value="expense" ${t.type==='expense'?'selected':''}>Gasto</option><option value="income" ${t.type==='income'?'selected':''}>Receita</option><option value="investment" ${t.type==='investment'?'selected':''}>Investimento</option><option value="withdrawal" ${t.type==='withdrawal'?'selected':''}>Saque</option><option value="offset" ${t.type==='offset'?'selected':''}>Abatimento</option></select></label><label><span class="eyebrow">data</span><input data-edit-field="date" type="date" value="${t.date||''}" /></label></div><label style="display:block;margin-top:12px;"><span class="eyebrow">categoria</span><select data-edit-field="category">${categoryOptions}</select></label><div class="stat-row" style="grid-template-columns:1fr 1fr;margin-top:12px;"><label><span class="eyebrow">banco ou cartão</span><input data-edit-field="bank" value="${t.bank||''}" /></label><label><span class="eyebrow">parcelamento</span><input data-edit-field="installment" value="${t.installment||''}" placeholder="ex.: 1 de 12" /></label></div><label style="display:block;margin-top:12px;"><span class="eyebrow">usado por</span><select data-edit-field="debtor"><option value="">Eu</option>${state.debtors.map(d=>`<option value="${d.name}" ${t.debtor===d.name?'selected':''}>${d.emoji||'🙋'} ${d.name}</option>`).join('')}</select></label><label style="display:block;margin-top:12px;"><span class="eyebrow">classificação</span><select data-edit-field="ownerType"><option value="own" ${!t.ownerType||t.ownerType==='own'?'selected':''}>💗 meu gasto</option><option value="debtor" ${t.ownerType==='debtor'?'selected':''}>🤝 empréstimo</option><option value="reimbursable" ${t.ownerType==='reimbursable'?'selected':''}>↩️ reembolsável</option></select></label><div class="row" style="justify-content:flex-end;gap:10px;margin-top:12px;"><button class="btn-text" data-cancel-edit-tx="${idx}">cancelar</button><button class="btn btn-pink" data-save-tx="${idx}">salvar</button></div></div>`:''}`;
 }
 
 function renderTx(){
@@ -1067,7 +1246,7 @@ function renderTx(){
     if(!desc||!amount)return;
     const previous=state.tx[idx]; if(previous&&(previous.type==='investment'||previous.type==='withdrawal'))applyTransactionToInvestment(previous,-1);
     const installment=get('installment'),match=installment.match(/^\s*(\d+)\s*(?:de|\/)\s*(\d+)\s*$/i);
-    state.tx[idx]={...previous,desc,type,date,category:ownerType==='debtor'?'Empréstimos':ownerType==='reimbursable'?'Reembolso':category,amount:Math.abs(amount),bank:get('bank'),installment,installmentCurrent:match?Number(match[1]):0,installmentTotal:match?Number(match[2]):0,debtor:ownerType==='debtor'?debtor:'',ownerType,cycle:getCycleForDate(date,true)};
+    state.tx[idx]={...previous,id:previous.id || `tx-${Date.now()}-${idx}-${Math.random().toString(36).slice(2,8)}`,desc,type,date,category:ownerType==='debtor'?'Empréstimos':ownerType==='reimbursable'?'Reembolso':category,amount:Math.abs(amount),bank:get('bank'),installment,installmentCurrent:match?Number(match[1]):0,installmentTotal:match?Number(match[2]):0,debtor:ownerType==='debtor'?debtor:'',ownerType,cycle:getCycleForDate(date,true),linkedTransactionIds:Array.isArray(previous.linkedTransactionIds)?previous.linkedTransactionIds:[]};
     if(state.tx[idx].type==='investment'||state.tx[idx].type==='withdrawal')applyTransactionToInvestment(state.tx[idx],1);
     save();renderAll();
   }));
@@ -1154,9 +1333,9 @@ function wire(){
     }
     const finalCategory=txType==='expense'&&ownerType==='debtor'?'Empréstimos':txType==='expense'&&ownerType==='reimbursable'?'Reembolso':category;
     const cycle=getCycleForDate(date,true),installmentInfo=txType==='expense'&&installmentCurrent>=1&&installmentTotal>1&&installmentCurrent<=installmentTotal?{current:installmentCurrent,total:installmentTotal}:null,installmentGroup=installmentInfo?`installment-${Date.now()}-${Math.random().toString(36).slice(2,8)}`:'';
-    const txEntry={desc,amount:Math.abs(amount),type:txType,category:finalCategory,ownerType,bank:txType==='expense'?bank:txType==='offset'?offsetBank:'',paymentMethod:txType==='expense'?paymentMethod:'',faturaDay:txType==='expense'&&paymentMethod==='credito'?faturaDay:txType==='offset'?offsetFaturaDay:'',installment:txType==='expense'&&installmentInfo?`${installmentInfo.current} de ${installmentInfo.total}`:'',installmentCurrent:installmentInfo?.current||0,installmentTotal:installmentInfo?.total||0,investmentName:['investment','withdrawal'].includes(txType)?investmentName:'',debtor,date,cycle,installmentGroup};
+    const txEntry={id:`tx-${Date.now()}-${Math.random().toString(36).slice(2,8)}`,desc,amount:Math.abs(amount),type:txType,category:finalCategory,ownerType,bank:txType==='expense'?bank:txType==='offset'?offsetBank:'',paymentMethod:txType==='expense'?paymentMethod:'',faturaDay:txType==='expense'&&paymentMethod==='credito'?faturaDay:txType==='offset'?offsetFaturaDay:'',installment:txType==='expense'&&installmentInfo?`${installmentInfo.current} de ${installmentInfo.total}`:'',installmentCurrent:installmentInfo?.current||0,installmentTotal:installmentInfo?.total||0,investmentName:['investment','withdrawal'].includes(txType)?investmentName:'',debtor,date,cycle,installmentGroup,linkedTransactionIds:[]};
     state.tx.push(txEntry);if(['investment','withdrawal'].includes(txType))applyTransactionToInvestment(txEntry,1);
-    if(installmentInfo&&scheduleInstallments){for(let n=installmentInfo.current+1;n<=installmentInfo.total;n++){const futureDate=dateAfterMonths(date,n-installmentInfo.current);state.tx.push({...txEntry,installment:`${n} de ${installmentInfo.total}`,installmentCurrent:n,date:futureDate,cycle:getCycleForDate(futureDate,true),scheduled:true});}}
+    if(installmentInfo&&scheduleInstallments){for(let n=installmentInfo.current+1;n<=installmentInfo.total;n++){const futureDate=dateAfterMonths(date,n-installmentInfo.current);state.tx.push({...txEntry,id:`tx-${Date.now()}-${n}-${Math.random().toString(36).slice(2,8)}`,installment:`${n} de ${installmentInfo.total}`,installmentCurrent:n,date:futureDate,cycle:getCycleForDate(futureDate,true),scheduled:true,linkedTransactionIds:[]});}}
     document.getElementById('txDesc').value='';document.getElementById('txAmount').value='';document.getElementById('txBank').value='';document.getElementById('txOffsetBank').value='';document.getElementById('txInstallmentCurrent').value='';document.getElementById('txInstallmentTotal').value='';document.getElementById('txDebtor').value='';document.getElementById('txDebtorOther').value='';document.getElementById('txDebtorOther').classList.add('hidden');document.getElementById('txOwnerType').value='own';renderOwnerTypeUI();save();renderAll();
   });
 
@@ -1168,8 +1347,8 @@ function wire(){
   document.getElementById('saveMilesGoal').addEventListener('click',()=>{state.miles.goal=Math.max(0,Number(document.getElementById('milesGoal').value||0));save();renderMiles();});
   document.getElementById('milesAddForm').addEventListener('submit',e=>{e.preventDefault();const miles=Number(document.getElementById('milesAdd').value),source=document.getElementById('milesSource').value,operation=document.getElementById('milesOperation').value;if(!miles)return;state.miles.balances={XP:0,Livelo:0,Smiles:0,Outros:0,...(state.miles.balances||{})};state.miles.balances[source]=operation==='remove'?Math.max(0,Number(state.miles.balances[source]||0)-miles):Number(state.miles.balances[source]||0)+miles;document.getElementById('milesAdd').value='';save();renderMiles();});
 
-  document.getElementById('btnExport').addEventListener('click',()=>{const blob=new Blob([JSON.stringify(state,null,2)],{type:'application/json'}),url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download='financinhas-giovanna-v2.json';a.click();URL.revokeObjectURL(url);});
-  document.getElementById('btnExportCsv').addEventListener('click',()=>{const cols=['Data','Descrição','Tipo','Valor','Categoria','Banco ou cartão','Parcelamento','Ciclo','Investimento','Pessoa','Classificação'];const esc=v=>`"${String(v??'').replace(/"/g,'""')}"`;const rows=state.tx.map(t=>[t.date,t.desc,t.type,Number(t.amount||0).toFixed(2).replace('.',','),t.category,t.bank,t.installment,t.cycle,t.investmentName,t.debtor,t.ownerType].map(esc).join(';'));const csv=`\uFEFF${cols.map(esc).join(';')}\r\n${rows.join('\r\n')}`,blob=new Blob([csv],{type:'text/csv;charset=utf-8'}),url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download='movimentacoes-financinhas-v2.csv';a.click();URL.revokeObjectURL(url);});
+  document.getElementById('btnExport').addEventListener('click',()=>{const blob=new Blob([JSON.stringify(state,null,2)],{type:'application/json'}),url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download='financinhas-giovanna-v4.json';a.click();URL.revokeObjectURL(url);});
+  document.getElementById('btnExportCsv').addEventListener('click',()=>{const cols=['Data','Descrição','Tipo','Valor','Categoria','Banco ou cartão','Parcelamento','Ciclo','Investimento','Pessoa','Classificação','Vinculado a'];const esc=v=>`"${String(v??'').replace(/"/g,'""')}"`;const rows=state.tx.map(t=>[t.date,t.desc,t.type,Number(t.amount||0).toFixed(2).replace('.',','),t.category,t.bank,t.installment,t.cycle,t.investmentName,t.debtor,t.ownerType,(t.linkedTransactionIds||[]).join(',')].map(esc).join(';'));const csv=`\uFEFF${cols.map(esc).join(';')}\r\n${rows.join('\r\n')}`,blob=new Blob([csv],{type:'text/csv;charset=utf-8'}),url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download='movimentacoes-financinhas-v4.csv';a.click();URL.revokeObjectURL(url);});
   document.getElementById('btnImport').addEventListener('click',()=>document.getElementById('backupFile').click());
   document.getElementById('backupFile').addEventListener('change',async e=>{const file=e.target.files[0];if(!file)return;try{const imported=JSON.parse(await file.text());if(!imported||typeof imported!=='object'||!Array.isArray(imported.tx))throw new Error('formato inválido');if(!confirm('Substituir os dados atuais pelos dados deste backup?'))return;state={...structuredClone(defaults),...imported};migrateLegacyCategories();save();renderAll();alert('Backup importado com sucesso! 🌸');}catch(err){alert('Não foi possível importar este arquivo. Escolha um backup exportado por este app.');}finally{e.target.value='';}});
   document.getElementById('btnClearTransactions').addEventListener('click',()=>{if(!confirm('Apagar somente todas as movimentações?'))return;state.tx=[];save();renderAll();});
@@ -1179,16 +1358,20 @@ function wire(){
   document.getElementById('addBudget').addEventListener('click',()=>{state.budgets.push({name:'Nova categoria',emoji:'📊',cap:0,spent:0});save();renderAll();});
   document.getElementById('addInvestment').addEventListener('click',()=>{state.investments.push({name:'Novo investimento',emoji:'💼',bank:'',target:0,current:0});save();renderAll();});
   document.getElementById('addDebtor').addEventListener('click',()=>{state.debtors.push({name:'Nova pessoa',emoji:'🙋'});save();renderAll();});
-  document.getElementById('debtPaymentForm').addEventListener('submit',e=>{e.preventDefault();const person=document.getElementById('debtPaymentPerson').value,amount=Number(document.getElementById('debtPaymentAmount').value),date=document.getElementById('debtPaymentDate').value||today;if(!person||!amount)return;state.tx.push({desc:`Pagamento recebido de ${person}`,amount:Math.abs(amount),type:'income',category:'Reembolso',ownerType:'reimbursable',debtor:person,bank:'',installment:'',installmentCurrent:0,installmentTotal:0,date,cycle:getCycleForDate(date,true)});document.getElementById('debtPaymentAmount').value='';save();renderAll();});
+  wireReimbursementPaymentForm();
+  wireDebtPaymentForm();
+
   ['txFilterType','txFilterCategory','txFilterPayment','txFilterMonth'].forEach(id=>document.getElementById(id).addEventListener('change',renderTx));document.getElementById('txFilterName').addEventListener('input',renderTx);tabs();
 }
 
 function renderAll(){
-  renderLastUpdated();renderMood();renderStats();renderVisuals();renderDashboardInsights();renderCycles();renderCurrentCycle();renderBudgets();renderInvestmentVisuals();renderInvestments();renderDebtors();renderDebtorOptions();renderDebtPaymentOptions();renderAnalysis();renderMiles();txOptions();renderInvestmentOptions();renderTx();renderInstallmentTable();renderOwnerTypeUI();
+  renderLastUpdated();renderMood();renderStats();renderVisuals();renderDashboardInsights();renderCycles();renderCurrentCycle();renderBudgets();renderInvestmentVisuals();renderInvestments();renderDebtors();renderDebtorOptions();renderDebtPaymentOptions();renderReimbursementOptions();renderDebtPaymentTargetOptions();renderAnalysis();renderMiles();txOptions();renderInvestmentOptions();renderTx();renderInstallmentTable();renderOwnerTypeUI();
 }
 
 (async function init(){
   state=await loadState();
+  const idsChanged=ensureTransactionIds();
+  if(idsChanged)save();
   const scheduledChanged=syncScheduledInstallments();
   if(scheduledChanged)save();
   wire();renderAll();renderVersion();
