@@ -125,6 +125,33 @@
     .metrics{grid-template-columns:1fr 1fr}
     .metric:last-child{grid-column:1/-1}
   }
+  .site-footer{
+  width:100%;
+  max-width:900px;
+  margin-top:42px;
+  padding:16px 12px 6px;
+  text-align:center;
+  color:var(--text-secondary);
+  font-size:12px;
+  font-weight:600;
+}
+
+.footer-dot{
+  margin:0 6px;
+  opacity:.55;
+}
+
+@media (max-width:480px){
+  .site-footer{
+    display:flex;
+    flex-direction:column;
+    gap:3px;
+  }
+
+  .footer-dot{
+    display:none;
+  }
+}
 </style>
 </head>
 <body data-theme="light">
@@ -275,6 +302,11 @@
   window.addEventListener('storage',()=>{renderFinance();renderLife()});
   window.addEventListener('focus',()=>{renderFinance();renderLife()});
 })();
+  <footer class="site-footer">
+  <span>feito com carinho para sua vida florescer 🌷✨</span>
+  <span class="footer-dot">·</span>
+  <span>meu espaço pessoal</span>
+</footer>
 </script>
 </body>
 </html>
