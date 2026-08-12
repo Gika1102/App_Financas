@@ -99,6 +99,8 @@
   .stat-pill{ background:var(--bg2); border-radius:14px; padding:8px 7px; text-align:center; }
   .stat-pill .n{ font-family:'Baloo 2',sans-serif; font-weight:700; font-size:1.12rem; display:block; margin-top:1px; }
   .stat-pill .l{ font-size:.74rem; color:var(--ink-soft); font-weight:700; }
+  .stat-pill .sub{ display:block; font-size:.66rem; color:var(--ink-soft); margin-top:2px; font-weight:700; }
+  .stat-pill .sub.has-debt{ color:var(--peach-deep); }
 
   .chip{
     border:none; border-radius:999px; padding:8px 12px; font-weight:700; font-size:.9rem;
@@ -107,8 +109,12 @@
   }
   .chip:hover{ background:var(--lilac); }
 
-  .bar-track{ background:#f1ecf9; border-radius:999px; height:9px; overflow:hidden; }
+  .bar-track{ background:#f1ecf9; border-radius:999px; height:9px; overflow:hidden; display:flex; }
   .bar-fill{ height:100%; border-radius:999px; transition:width .3s ease; }
+  .bar-track .bar-fill{ border-radius:0; }
+  .bar-track .bar-fill:first-child{ border-radius:999px 0 0 999px; }
+  .bar-track .bar-fill:last-child{ border-radius:0 999px 999px 0; }
+  .bar-track .bar-fill:only-child{ border-radius:999px; }
   .fill-mint{ background:var(--mint-deep); }
   .fill-butter{ background:var(--butter-deep); }
   .fill-peach{ background:var(--peach-deep); }
@@ -166,7 +172,7 @@
   .installment-table td{ background:rgba(255,255,255,.92); border:none; }
   .installment-table td strong{ display:block; margin-bottom:4px; }
   .chart-value{ font-weight:700; font-variant-numeric:tabular-nums; white-space:nowrap; }
-  .chart-legend{ display:flex; gap:12px; font-size:.82rem; color:var(--ink-soft); margin-bottom:4px; }
+  .chart-legend{ display:flex; gap:12px; font-size:.82rem; color:var(--ink-soft); margin-bottom:4px; flex-wrap:wrap; }
   .legend-dot{ display:inline-block; width:9px; height:9px; border-radius:50%; margin-right:4px; }
   .investment-charts{ display:grid; gap:10px; margin-bottom:10px; }
   .analysis-summary{ display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:10px; margin-bottom:10px; }
@@ -207,6 +213,9 @@
   .tx-list{ display:flex; flex-direction:column; gap:0; }
   .launch-filters{ display:grid; gap:10px; margin-bottom:12px; }
   .launch-filters .row{ flex-wrap:wrap; }
+  .fatura-summary{ display:flex; justify-content:space-between; align-items:baseline; gap:8px; margin:10px 0 6px; flex-wrap:wrap; }
+  .fatura-summary .fatura-real{ font-family:var(--font-display); font-weight:800; font-size:1.02rem; color:var(--sky-deep); }
+  .fatura-summary .fatura-debt{ font-size:.78rem; color:var(--peach-deep); font-weight:700; }
 
   @media (min-width:600px){ .stat-row{ grid-template-columns:repeat(3,1fr); } .dashboard-stats{ grid-template-columns:repeat(4,1fr); } }
 
@@ -291,8 +300,8 @@
       </div>
       <div class="stat-row dashboard-stats">
         <div class="stat-pill"><span class="l">💳 SALDO EM CONTA</span><span class="n" id="statPatrimonio">—</span></div>
-        <div class="stat-pill"><span class="l">🗓️ FATURA DIA 01</span><span class="n" id="statFatura01">—</span></div>
-        <div class="stat-pill"><span class="l">🗓️ FATURA DIA 15</span><span class="n" id="statFatura15">—</span></div>
+        <div class="stat-pill"><span class="l">🗓️ FATURA DIA 01</span><span class="n" id="statFatura01">—</span><small class="sub" id="statFatura01Sub"></small></div>
+        <div class="stat-pill"><span class="l">🗓️ FATURA DIA 15</span><span class="n" id="statFatura15">—</span><small class="sub" id="statFatura15Sub"></small></div>
         <div class="stat-pill"><span class="l">🌱 INVESTIDO</span><span class="n" id="statInvest">—</span></div>
       </div>
       <div class="quick-glance">
@@ -605,8 +614,9 @@
 <script>
 const money = new Intl.NumberFormat('pt-BR', { style:'currency', currency:'BRL' });
 const moneyCompact = new Intl.NumberFormat('pt-BR', { style:'currency', currency:'BRL', notation:'compact', maximumFractionDigits:1 });
-const APP_VERSION = '1.6.0';
+const APP_VERSION = '1.7.0';
 const APP_CHANGELOG = [
+  { version:'1.7.0', note:'separação visual entre gastos próprios e dívidas nos gráficos de fatura por cartão' },
   { version:'1.6.0', note:'marcações de valor nos gráficos de fatura e tendências' },
   { version:'1.5.0', note:'ajuste de espaçamento entre os blocos de análises' },
   { version:'1.4.0', note:'remoção dos cards de dólar e Selic da aba Investimentos' },
@@ -871,6 +881,15 @@ function getFaturaTotal(month, faturaDay){
   return Math.max(0, creditSpend - offsetTotal);
 }
 
+function getFaturaSplit(month, faturaDay){
+  const creditTx = state.tx.filter(t=>t.type==='expense' && t.paymentMethod==='credito' && (t.faturaDay||'01')===faturaDay && String(t.date||'').slice(0,7)===month);
+  const debt = creditTx.filter(t=>t.debtor).reduce((s,t)=>s+Math.abs(Number(t.amount||0)),0);
+  const ownGross = creditTx.filter(t=>!t.debtor).reduce((s,t)=>s+Math.abs(Number(t.amount||0)),0);
+  const offsetTotal = state.tx.filter(t=>t.type==='offset' && (t.faturaDay||'01')===faturaDay && String(t.date||'').slice(0,7)===month).reduce((s,t)=>s+Math.abs(Number(t.amount||0)),0);
+  const own = Math.max(0, ownGross - offsetTotal);
+  return { own, debt, total: own + debt };
+}
+
 function renderStats(){
   const investmentsTotal = state.investments.reduce((s,g)=>s+Number(g.current||0),0);
   const now = new Date();
@@ -879,11 +898,22 @@ function renderStats(){
   const totalSpent = getDashboardSpendTotal();
   const vrBalance = getValeRefBalance();
   const installmentCount = getInstallmentGroups().length;
-  const fatura01 = getFaturaTotal(getDashboardMonth(), '01');
-  const fatura15 = getFaturaTotal(getDashboardMonth(), '15');
+  const dashboardMonthValue = getDashboardMonth();
+  const split01 = getFaturaSplit(dashboardMonthValue, '01');
+  const split15 = getFaturaSplit(dashboardMonthValue, '15');
   document.getElementById('statPatrimonio').textContent = money.format(accountBalance);
-  document.getElementById('statFatura01').textContent = money.format(fatura01);
-  document.getElementById('statFatura15').textContent = money.format(fatura15);
+  document.getElementById('statFatura01').textContent = money.format(split01.total);
+  document.getElementById('statFatura15').textContent = money.format(split15.total);
+  const sub01 = document.getElementById('statFatura01Sub');
+  const sub15 = document.getElementById('statFatura15Sub');
+  if(split01.debt>0){
+    sub01.textContent = `sua parte real: ${money.format(split01.own)}`;
+    sub01.classList.add('has-debt');
+  } else { sub01.textContent = ''; sub01.classList.remove('has-debt'); }
+  if(split15.debt>0){
+    sub15.textContent = `sua parte real: ${money.format(split15.own)}`;
+    sub15.classList.add('has-debt');
+  } else { sub15.textContent = ''; sub15.classList.remove('has-debt'); }
   document.getElementById('statVr').textContent = money.format(vrBalance);
   document.getElementById('statInvest').textContent = money.format(investmentsTotal);
   document.getElementById('statInstallments').textContent = installmentCount;
@@ -942,31 +972,53 @@ function renderVisuals(){
   const buildCardBreakdown = faturaDay => {
     const groupExpenses = creditExpenses.filter(t=>(t.faturaDay||'01')===faturaDay);
     const groupOffsets = offsetsThisMonth.filter(t=>(t.faturaDay||'01')===faturaDay);
-    const byCard = groupExpenses.reduce((acc,t)=>{
+    const byCard = {};
+    groupExpenses.forEach(t=>{
       const bank = t.bank?.trim() || 'Sem cartão';
-      acc[bank] = (acc[bank]||0) + Math.abs(Number(t.amount||0));
-      return acc;
-    },{});
+      if(!byCard[bank]) byCard[bank] = { own:0, debt:0 };
+      const amt = Math.abs(Number(t.amount||0));
+      if(t.debtor) byCard[bank].debt += amt; else byCard[bank].own += amt;
+    });
     groupOffsets.forEach(t=>{
       const bank = t.bank?.trim() || 'Sem cartão';
-      if(byCard[bank] !== undefined) byCard[bank] = Math.max(0, byCard[bank] - Math.abs(Number(t.amount||0)));
+      if(byCard[bank]) byCard[bank].own = Math.max(0, byCard[bank].own - Math.abs(Number(t.amount||0)));
     });
-    return Object.entries(byCard).sort((a,b)=>b[1]-a[1]).slice(0,5);
+    return Object.entries(byCard)
+      .map(([bank,v])=>({ bank, own:v.own, debt:v.debt, total:v.own+v.debt }))
+      .filter(c=>c.total>0)
+      .sort((a,b)=>b.total-a.total)
+      .slice(0,5);
   };
-  const renderCardGroup = (label, cards) => {
+  const renderCardGroup = (label, faturaDay, cards) => {
+    const split = getFaturaSplit(currentMonth, faturaDay);
+    const summary = split.debt>0
+      ? `<div class="fatura-summary"><span class="fatura-real">real: ${money.format(split.own)}</span><span class="fatura-debt">de terceiros: ${money.format(split.debt)}</span></div>`
+      : '';
     if(!cards.length){
       return `<div class="eyebrow" style="margin:10px 0 4px; font-size:.72rem;">${label}</div><div class="empty" style="padding:6px 0;">nenhum gasto nessa fatura ✨</div>`;
     }
-    const maxCard = cards[0][1] || 1;
-    return `<div class="eyebrow" style="margin:10px 0 4px; font-size:.72rem;">${label}</div>` + cards.map(([card,value])=>`
+    const maxCard = cards[0].total || 1;
+    const rows = cards.map(c=>{
+      const ownWidth = (c.own/maxCard)*100;
+      const debtWidth = (c.debt/maxCard)*100;
+      const debtNote = c.debt>0 ? ` <small style="color:var(--peach-deep); font-weight:700;">(${money.format(c.debt)} de terceiros)</small>` : '';
+      return `
       <div class="chart-row">
-        <span>${card}</span>
-        <div class="bar-track"><div class="bar-fill" style="width:${(value/maxCard)*100}%; background:var(--sky-deep);"></div></div>
-        <span class="chart-value">${money.format(value)}</span>
-      </div>`).join('');
+        <span>${c.bank}</span>
+        <div class="bar-track">
+          ${c.own>0 ? `<div class="bar-fill" style="width:${ownWidth}%; background:var(--sky-deep);"></div>` : ''}
+          ${c.debt>0 ? `<div class="bar-fill" style="width:${debtWidth}%; background:var(--peach-deep);"></div>` : ''}
+        </div>
+        <span class="chart-value">${money.format(c.total)}${debtNote}</span>
+      </div>`;
+    }).join('');
+    return `<div class="eyebrow" style="margin:10px 0 4px; font-size:.72rem;">${label}</div>${summary}${rows}`;
   };
   const creditCardChart = document.getElementById('creditCardChart');
-  creditCardChart.innerHTML = renderCardGroup('🗓️ fatura dia 01', buildCardBreakdown('01')) + renderCardGroup('🗓️ fatura dia 15', buildCardBreakdown('15'));
+  creditCardChart.innerHTML =
+    `<div class="chart-legend"><span><i class="legend-dot" style="background:var(--sky-deep);"></i>seu gasto</span><span><i class="legend-dot" style="background:var(--peach-deep);"></i>de terceiros (dívida)</span></div>` +
+    renderCardGroup('🗓️ fatura dia 01', '01', buildCardBreakdown('01')) +
+    renderCardGroup('🗓️ fatura dia 15', '15', buildCardBreakdown('15'));
 }
 
 function renderDashboardInsights(){
