@@ -658,6 +658,222 @@
   .color-swatch{ width:32px; height:32px; border-radius:10px; border:2px solid transparent; cursor:pointer; transition: all var(--transition); }
   .color-swatch.active{ border-color: var(--text-primary); transform: scale(1.1); }
   .color-swatch-row{ display:flex; gap:10px; flex-wrap:wrap; }
+
+
+  /* ============================================================
+     ECOSYSTEM VISUAL TUNE — inspirado no app de Finanças
+     Mantém a estrutura do Life Dashboard, mas aproxima a linguagem:
+     superfícies claras, bordas suaves, pills e pastel mais limpo.
+     ============================================================ */
+  :root{
+    --bg-grad-1:#FCF8FF;
+    --bg-grad-2:#F7FAFF;
+    --bg-grad-3:#FEF2F8;
+    --text-primary:#574F6B;
+    --text-secondary:#8E849F;
+    --text-muted:#AAA0B9;
+    --card-bg:rgba(255,255,255,.88);
+    --card-bg-strong:#FFFFFF;
+    --card-border:rgba(87,79,107,.075);
+    --input-bg:#FFFFFF;
+    --shadow-soft:0 4px 14px rgba(183,156,242,.08);
+    --shadow-hover:0 8px 20px rgba(183,156,242,.13);
+    --radius-lg:18px;
+    --radius-md:14px;
+    --radius-sm:12px;
+    --success:#6FCF9C;
+    --warning:#ECB84A;
+    --danger:#F2987F;
+  }
+
+  body{
+    font-family:"Segoe UI", Arial, sans-serif;
+    background:
+      radial-gradient(circle at 8% 0%, rgba(255,215,230,.34), transparent 32%),
+      radial-gradient(circle at 92% 8%, rgba(215,236,255,.42), transparent 34%),
+      linear-gradient(180deg,#FCF8FF 0%,#F7FAFF 100%);
+  }
+
+  .sidebar{
+    width:220px;
+    padding:20px 12px;
+    gap:4px;
+    background:rgba(255,255,255,.90);
+    backdrop-filter:none;
+    -webkit-backdrop-filter:none;
+    border-right:1px solid rgba(87,79,107,.075);
+    box-shadow:3px 0 14px rgba(183,156,242,.05);
+  }
+  .sidebar__brand{padding:5px 9px 18px;}
+  .sidebar__brand-logo{
+    width:36px;height:36px;border-radius:13px;
+    box-shadow:none;
+    background:linear-gradient(135deg,#E6D9FF,#FFD7E6);
+  }
+  .sidebar__brand-text{
+    font-family:"Trebuchet MS","Segoe UI",Arial,sans-serif;
+    color:#574F6B;
+  }
+  .nav-item{
+    padding:9px 11px;
+    border-radius:999px;
+    font-size:13.5px;
+    font-weight:700;
+  }
+  .nav-item:hover{transform:none;background:#F7F2FB;}
+  .nav-item.active{
+    background:#E6D9FF;
+    color:#574F6B;
+    box-shadow:none;
+  }
+  .nav-item.active::before{display:none;}
+
+  .app-header{
+    margin:12px 18px 0;
+    padding:13px 18px;
+    top:10px;
+    border:1px solid rgba(255,255,255,.88);
+    border-radius:18px;
+    background:linear-gradient(120deg,rgba(255,255,255,.96),rgba(255,239,246,.90),rgba(235,246,255,.90));
+    backdrop-filter:none;
+    -webkit-backdrop-filter:none;
+    box-shadow:0 5px 16px rgba(183,156,242,.10);
+  }
+  .header__greeting{
+    font-family:"Trebuchet MS","Segoe UI",Arial,sans-serif;
+    font-size:18px;
+  }
+  .header__quote{font-size:12px;font-weight:600;}
+  .header__clock{font-size:17px;}
+  .icon-btn{
+    background:#FFF;
+    border:1px solid rgba(87,79,107,.08);
+    border-radius:999px;
+    box-shadow:none;
+  }
+  .icon-btn:hover{transform:translateY(-1px);box-shadow:0 4px 12px rgba(183,156,242,.10);}
+  .search-input{
+    background:#FFF;
+    border:2px solid rgba(87,79,107,.08);
+    border-radius:999px;
+  }
+  .search-input:focus{box-shadow:0 0 0 3px rgba(183,156,242,.10);border-color:rgb(var(--lavender));}
+
+  .page-area{padding:24px 28px 52px;}
+  .page-title{
+    font-family:"Trebuchet MS","Segoe UI",Arial,sans-serif;
+    font-size:24px;
+    letter-spacing:-.02em;
+  }
+  .page-subtitle{margin-bottom:18px;color:#9A90AD;font-weight:600;}
+
+  .card{
+    background:rgba(255,255,255,.88);
+    border:1px solid rgba(87,79,107,.07);
+    border-radius:18px;
+    padding:16px;
+    backdrop-filter:none;
+    -webkit-backdrop-filter:none;
+    box-shadow:none;
+  }
+  .card:hover{box-shadow:0 5px 16px rgba(183,156,242,.08);}
+  .card-title{
+    font-family:"Trebuchet MS","Segoe UI",Arial,sans-serif;
+    font-size:14px;
+    margin-bottom:11px;
+  }
+  .grid{gap:12px;}
+
+  .stat-card{gap:7px;}
+  .stat-card__icon{
+    width:38px;height:38px;border-radius:13px;
+    background:#F7F2FB;
+  }
+  .stat-card__value{font-size:22px;color:#574F6B;}
+  .priority-item{background:#F9F5FC;border-radius:14px;padding:8px 10px;}
+  .priority-num{background:#E6D9FF;color:#574F6B;}
+  .progress-track{height:9px;background:#F1ECF9;box-shadow:none;}
+  .progress-fill{background:linear-gradient(90deg,#B79CF2,#FF8FB8);}
+
+  .btn{
+    border-radius:999px;
+    padding:9px 15px;
+    font-family:"Trebuchet MS","Segoe UI",Arial,sans-serif;
+    font-size:13px;
+    font-weight:700;
+    box-shadow:none;
+  }
+  .btn-primary{background:#FF8FB8;color:#FFF;box-shadow:0 3px 10px rgba(255,143,184,.16);}
+  .btn-primary:hover{background:#FF7EAC;transform:translateY(-1px);box-shadow:0 5px 14px rgba(255,143,184,.20);}
+  .btn-secondary{background:#F7F2FB;border:0;}
+  .btn-secondary:hover{background:#E6D9FF;}
+  .btn-danger{background:#FFF0EA;color:#D97C6A;}
+  .btn-sm{border-radius:999px;}
+  .fab{background:#FF8FB8;box-shadow:0 8px 20px rgba(255,143,184,.22);}
+
+  .field input[type="text"], .field input[type="number"], .field input[type="date"],
+  .field textarea, .field select, .hour-input, .week-mini-textarea, .add-row input{
+    background:#FFF;
+    border:2px solid rgba(87,79,107,.08);
+    border-radius:12px;
+  }
+  .field input:focus, .field textarea:focus, .field select:focus,
+  .hour-input:focus, .week-mini-textarea:focus, .add-row input:focus{
+    border-color:#B79CF2;
+    box-shadow:0 0 0 3px rgba(183,156,242,.10);
+  }
+  .badge,.habit-cat{background:#F7F2FB;color:#8E849F;}
+  .tag-item{background:#F9F5FC;}
+  .checkbox-custom{border-color:#D7C7F5;background:#FFF;}
+  .checkbox-custom.checked{background:#FF8FB8;border-color:#FF8FB8;}
+
+  .pomodoro-ring{
+    background:conic-gradient(#B79CF2 calc(var(--progress, 0) * 1%), #F1ECF9 0);
+  }
+  .pomodoro-ring-inner{background:#FFF;box-shadow:none;}
+
+  .habit-card{background:rgba(255,255,255,.90);}
+  .habit-cell{background:#F7F2FB;}
+  .habit-cell:hover{border-color:#B79CF2;}
+
+  .cal-day{background:#FFF;border-color:rgba(87,79,107,.07);}
+  .cal-day:hover{background:#F7F2FB;box-shadow:none;}
+  .cal-day.today{background:#E6D9FF;box-shadow:none;}
+
+  [data-theme="dark"]{
+    --text-primary:#EDE9F7;
+    --text-secondary:#B7AEC8;
+    --text-muted:#827991;
+    --card-bg:rgba(39,34,55,.92);
+    --card-bg-strong:#2C263D;
+    --card-border:rgba(255,255,255,.075);
+    --input-bg:#312A43;
+  }
+  [data-theme="dark"] body{
+    background:linear-gradient(180deg,#1B1826 0%,#211B30 100%);
+  }
+  [data-theme="dark"] .sidebar{background:rgba(31,27,43,.96);border-right-color:rgba(255,255,255,.06);}
+  [data-theme="dark"] .sidebar__brand-text{color:var(--text-primary);}
+  [data-theme="dark"] .nav-item.active{background:rgba(183,156,242,.22);color:var(--text-primary);}
+  [data-theme="dark"] .app-header{background:linear-gradient(120deg,rgba(44,38,61,.96),rgba(54,38,55,.94),rgba(35,45,61,.94));border-color:rgba(255,255,255,.06);}
+  [data-theme="dark"] .card,[data-theme="dark"] .habit-card{background:rgba(44,38,61,.90);border-color:rgba(255,255,255,.06);}
+  [data-theme="dark"] .icon-btn,[data-theme="dark"] .search-input,
+  [data-theme="dark"] .field input[type="text"],[data-theme="dark"] .field input[type="number"],[data-theme="dark"] .field input[type="date"],
+  [data-theme="dark"] .field textarea,[data-theme="dark"] .field select,[data-theme="dark"] .hour-input,[data-theme="dark"] .week-mini-textarea,[data-theme="dark"] .add-row input{background:#312A43;border-color:rgba(255,255,255,.07);}
+  [data-theme="dark"] .stat-card__value{color:var(--text-primary);}
+  [data-theme="dark"] .stat-card__icon,[data-theme="dark"] .priority-item,[data-theme="dark"] .badge,[data-theme="dark"] .habit-cat,[data-theme="dark"] .tag-item,[data-theme="dark"] .habit-cell,[data-theme="dark"] .btn-secondary{background:rgba(255,255,255,.055);}
+  [data-theme="dark"] .pomodoro-ring-inner,[data-theme="dark"] .cal-day{background:#312A43;}
+
+  @media (max-width:900px){
+    .app-header{margin:8px 10px 0;top:6px;}
+    .sidebar{width:220px;}
+  }
+  @media (max-width:600px){
+    .page-area{padding:18px 14px 42px;}
+    .app-header{padding:11px 12px;border-radius:16px;}
+    .card{padding:14px;}
+  }
+
 </style>
 </head>
 <body data-theme="light">
