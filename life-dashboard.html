@@ -1393,8 +1393,6 @@
               <div class="card"><div class="card-title"><span class="em">🏃</span> Corridas</div><input class="hour-input" type="number" id="revRuns" placeholder="0"></div>
               <div class="card"><div class="card-title"><span class="em">😴</span> Dias dormindo bem</div><input class="hour-input" type="number" id="revSleepDays" placeholder="0"></div>
               <div class="card"><div class="card-title"><span class="em">💰</span> Quanto economizei</div><input class="hour-input" type="text" id="revSaved" placeholder="R$ 0,00"></div>
-              <div class="card"><div class="card-title"><span class="em">📈</span> Maior gasto</div><input class="hour-input" type="text" id="revBiggestExpense" placeholder="Descrição"></div>
-              <div class="card"><div class="card-title"><span class="em">📉</span> Menor gasto</div><input class="hour-input" type="text" id="revSmallestExpense" placeholder="Descrição"></div>
             </div>
             <div class="card">
               <div class="card-title"><span class="em">⭐</span> Nota do mês</div>
@@ -2787,8 +2785,6 @@ function renderReview(){
   $('#revRuns').value = rec.runs||0;
   $('#revSleepDays').value = rec.sleepDays||0;
   $('#revSaved').value = rec.saved||'';
-  $('#revBiggestExpense').value = rec.biggestExpense||'';
-  $('#revSmallestExpense').value = rec.smallestExpense||'';
   $('#revWord').value = rec.word||'';
   $('#revNextGoal').value = rec.nextGoal||'';
 
@@ -3197,8 +3193,6 @@ function bindEvents(){
     rec.runs = Number($('#revRuns').value)||0;
     rec.sleepDays = Number($('#revSleepDays').value)||0;
     rec.saved = $('#revSaved').value;
-    rec.biggestExpense = $('#revBiggestExpense').value;
-    rec.smallestExpense = $('#revSmallestExpense').value;
     rec.word = $('#revWord').value;
     rec.nextGoal = $('#revNextGoal').value;
     saveData();
