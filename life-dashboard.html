@@ -497,30 +497,93 @@
   .tag-item{ display:flex; justify-content:space-between; align-items:center; font-size:12.5px; background:rgba(var(--lavender),0.08); padding:8px 10px; border-radius:10px; }
 
   /* ---------- 10. HABIT TRACKER ---------- */
-  .habit-card{ display:flex; flex-direction:column; gap:10px; }
-  .habit-card__head{ display:flex; align-items:center; justify-content:space-between; cursor:pointer; }
-  .habit-summary-row{ display:flex; gap:14px; flex-wrap:wrap; font-size:11.5px; color:var(--text-secondary); }
-  .habit-summary-row b{ color:var(--text-primary); font-size:13px; }
-  .habit-expand{ display:flex; flex-direction:column; gap:12px; }
-  .habit-expand.hidden{ display:none; }
-  .habit-toggle-btn{ transition: transform var(--transition); }
-  .habit-toggle-btn.open{ transform: rotate(180deg); }
-  .habit-card__name{ font-weight:800; font-size:15px; display:flex; align-items:center; gap:8px; }
-  .habit-dot{ width:12px; height:12px; border-radius:50%; flex-shrink:0; }
-  .habit-cat{ font-size:11px; color:var(--text-secondary); background:rgba(var(--lavender),0.1); padding:3px 8px; border-radius:20px; }
-  .habit-grid{ display:grid; grid-template-columns: repeat(7, 1fr); gap:5px; }
-  .habit-cell{
-    aspect-ratio:1; border-radius:7px; background: rgba(var(--lavender),0.12);
-    display:flex; align-items:center; justify-content:center; font-size:9px; color:var(--text-muted);
-    transition: all var(--transition); border:1px solid transparent;
+  .habits-overview-card{ padding:16px 18px; }
+  .habits-overview-card .card-title{ margin-bottom:10px; }
+  #habitsOverview{ grid-template-columns:repeat(3,1fr); gap:10px; }
+  #habitsOverview .habit-overview-stat{
+    display:flex; align-items:center; gap:10px;
+    padding:10px 12px; border-radius:14px;
+    background:rgba(var(--lavender),0.07);
+    min-width:0;
   }
-  .habit-cell:hover{ transform: scale(1.15); border-color: rgb(var(--lavender)); }
-  .habit-cell.done{ color:#fff; }
-  .habit-stats-row{ display:flex; gap:14px; flex-wrap:wrap; font-size:11.5px; color:var(--text-secondary); }
-  .habit-stats-row b{ color:var(--text-primary); font-size:13px; }
-  .mini-bars{ display:flex; align-items:flex-end; gap:3px; height:36px; }
-  .mini-bar{ flex:1; background: rgba(var(--lavender),0.2); border-radius:3px 3px 0 0; transition: height 600ms ease; }
-  .mini-bar.on{ background: linear-gradient(180deg, rgb(var(--pink)), rgb(var(--lavender))); }
+  .habit-overview-stat__icon{
+    width:32px; height:32px; border-radius:10px; flex-shrink:0;
+    display:flex; align-items:center; justify-content:center;
+    background:rgba(var(--lavender),0.12); font-size:15px;
+  }
+  .habit-overview-stat__value{ font-size:18px; font-weight:800; line-height:1; }
+  .habit-overview-stat__label{ font-size:10.5px; color:var(--text-secondary); margin-top:3px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+
+  .habit-card{ padding:14px 16px; display:flex; flex-direction:column; gap:0; }
+  .habit-main-row{
+    display:grid; grid-template-columns:minmax(180px,1.5fr) minmax(210px,1fr) auto auto;
+    align-items:center; gap:18px;
+  }
+  .habit-identity{ min-width:0; display:flex; align-items:center; gap:10px; }
+  .habit-dot{ width:10px; height:10px; border-radius:50%; flex-shrink:0; box-shadow:0 0 0 4px rgba(var(--lavender),0.08); }
+  .habit-name-wrap{ min-width:0; }
+  .habit-card__name{ font-weight:800; font-size:14px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .habit-cat{ font-size:10px; color:var(--text-secondary); margin-top:2px; }
+
+  .habit-week-strip{ display:grid; grid-template-columns:repeat(7,1fr); gap:5px; }
+  .habit-week-day{ display:flex; flex-direction:column; align-items:center; gap:4px; }
+  .habit-week-label{ font-size:9px; color:var(--text-muted); text-transform:uppercase; }
+  .habit-week-dot{
+    width:22px; height:22px; border-radius:7px;
+    background:rgba(var(--lavender),0.10); border:1px solid transparent;
+    transition:all 160ms ease; position:relative;
+  }
+  .habit-week-dot:hover{ transform:translateY(-1px); border-color:rgba(var(--lavender),0.45); }
+  .habit-week-dot.done::after{ content:'✓'; color:#fff; font-size:10px; font-weight:800; position:absolute; inset:0; display:flex; align-items:center; justify-content:center; }
+  .habit-week-dot.today{ box-shadow:0 0 0 2px rgba(var(--lavender),0.22); }
+
+  .habit-quick-stats{ display:flex; align-items:center; gap:10px; white-space:nowrap; }
+  .habit-percent{
+    min-width:54px; text-align:center; padding:6px 9px; border-radius:999px;
+    font-size:12px; font-weight:800; background:rgba(var(--lavender),0.11);
+  }
+  .habit-streak{ font-size:11.5px; color:var(--text-secondary); }
+  .habit-streak b{ color:var(--text-primary); }
+  .habit-actions{ display:flex; gap:4px; align-items:center; }
+  .habit-actions .icon-btn{ background:transparent; border-color:transparent; }
+  .habit-actions .icon-btn:hover{ background:rgba(var(--lavender),0.10); box-shadow:none; transform:none; }
+  .habit-toggle-btn{ transition:transform var(--transition); }
+  .habit-toggle-btn.open{ transform:rotate(180deg); }
+
+  .habit-expand{ margin-top:14px; padding-top:14px; border-top:1px solid var(--card-border); display:grid; grid-template-columns:minmax(260px,1fr) auto; gap:20px; align-items:start; }
+  .habit-expand.hidden{ display:none; }
+  .habit-month-title{ font-size:11px; font-weight:700; color:var(--text-secondary); margin-bottom:8px; }
+  .habit-weekdays{ display:grid; grid-template-columns:repeat(7,1fr); gap:5px; margin-bottom:5px; }
+  .habit-weekdays span{ text-align:center; font-size:9px; font-weight:700; color:var(--text-muted); }
+  .habit-grid{ display:grid; grid-template-columns:repeat(7,1fr); gap:5px; }
+  .habit-cell{
+    aspect-ratio:1; min-width:0; border-radius:7px; background:rgba(var(--lavender),0.08);
+    display:flex; align-items:center; justify-content:center; font-size:9px; color:var(--text-muted);
+    transition:all 150ms ease; border:1px solid transparent;
+  }
+  .habit-cell:hover{ transform:scale(1.08); border-color:rgba(var(--lavender),0.5); }
+  .habit-cell.done{ color:#fff; font-weight:700; }
+  .habit-detail-stats{ min-width:150px; display:flex; flex-direction:column; gap:8px; }
+  .habit-detail-stat{ display:flex; justify-content:space-between; gap:16px; font-size:11.5px; color:var(--text-secondary); padding:7px 9px; border-radius:10px; background:rgba(var(--lavender),0.06); }
+  .habit-detail-stat b{ color:var(--text-primary); }
+
+  @media (max-width: 900px){
+    .habit-main-row{ grid-template-columns:1fr auto; gap:12px; }
+    .habit-week-strip{ grid-column:1 / -1; grid-row:2; }
+    .habit-quick-stats{ justify-self:end; }
+    .habit-actions{ grid-column:2; grid-row:1; }
+    .habit-expand{ grid-template-columns:1fr; }
+    .habit-detail-stats{ min-width:0; display:grid; grid-template-columns:repeat(3,1fr); }
+  }
+  @media (max-width: 560px){
+    #habitsOverview{ grid-template-columns:1fr; }
+    .habit-card{ padding:13px; }
+    .habit-main-row{ grid-template-columns:minmax(0,1fr) auto; }
+    .habit-quick-stats{ grid-column:1; grid-row:3; justify-self:start; }
+    .habit-actions{ grid-column:2; grid-row:1; }
+    .habit-week-dot{ width:100%; aspect-ratio:1; height:auto; max-width:28px; }
+    .habit-detail-stats{ grid-template-columns:1fr; }
+  }
 
   /* ---------- 11. TOASTS / MODAL ---------- */
   .toast-container{ position:fixed; bottom:24px; left:50%; transform:translateX(-50%); z-index:200; display:flex; flex-direction:column; gap:10px; align-items:center; }
@@ -932,6 +995,7 @@
               <div class="text-sm mt-16" id="pomodoroCycleLabel">Bloco 1 de 4</div>
               <div class="btn-row" style="justify-content:center;">
                 <button class="btn btn-primary" id="pomodoroStartPauseBtn">▶️ Iniciar</button>
+                <button class="btn btn-secondary" id="pomodoroEndSessionBtn" style="display:none;">⏹️ Encerrar sessão</button>
                 <button class="btn btn-secondary" id="pomodoroSkipBtn">⏭️ Pular</button>
                 <button class="btn btn-secondary" id="pomodoroResetBtn">🔄 Reiniciar</button>
               </div>
@@ -995,28 +1059,13 @@
 
           <div class="flex-col gap-16">
             <div class="card month-side-section">
-              <div class="card-title"><span class="em">🎯</span> Objetivos do mês</div>
-              <textarea class="week-mini-textarea" id="monthObjectives" placeholder="Quais são seus objetivos para este mês?"></textarea>
-            </div>
-            <div class="card month-side-section">
               <div class="card-title"><span class="em">📌</span> Datas importantes</div>
-              <div id="monthImportantDates" class="tag-list"></div>
-              <div class="add-row"><input type="text" id="monthNewDate" placeholder="Ex: 15/03 - Reunião"><button class="btn btn-primary btn-sm" data-list="importantDates">+</button></div>
-            </div>
-            <div class="card month-side-section">
-              <div class="card-title"><span class="em">💳</span> Contas</div>
-              <div id="monthBills" class="tag-list"></div>
-              <div class="add-row"><input type="text" id="monthNewBill" placeholder="Ex: Aluguel - dia 5"><button class="btn btn-primary btn-sm" data-list="bills">+</button></div>
-            </div>
-            <div class="card month-side-section">
-              <div class="card-title"><span class="em">🎉</span> Eventos</div>
               <div id="monthEvents" class="tag-list"></div>
-              <div class="add-row"><input type="date" id="monthNewEventDate" style="flex:none; width:auto;"><input type="text" id="monthNewEvent" placeholder="Ex: Aniversário da empresa"><button class="btn btn-primary btn-sm" data-list="events">+</button></div>
-            </div>
-            <div class="card month-side-section">
-              <div class="card-title"><span class="em">🎂</span> Aniversários</div>
-              <div id="monthBirthdays" class="tag-list"></div>
-              <div class="add-row"><input type="text" id="monthNewBirthday" placeholder="Ex: Maria - 20/03"><button class="btn btn-primary btn-sm" data-list="birthdays">+</button></div>
+              <div class="add-row" style="flex-wrap:wrap;">
+                <input type="date" id="monthNewEventDate" style="flex:none; width:auto;">
+                <input type="text" id="monthNewEvent" placeholder="Ex: Consulta, aniversário, reunião..." style="min-width:160px;">
+                <button class="btn btn-primary btn-sm" id="monthAddImportantDateBtn">+ Adicionar</button>
+              </div>
             </div>
           </div>
         </div>
@@ -1032,9 +1081,9 @@
           <button class="btn btn-primary" id="newHabitBtn">🌱 Novo hábito</button>
         </div>
 
-        <div class="card mt-24">
-          <div class="card-title"><span class="em">📊</span> Resumo geral do mês</div>
-          <div class="grid grid-3" id="habitsOverview"></div>
+        <div class="card habits-overview-card mt-24">
+          <div class="card-title"><span class="em">📊</span> Resumo do mês</div>
+          <div class="grid" id="habitsOverview"></div>
         </div>
 
         <div class="flex-col gap-16 mt-24" id="habitsList"></div>
@@ -1852,7 +1901,8 @@ const pomodoroState = {
   totalSeconds: 25*60,
   running: false,
   timerId: null,
-  cycleCount: 0
+  cycleCount: 0,
+  currentSession: null
 };
 
 function pomodoroPhaseMinutes(phase){
@@ -1902,13 +1952,59 @@ function pausePomodoroTimer(){
 
 function startPomodoroTimer(){
   if(pomodoroState.running) return;
+  if(pomodoroState.phase==='work' && !pomodoroState.currentSession){
+    const subjectInput = $('#pomodoroSubject');
+    const courseInput = $('#pomodoroCourse');
+    const categoryInput = $('#pomodoroCategory');
+    pomodoroState.currentSession = {
+      id: uid(),
+      subject: (subjectInput && subjectInput.value.trim()) || 'Sem assunto',
+      course: (courseInput && courseInput.value.trim()) || '',
+      category: (categoryInput && categoryInput.value.trim()) || '',
+      plannedSeconds: pomodoroState.totalSeconds,
+      startedAt: new Date().toISOString()
+    };
+  }
   pomodoroState.running = true;
   pomodoroState.timerId = setInterval(tickPomodoro, 1000);
   renderPomodoro();
 }
 
+function saveCurrentPomodoroSession(status){
+  if(pomodoroState.phase!=='work' || !pomodoroState.currentSession) return false;
+  const elapsedSeconds = Math.max(0, pomodoroState.totalSeconds - pomodoroState.secondsLeft);
+  if(elapsedSeconds<=0){
+    pomodoroState.currentSession = null;
+    return false;
+  }
+  const data = getPomodoroData();
+  const dk = dateKey(new Date());
+  if(!data.log[dk]) data.log[dk] = [];
+  data.log[dk].push({
+    ...pomodoroState.currentSession,
+    durationSeconds: elapsedSeconds,
+    minutes: Math.round((elapsedSeconds/60)*10)/10,
+    status: status || 'completed',
+    endedAt: new Date().toISOString()
+  });
+  pomodoroState.currentSession = null;
+  saveData(true);
+  renderDashboardIfActive();
+  return true;
+}
+
+function endPomodoroSession(){
+  if(pomodoroState.phase!=='work' || !pomodoroState.currentSession) return;
+  const saved = saveCurrentPomodoroSession('interrupted');
+  pausePomodoroTimer();
+  pomodoroState.cycleCount = 0;
+  initPomodoroPhase('work');
+  if(saved) showToast('Sessão encerrada e salva no histórico. 💾', 'success');
+}
+
 function resetPomodoroTimer(){
   pausePomodoroTimer();
+  pomodoroState.currentSession = null;
   pomodoroState.cycleCount = 0;
   initPomodoroPhase('work');
 }
@@ -1933,22 +2029,8 @@ function tickPomodoro(){
 function completePomodoroPhase(){
   const wasWork = pomodoroState.phase==='work';
   if(wasWork){
-    const data = getPomodoroData();
-    const dk = dateKey(new Date());
-    if(!data.log[dk]) data.log[dk] = [];
-    const subjectInput = $('#pomodoroSubject');
-    const courseInput = $('#pomodoroCourse');
-    const categoryInput = $('#pomodoroCategory');
-    data.log[dk].push({
-      subject: (subjectInput && subjectInput.value.trim()) || 'Sem assunto',
-      course: (courseInput && courseInput.value.trim()) || '',
-      category: (categoryInput && categoryInput.value.trim()) || '',
-      minutes: pomodoroPhaseMinutes('work'),
-      endedAt: new Date().toISOString()
-    });
+    saveCurrentPomodoroSession('completed');
     pomodoroState.cycleCount++;
-    saveData(true);
-    renderDashboardIfActive();
   }
   playPomodoroBeep();
   showToast(wasWork ? 'Bloco de foco concluído! Hora da pausa 🌸' : 'Pausa concluída! Vamos focar de novo 🎯', 'success');
@@ -1975,19 +2057,33 @@ function renderPomodoroToday(){
   const data = getPomodoroData();
   const dk = dateKey(new Date());
   const sessions = data.log[dk] || [];
-  const totalMinutes = sessions.reduce((sum,s)=>sum+(Number(s.minutes)||0),0);
+  const totalSeconds = sessions.reduce((sum,s)=> sum + (Number(s.durationSeconds) || (Number(s.minutes)||0)*60), 0);
+  const totalMinutes = Math.round((totalSeconds/60)*10)/10;
   $('#pomodoroTodayCount').textContent = sessions.length;
   $('#pomodoroTodayMinutes').textContent = `${totalMinutes} min`;
   const logEl = $('#pomodoroLogToday');
   if(!sessions.length){
-    logEl.innerHTML = `<div class="empty-state"><div class="em">🍅</div><div class="msg">Nenhum bloco concluído ainda hoje.</div></div>`;
+    logEl.innerHTML = `<div class="empty-state"><div class="em">🍅</div><div class="msg">Nenhuma sessão salva ainda hoje.</div></div>`;
   } else {
-    logEl.innerHTML = sessions.slice().reverse().map(s=>{
+    logEl.innerHTML = sessions.slice().reverse().map((s,reverseIdx)=>{
       const time = new Date(s.endedAt).toLocaleTimeString('pt-BR', {hour:'2-digit', minute:'2-digit'});
       const details = [s.course, s.category].filter(Boolean).map(escapeHTML).join(' · ');
-      return `<div class="mini-stat-row">
-        <span class="mini-stat-label">🍅 ${escapeHTML(s.subject)}${details ? ` <span style="color:var(--text-muted);">(${details})</span>` : ''}</span>
-        <span class="mini-stat-value">${s.minutes} min · ${time}</span>
+      const seconds = Number(s.durationSeconds) || Math.round((Number(s.minutes)||0)*60);
+      const mins = Math.floor(seconds/60);
+      const secs = seconds%60;
+      const durationLabel = secs ? `${mins}m ${pad2(secs)}s` : `${mins} min`;
+      const interrupted = s.status==='interrupted';
+      const statusLabel = interrupted ? 'Encerrada' : 'Concluída';
+      const statusIcon = interrupted ? '⏹️' : '✅';
+      return `<div style="padding:10px 0; border-bottom:1px solid var(--card-border);">
+        <div class="flex-between" style="gap:12px; align-items:flex-start;">
+          <div style="min-width:0;">
+            <div style="font-size:13.5px; font-weight:700;">🍅 ${escapeHTML(s.subject || 'Sem assunto')}</div>
+            ${details ? `<div class="text-sm" style="margin-top:3px;">${details}</div>` : ''}
+            <div class="text-sm" style="margin-top:4px;">${statusIcon} ${statusLabel} · ${time}</div>
+          </div>
+          <div class="mini-stat-value" style="white-space:nowrap;">${durationLabel}</div>
+        </div>
       </div>`;
     }).join('');
   }
@@ -2008,7 +2104,12 @@ function renderPomodoro(){
   $('#pomodoroPhaseLabel').textContent = pomodoroPhaseLabel(pomodoroState.phase);
   const progress = pomodoroState.totalSeconds ? ((pomodoroState.totalSeconds - pomodoroState.secondsLeft)/pomodoroState.totalSeconds)*100 : 0;
   $('#pomodoroRing').style.setProperty('--progress', progress);
-  $('#pomodoroStartPauseBtn').textContent = pomodoroState.running ? '⏸️ Pausar' : '▶️ Iniciar';
+  $('#pomodoroStartPauseBtn').textContent = pomodoroState.running ? '⏸️ Pausar' : (pomodoroState.currentSession ? '▶️ Continuar' : '▶️ Iniciar');
+  const endSessionBtn = $('#pomodoroEndSessionBtn');
+  if(endSessionBtn){
+    const hasActiveWorkSession = pomodoroState.phase==='work' && !!pomodoroState.currentSession && (pomodoroState.totalSeconds - pomodoroState.secondsLeft) > 0;
+    endSessionBtn.style.display = hasActiveWorkSession ? 'inline-flex' : 'none';
+  }
   const cyclesBeforeLong = Number(getPomodoroData().settings.cyclesBeforeLong)||4;
   const displayCycle = (pomodoroState.cycleCount % cyclesBeforeLong) + (pomodoroState.phase==='work' ? 1 : 0);
   $('#pomodoroCycleLabel').textContent = `Bloco ${Math.max(1, displayCycle || cyclesBeforeLong)} de ${cyclesBeforeLong}`;
@@ -2084,11 +2185,7 @@ function renderMonthly(){
     });
   });
 
-  $('#monthObjectives').value = mrec.objectives||'';
-  renderTagList('monthImportantDates', mrec.importantDates, 'importantDates');
-  renderTagList('monthBills', mrec.bills, 'bills');
   renderMonthEvents(mrec.events);
-  renderTagList('monthBirthdays', mrec.birthdays, 'birthdays');
 }
 
 function renderMonthEvents(events){
@@ -2170,9 +2267,9 @@ function renderHabitsOverview(){
   const bestStreak = Math.max(...stats.map(s=>s.bestStreak));
   const totalDone = stats.reduce((a,s)=>a+s.done,0);
   el.innerHTML = `
-    <div class="stat-card"><div class="stat-card__icon">📈</div><div class="stat-card__value">${avgPct}%</div><div class="stat-card__label">Média geral de conclusão</div></div>
-    <div class="stat-card"><div class="stat-card__icon">🔥</div><div class="stat-card__value">${bestStreak}</div><div class="stat-card__label">Melhor sequência (dias)</div></div>
-    <div class="stat-card"><div class="stat-card__icon">✅</div><div class="stat-card__value">${totalDone}</div><div class="stat-card__label">Total de dias concluídos</div></div>
+    <div class="habit-overview-stat"><div class="habit-overview-stat__icon">📈</div><div><div class="habit-overview-stat__value">${avgPct}%</div><div class="habit-overview-stat__label">conclusão média</div></div></div>
+    <div class="habit-overview-stat"><div class="habit-overview-stat__icon">🔥</div><div><div class="habit-overview-stat__value">${bestStreak}</div><div class="habit-overview-stat__label">melhor sequência</div></div></div>
+    <div class="habit-overview-stat"><div class="habit-overview-stat__icon">✅</div><div><div class="habit-overview-stat__value">${totalDone}</div><div class="habit-overview-stat__label">check-ins no mês</div></div></div>
   `;
 }
 
@@ -2185,6 +2282,7 @@ function renderHabits(){
     list.innerHTML = `<div class="card"><div class="empty-state"><div class="em">🌱</div><div class="msg">Nenhum hábito criado ainda. Que tal começar com "Beber água" ou "Ler 10 páginas"?</div></div></div>`;
     return;
   }
+
   list.innerHTML = '';
   habitIds.forEach(id=>{
     const habit = plannerData.habits[id];
@@ -2193,6 +2291,7 @@ function renderHabits(){
     const stats = habitStats(habit, refDate);
     const isExpanded = appState.expandedHabits.has(id);
     const cat = HABIT_CATEGORIES.find(c=>c.id===habit.category) || HABIT_CATEGORIES[HABIT_CATEGORIES.length-1];
+    const todayKey = dateKey(refDate);
 
     const card = document.createElement('div');
     card.className = 'card habit-card';
@@ -2203,43 +2302,67 @@ function renderHabits(){
     for(let d=1; d<=total; d++){
       const dk = dateKey(new Date(y,m,d));
       const done = habit.completions && habit.completions[dk];
-      gridCells += `<div class="habit-cell ${done?'done':''}" style="${done?`background:${habit.color}`:''}" data-date="${dk}" data-habit="${id}">${d}</div>`;
+      gridCells += `<button class="habit-cell ${done?'done':''}" style="${done?`background:${habit.color}`:''}" data-date="${dk}" title="${pad2(d)}/${pad2(m+1)}">${d}</button>`;
     }
 
-    // mini bar chart (últimos 14 dias)
-    let miniBars = '';
-    const today = new Date();
-    for(let i=13;i>=0;i--){
-      const d = addDays(today,-i);
+    let weekCells = '';
+    for(let i=6;i>=0;i--){
+      const d = addDays(refDate,-i);
       const dk = dateKey(d);
       const done = habit.completions && habit.completions[dk];
-      miniBars += `<div class="mini-bar ${done?'on':''}" style="height:${done?'100%':'20%'}"></div>`;
+      const isToday = dk===todayKey;
+      weekCells += `
+        <div class="habit-week-day">
+          <span class="habit-week-label">${WEEKDAY_SHORT[d.getDay()].slice(0,1)}</span>
+          <button class="habit-week-dot ${done?'done':''} ${isToday?'today':''}" style="${done?`background:${habit.color}`:''}" data-date="${dk}" title="${WEEKDAY_SHORT[d.getDay()]} ${fmtDateBR(d)}"></button>
+        </div>`;
     }
 
     card.innerHTML = `
-      <div class="habit-card__head">
-        <div class="habit-card__name"><span class="habit-dot" style="background:${habit.color}"></span>${escapeHTML(habit.name)} <span class="habit-cat">${cat.label}</span></div>
-        <div class="flex gap-8">
+      <div class="habit-main-row">
+        <div class="habit-identity">
+          <span class="habit-dot" style="background:${habit.color}"></span>
+          <div class="habit-name-wrap">
+            <div class="habit-card__name">${escapeHTML(habit.name)}</div>
+            <div class="habit-cat">${cat.label}</div>
+          </div>
+        </div>
+
+        <div class="habit-week-strip">${weekCells}</div>
+
+        <div class="habit-quick-stats">
+          <span class="habit-percent">${stats.pct}%</span>
+          <span class="habit-streak">🔥 <b>${stats.currentStreak}</b> dias</span>
+        </div>
+
+        <div class="habit-actions">
           <button class="icon-btn btn-sm" data-action="edit-habit" title="Editar">✏️</button>
           <button class="icon-btn btn-sm" data-action="delete-habit" title="Excluir">🗑️</button>
-          <button class="icon-btn btn-sm habit-toggle-btn ${isExpanded?'open':''}" data-action="toggle-habit" title="${isExpanded?'Recolher':'Expandir'}">⌄</button>
+          <button class="icon-btn btn-sm habit-toggle-btn ${isExpanded?'open':''}" data-action="toggle-habit" title="${isExpanded?'Recolher':'Ver mês'}">⌄</button>
         </div>
       </div>
-      <div class="progress-track thin"><div class="progress-fill" style="width:${stats.pct}%; background: linear-gradient(90deg, ${habit.color}, rgb(var(--pink)))"></div></div>
-      <div class="habit-summary-row">
-        <span><b>${stats.pct}%</b> concluído</span>
-        <span>🔥 <b>${stats.currentStreak}</b> seq. atual</span>
-        <span>✅ <b>${stats.done}</b> dias feitos</span>
-      </div>
+
       <div class="habit-expand ${isExpanded?'':'hidden'}">
-        <div class="habit-grid">${gridCells}</div>
-        <div class="habit-stats-row">
-          <span>🏆 <b>${stats.bestStreak}</b> melhor seq.</span>
-          <span>⏳ <b>${stats.remaining}</b> restantes</span>
+        <div>
+          <div class="habit-month-title">${MONTH_NAMES[m]} ${y}</div>
+          <div class="habit-weekdays"><span>D</span><span>S</span><span>T</span><span>Q</span><span>Q</span><span>S</span><span>S</span></div>
+          <div class="habit-grid">${gridCells}</div>
         </div>
-        <div class="mini-bars">${miniBars}</div>
+        <div class="habit-detail-stats">
+          <div class="habit-detail-stat"><span>Feitos</span><b>${stats.done}</b></div>
+          <div class="habit-detail-stat"><span>Melhor sequência</span><b>${stats.bestStreak} dias</b></div>
+          <div class="habit-detail-stat"><span>Restantes</span><b>${stats.remaining}</b></div>
+        </div>
       </div>
     `;
+
+    function toggleHabitDate(dk){
+      if(!habit.completions) habit.completions = {};
+      habit.completions[dk] = !habit.completions[dk];
+      saveData(true);
+      renderHabits();
+      renderDashboardIfActive();
+    }
 
     card.querySelector('[data-action="toggle-habit"]').addEventListener('click', ()=>{
       if(appState.expandedHabits.has(id)) appState.expandedHabits.delete(id);
@@ -2247,17 +2370,14 @@ function renderHabits(){
       renderHabits();
     });
 
-    $all('.habit-cell', card).forEach(cell=>{
-      if(!cell.dataset.date) return;
-      cell.addEventListener('click', ()=>{
-        const dk = cell.dataset.date;
-        if(!habit.completions) habit.completions = {};
-        habit.completions[dk] = !habit.completions[dk];
-        saveData(true);
-        renderHabits();
-        renderDashboardIfActive();
-      });
+    $all('.habit-week-dot', card).forEach(cell=>{
+      cell.addEventListener('click', ()=> toggleHabitDate(cell.dataset.date));
     });
+
+    $all('.habit-cell', card).forEach(cell=>{
+      cell.addEventListener('click', ()=> toggleHabitDate(cell.dataset.date));
+    });
+
     card.querySelector('[data-action="delete-habit"]').addEventListener('click', ()=>{
       showModal({
         title:'Excluir hábito?',
@@ -2634,11 +2754,19 @@ function bindEvents(){
     if(pomodoroState.running) pausePomodoroTimer();
     else startPomodoroTimer();
   });
+  $('#pomodoroEndSessionBtn').addEventListener('click', ()=>{
+    showModal({
+      title:'Encerrar sessão?',
+      text:'O tempo feito até agora será salvo no histórico como sessão encerrada.',
+      confirmLabel:'Encerrar e salvar',
+      onConfirm: endPomodoroSession
+    });
+  });
   $('#pomodoroSkipBtn').addEventListener('click', skipPomodoroPhase);
   $('#pomodoroResetBtn').addEventListener('click', ()=>{
     showModal({
       title:'Reiniciar Pomodoro?',
-      text:'Isso volta o timer para o início de um novo bloco de foco. Os blocos já concluídos hoje continuam salvos.',
+      text:'Isso descarta a sessão atual e volta o timer para um novo bloco de foco. As sessões já salvas continuam no histórico.',
       confirmLabel:'Reiniciar',
       onConfirm: resetPomodoroTimer
     });
@@ -2659,29 +2787,25 @@ function bindEvents(){
   // ---- Monthly Planner ----
   $('#calPrevBtn').addEventListener('click', ()=>{ appState.monthlyDate = addMonths(appState.monthlyDate,-1); renderMonthly(); });
   $('#calNextBtn').addEventListener('click', ()=>{ appState.monthlyDate = addMonths(appState.monthlyDate,1); renderMonthly(); });
-  $('#monthObjectives').addEventListener('input', e=>{
-    getMonthly(monthKey(appState.monthlyDate)).objectives = e.target.value;
-  });
-  $all('[data-list]').forEach(btn=>{
-    btn.addEventListener('click', ()=>{
-      const listName = btn.dataset.list;
-      const inputMap = {importantDates:'#monthNewDate', bills:'#monthNewBill', events:'#monthNewEvent', birthdays:'#monthNewBirthday'};
-      const input = $(inputMap[listName]);
-      const val = input.value.trim();
-      if(!val) return;
-      const mrec = getMonthly(monthKey(appState.monthlyDate));
-      if(listName==='events'){
-        const dateInput = $('#monthNewEventDate');
-        mrec.events.push({ id: uid(), date: dateInput.value || '', text: val });
-        dateInput.value = '';
-      } else {
-        mrec[listName].push(val);
-      }
-      input.value='';
-      renderMonthly();
-      saveData(true);
-    });
-  });
+  function addImportantDate(){
+    const dateInput = $('#monthNewEventDate');
+    const textInput = $('#monthNewEvent');
+    const date = dateInput.value;
+    const text = textInput.value.trim();
+    if(!date || !text){
+      showToast('Preencha a data e a descrição.', 'error');
+      return;
+    }
+    const mrec = getMonthly(monthKey(appState.monthlyDate));
+    mrec.events.push({ id: uid(), date, text });
+    dateInput.value = '';
+    textInput.value = '';
+    renderMonthly();
+    saveData(true);
+    showToast('Data importante adicionada!', 'success');
+  }
+  $('#monthAddImportantDateBtn').addEventListener('click', addImportantDate);
+  $('#monthNewEvent').addEventListener('keydown', e=>{ if(e.key==='Enter') addImportantDate(); });
 
   // ---- Habit Tracker ----
   $('#newHabitBtn').addEventListener('click', ()=> openHabitModal(null));
