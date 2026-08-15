@@ -83,6 +83,10 @@
   .stat-pill .l{ font-size:.74rem; color:var(--ink-soft); font-weight:700; }
   .stat-pill .sub{ display:block; font-size:.66rem; color:var(--ink-soft); margin-top:2px; font-weight:700; }
   .stat-pill .sub.has-debt{ color:var(--peach-deep); }
+  .invoice-pay-btn{ margin-top:7px; width:100%; border:none; border-radius:999px; padding:6px 8px; background:rgba(211,245,227,.7); color:var(--ink); font-weight:800; font-size:.72rem; cursor:pointer; }
+  .invoice-pay-btn:hover{ background:var(--mint); }
+  .invoice-pay-btn:disabled{ opacity:.55; cursor:default; }
+  .invoice-paid-note{ display:block; margin-top:3px; color:var(--mint-deep); font-size:.66rem; font-weight:800; }
 
   .chip{ border:none; border-radius:999px; padding:8px 12px; font-weight:700; font-size:.9rem; background:var(--bg2); color:var(--ink); cursor:pointer; transition:.15s; box-shadow:0 2px 8px rgba(180,150,200,.08); }
   .chip:hover{ background:var(--lilac); }
@@ -322,8 +326,8 @@
       </div>
       <div class="stat-row dashboard-stats">
         <div class="stat-pill"><span class="l">💳 SALDO EM CONTA</span><span class="n" id="statPatrimonio">—</span></div>
-        <div class="stat-pill"><span class="l">💳 FATURA DIA 01</span><span class="n" id="statFatura01">—</span><small class="sub" id="statFatura01Sub"></small></div>
-        <div class="stat-pill"><span class="l">💳 FATURA DIA 15</span><span class="n" id="statFatura15">—</span><small class="sub" id="statFatura15Sub"></small></div>
+        <div class="stat-pill"><span class="l">💳 FATURA DIA 01</span><span class="n" id="statFatura01">—</span><small class="sub" id="statFatura01Sub"></small><button class="invoice-pay-btn" id="payInvoice01" type="button">pagar fatura</button><small class="invoice-paid-note" id="statFatura01Paid"></small></div>
+        <div class="stat-pill"><span class="l">💳 FATURA DIA 15</span><span class="n" id="statFatura15">—</span><small class="sub" id="statFatura15Sub"></small><button class="invoice-pay-btn" id="payInvoice15" type="button">pagar fatura</button><small class="invoice-paid-note" id="statFatura15Paid"></small></div>
         <div class="stat-pill"><span class="l">🌱 INVESTIDO</span><span class="n" id="statInvest">—</span></div>
       </div>
       <div class="quick-glance">
@@ -543,7 +547,7 @@
         <div class="launch-card-header"><p class="eyebrow" style="margin:0;">histórico</p><span class="launch-pill">🧾 recente</span></div>
         <div class="launch-filters">
           <div class="row gap8">
-            <select id="txFilterType" aria-label="Filtrar lançamentos por tipo" style="flex:1;"><option value="">Todos os tipos</option><option value="expense">Gastos</option><option value="income">Receitas</option><option value="offset">Abatimentos</option></select>
+            <select id="txFilterType" aria-label="Filtrar lançamentos por tipo" style="flex:1;"><option value="">Todos os tipos</option><option value="expense">Gastos</option><option value="income">Receitas</option><option value="offset">Abatimentos</option><option value="invoice_payment">Pagamentos de fatura</option></select>
             <select id="txFilterCategory" aria-label="Filtrar lançamentos por categoria" style="flex:1;"></select>
           </div>
           <select id="txFilterPayment" aria-label="Filtrar lançamentos por forma de pagamento">
@@ -579,8 +583,9 @@
 <script>
 const money = new Intl.NumberFormat('pt-BR', { style:'currency', currency:'BRL' });
 const moneyCompact = new Intl.NumberFormat('pt-BR', { style:'currency', currency:'BRL', notation:'compact', maximumFractionDigits:1 });
-const APP_VERSION = '4.0.0';
+const APP_VERSION = '4.1.0';
 const APP_CHANGELOG = [
+  { version:'4.1.0', note:'pagamento de fatura baixa o saldo da conta sem duplicar gastos e mostra o valor pago/em aberto' },
   { version:'4.0.0', note:'reembolsos e pagamentos de dívidas podem ser vinculados a uma despesa específica, com pagamentos parciais e custo líquido' },
   { version:'3.0.0', note:'novo design: menos cards, mais hierarquia visual e dashboard orientado a decisões' },
   { version:'2.0.0', note:'separa consumo próprio, empréstimos/reembolsáveis e parcelamentos; inclui custo líquido e total a receber' },
@@ -908,6 +913,7 @@ function transactionCashImpact(transaction){
   if(transaction.type==='offset')return 0;
   if(transaction.type==='expense'&&transaction.paymentMethod==='credito')return 0;
   const amount=Math.abs(Number(transaction.amount||0));
+  if(transaction.type==='invoice_payment') return -amount;
   return ['income','withdrawal'].includes(transaction.type)?amount:-amount;
 }
 
@@ -981,16 +987,46 @@ function renderMood(){
 
 function getDashboardMonth(){if(dashboardMonth)return dashboardMonth;const now=new Date();return`${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}`;}
 function shiftDashboardMonth(offset){const[y,m]=getDashboardMonth().split('-').map(Number);const target=new Date(y,m-1+offset,1);dashboardMonth=`${target.getFullYear()}-${String(target.getMonth()+1).padStart(2,'0')}`;renderAll();}
+function getInvoicePaid(month,faturaDay){
+  return state.tx.filter(t=>t.type==='invoice_payment'&&(t.faturaDay||'01')===faturaDay&&(t.invoiceMonth||String(t.date||'').slice(0,7))===month).reduce((s,t)=>s+Math.abs(Number(t.amount||0)),0);
+}
 function getFaturaSplit(month,faturaDay){
   const creditTx=state.tx.filter(t=>t.type==='expense'&&t.paymentMethod==='credito'&&(t.faturaDay||'01')===faturaDay&&String(t.date||'').slice(0,7)===month);
   const debt=creditTx.filter(t=>t.debtor).reduce((s,t)=>s+Math.abs(Number(t.amount||0)),0);
   const reimb=creditTx.filter(t=>isReimbursable(t)&&!t.debtor).reduce((s,t)=>s+Math.abs(Number(t.amount||0)),0);
   const ownGross=creditTx.filter(t=>!t.debtor&&!isReimbursable(t)).reduce((s,t)=>s+Math.abs(Number(t.amount||0)),0);
   const offset=state.tx.filter(t=>t.type==='offset'&&(t.faturaDay||'01')===faturaDay&&String(t.date||'').slice(0,7)===month).reduce((s,t)=>s+Math.abs(Number(t.amount||0)),0);
-  const own=Math.max(0,ownGross+reimb-offset);
-  return{own,debt,reimb,offset,total:own+debt};
+  const grossOwn=Math.max(0,ownGross+reimb-offset);
+  const grossTotal=grossOwn+debt;
+  const paid=Math.min(grossTotal,getInvoicePaid(month,faturaDay));
+  const total=Math.max(0,grossTotal-paid);
+  const own=Math.max(0,grossOwn-Math.max(0,paid-debt));
+  const remainingDebt=Math.max(0,debt-paid);
+  return{own,debt:remainingDebt,reimb,offset,paid,grossTotal,total};
 }
 function getFaturaTotal(month,faturaDay){return getFaturaSplit(month,faturaDay).total;}
+
+function payInvoice(faturaDay){
+  const month=getDashboardMonth();
+  const split=getFaturaSplit(month,faturaDay);
+  if(split.total<=0){alert('Essa fatura já está paga ou não tem valor em aberto. ✨');return;}
+  const suggested=split.total.toFixed(2).replace('.',',');
+  const input=prompt(`Valor a pagar da fatura dia ${faturaDay}:`,suggested);
+  if(input===null)return;
+  const amount=Number(String(input).replace(/\./g,'').replace(',','.'));
+  if(!amount||amount<=0)return;
+  if(amount>split.total+0.009){alert(`O valor em aberto é ${money.format(split.total)}.`);return;}
+  const today=new Date().toISOString().slice(0,10);
+  state.tx.push({
+    id:`tx-${Date.now()}-${Math.random().toString(36).slice(2,8)}`,
+    desc:`Pagamento fatura dia ${faturaDay} · ${month}`,
+    amount:Math.abs(amount), type:'invoice_payment', category:'Pagamento de fatura', ownerType:'own',
+    bank:'', paymentMethod:'conta', faturaDay, invoiceMonth:month,
+    installment:'', installmentCurrent:0, installmentTotal:0, investmentName:'', debtor:'',
+    date:today, cycle:getCycleForDate(today,true), linkedTransactionIds:[]
+  });
+  save();renderAll();
+}
 
 function renderStats(){
   const investmentsTotal=state.investments.reduce((s,g)=>s+Number(g.current||0),0);
@@ -1001,8 +1037,14 @@ function renderStats(){
   document.getElementById('statFatura01').textContent=money.format(split01.total);
   document.getElementById('statFatura15').textContent=money.format(split15.total);
   const sub01=document.getElementById('statFatura01Sub'),sub15=document.getElementById('statFatura15Sub');
-  sub01.innerHTML=split01.debt>0?`seu consumo: ${money.format(split01.own)} · terceiros: ${money.format(split01.debt)}`:`seu consumo: ${money.format(split01.own)}`; sub01.classList.toggle('has-debt',split01.debt>0);
-  sub15.innerHTML=split15.debt>0?`seu consumo: ${money.format(split15.own)} · terceiros: ${money.format(split15.debt)}`:`seu consumo: ${money.format(split15.own)}`; sub15.classList.toggle('has-debt',split15.debt>0);
+  sub01.innerHTML=split01.debt>0?`seu consumo em aberto: ${money.format(split01.own)} · terceiros: ${money.format(split01.debt)}`:`seu consumo em aberto: ${money.format(split01.own)}`; sub01.classList.toggle('has-debt',split01.debt>0);
+  sub15.innerHTML=split15.debt>0?`seu consumo em aberto: ${money.format(split15.own)} · terceiros: ${money.format(split15.debt)}`:`seu consumo em aberto: ${money.format(split15.own)}`; sub15.classList.toggle('has-debt',split15.debt>0);
+  const paid01=document.getElementById('statFatura01Paid'),paid15=document.getElementById('statFatura15Paid');
+  paid01.textContent=split01.paid>0?`✓ pago: ${money.format(split01.paid)}${split01.total<=0?' · quitada':''}`:'';
+  paid15.textContent=split15.paid>0?`✓ pago: ${money.format(split15.paid)}${split15.total<=0?' · quitada':''}`:'';
+  const btn01=document.getElementById('payInvoice01'),btn15=document.getElementById('payInvoice15');
+  btn01.disabled=split01.total<=0; btn15.disabled=split15.total<=0;
+  btn01.textContent=split01.total<=0?'fatura paga ✓':'pagar fatura'; btn15.textContent=split15.total<=0?'fatura paga ✓':'pagar fatura';
   document.getElementById('statVr').textContent=money.format(getValeRefBalance());
   document.getElementById('statInvest').textContent=money.format(investmentsTotal);
   document.getElementById('statInstallments').textContent=getInstallmentGroups().length;
@@ -1209,7 +1251,7 @@ function renderDebtPaymentOptions(){
 }
 
 function txOptions(){
-  const cats=['Receitas','Rendimentos','Compromissos','Vale-Refeição','Viagens','Reembolso','Empréstimos','Abatimento de fatura',...state.budgets.map(b=>b.name),'Outros'];
+  const cats=['Receitas','Rendimentos','Compromissos','Vale-Refeição','Viagens','Reembolso','Empréstimos','Abatimento de fatura','Pagamento de fatura',...state.budgets.map(b=>b.name),'Outros'];
   document.getElementById('txCategory').innerHTML=cats.map(c=>`<option>${c}</option>`).join('');
   const filter=document.getElementById('txFilterCategory'),selected=filter.value;filter.innerHTML=`<option value="">Todas as categorias</option>${cats.map(c=>`<option>${c}</option>`).join('')}`;filter.value=cats.includes(selected)?selected:'';
 }
@@ -1226,12 +1268,12 @@ function renderInvestmentOptions(){
 
 function txRow(t,idx,removable){
   const sign=t.type==='income'||t.type==='withdrawal'||t.type==='offset'?'+':'-',color=t.type==='income'||t.type==='withdrawal'||t.type==='offset'?'var(--mint-deep)':'var(--peach-deep)',dateLabel=t.date?new Date(`${t.date}T12:00:00`).toLocaleDateString('pt-BR'):'sem data';
-  const label=t.type==='income'?'✨ Receita':t.type==='investment'?'💼 Investimento':t.type==='withdrawal'?'🏦 Saque':t.type==='offset'?'✂️ Abatimento':isThirdParty(t)?'🤝 Empréstimo':isReimbursable(t)?'↩️ Reembolsável':'💸 Gasto';
-  const categories=['Receitas','Rendimentos','Compromissos','Vale-Refeição','Viagens','Reembolso','Empréstimos','Abatimento de fatura',...state.budgets.map(b=>b.name),'Outros'];
+  const label=t.type==='income'?'✨ Receita':t.type==='investment'?'💼 Investimento':t.type==='withdrawal'?'🏦 Saque':t.type==='offset'?'✂️ Abatimento':t.type==='invoice_payment'?'✅ Pagamento de fatura':isThirdParty(t)?'🤝 Empréstimo':isReimbursable(t)?'↩️ Reembolsável':'💸 Gasto';
+  const categories=['Receitas','Rendimentos','Compromissos','Vale-Refeição','Viagens','Reembolso','Empréstimos','Abatimento de fatura','Pagamento de fatura',...state.budgets.map(b=>b.name),'Outros'];
   const categoryOptions=categories.map(c=>`<option value="${c}" ${t.category===c?'selected':''}>${c}</option>`).join('');
   const ownerText=isThirdParty(t)?` · ${t.debtor}`:isReimbursable(t)?' · aguarda reembolso':'';
   const reimbursementInfo=isReimbursable(t)?getReimbursementStatus(t):null;
-  return`<div class="tx-card"><div class="tx-meta"><div class="row gap8" style="flex-wrap:wrap;"><span class="tx-chip">${label}</span><span class="tx-chip tx-chip-muted">${t.category||'sem categoria'}</span>${isThirdParty(t)?'<span class="debt-tag">fica fora do seu orçamento</span>':''}</div><div class="tx-title">${t.desc}</div><div class="muted">${dateLabel}${ownerText}${t.cycle?' • '+t.cycle:''}</div>${t.type==='expense'&&t.bank?`<div class="muted">🏦 ${t.bank}</div>`:''}${t.type==='expense'?`<div class="muted">${t.paymentMethod==='credito'?`💳 cartão de crédito · fatura dia ${t.faturaDay||'01'}`:'🏦 débito / conta'}</div>`:''}${t.type==='expense'&&t.installment?`<div class="muted">🧾 ${t.installment}${!isThirdParty(t)&&!isReimbursable(t)?' · não conta em compras novas':''}</div>`:''}${reimbursementBadge(t)}${isReimbursable(t)&&reimbursementInfo?.paid>0?`<div class="muted">↳ ${reimbursementInfo.paid>=reimbursementInfo.gross?'cobertura completa':'reembolso parcial'} · ${getLinkedPayments(t.id).length} pagamento${getLinkedPayments(t.id).length===1?'':'s'} vinculado${getLinkedPayments(t.id).length===1?'':'s'}</div>`:''}</div><div class="tx-actions"><div class="tx-amount" style="color:${color};">${sign}${money.format(Math.abs(t.amount))}</div>${removable?`<div class="row gap8"><button class="btn-text" data-edit-tx="${idx}">editar</button><button class="btn-text" data-del="${idx}">remover</button></div>`:''}</div></div>${removable?`<div class="edit-panel hidden" id="txEdit${idx}"><div class="stat-row" style="grid-template-columns:1fr 1fr;"><label><span class="eyebrow">descrição</span><input data-edit-field="desc" value="${t.desc||''}" /></label><label><span class="eyebrow">valor</span><input data-edit-field="amount" type="number" step="0.01" value="${Math.abs(Number(t.amount||0))}" /></label><label><span class="eyebrow">tipo</span><select data-edit-field="type"><option value="expense" ${t.type==='expense'?'selected':''}>Gasto</option><option value="income" ${t.type==='income'?'selected':''}>Receita</option><option value="investment" ${t.type==='investment'?'selected':''}>Investimento</option><option value="withdrawal" ${t.type==='withdrawal'?'selected':''}>Saque</option><option value="offset" ${t.type==='offset'?'selected':''}>Abatimento</option></select></label><label><span class="eyebrow">data</span><input data-edit-field="date" type="date" value="${t.date||''}" /></label></div><label style="display:block;margin-top:12px;"><span class="eyebrow">categoria</span><select data-edit-field="category">${categoryOptions}</select></label><div class="stat-row" style="grid-template-columns:1fr 1fr;margin-top:12px;"><label><span class="eyebrow">banco ou cartão</span><input data-edit-field="bank" value="${t.bank||''}" /></label><label><span class="eyebrow">parcelamento</span><input data-edit-field="installment" value="${t.installment||''}" placeholder="ex.: 1 de 12" /></label></div><label style="display:block;margin-top:12px;"><span class="eyebrow">usado por</span><select data-edit-field="debtor"><option value="">Eu</option>${state.debtors.map(d=>`<option value="${d.name}" ${t.debtor===d.name?'selected':''}>${d.emoji||'🙋'} ${d.name}</option>`).join('')}</select></label><label style="display:block;margin-top:12px;"><span class="eyebrow">classificação</span><select data-edit-field="ownerType"><option value="own" ${!t.ownerType||t.ownerType==='own'?'selected':''}>💗 meu gasto</option><option value="debtor" ${t.ownerType==='debtor'?'selected':''}>🤝 empréstimo</option><option value="reimbursable" ${t.ownerType==='reimbursable'?'selected':''}>↩️ reembolsável</option></select></label><div class="row" style="justify-content:flex-end;gap:10px;margin-top:12px;"><button class="btn-text" data-cancel-edit-tx="${idx}">cancelar</button><button class="btn btn-pink" data-save-tx="${idx}">salvar</button></div></div>`:''}`;
+  return`<div class="tx-card"><div class="tx-meta"><div class="row gap8" style="flex-wrap:wrap;"><span class="tx-chip">${label}</span><span class="tx-chip tx-chip-muted">${t.category||'sem categoria'}</span>${isThirdParty(t)?'<span class="debt-tag">fica fora do seu orçamento</span>':''}</div><div class="tx-title">${t.desc}</div><div class="muted">${dateLabel}${ownerText}${t.cycle?' • '+t.cycle:''}</div>${t.type==='expense'&&t.bank?`<div class="muted">🏦 ${t.bank}</div>`:''}${t.type==='expense'?`<div class="muted">${t.paymentMethod==='credito'?`💳 cartão de crédito · fatura dia ${t.faturaDay||'01'}`:'🏦 débito / conta'}</div>`:''}${t.type==='expense'&&t.installment?`<div class="muted">🧾 ${t.installment}${!isThirdParty(t)&&!isReimbursable(t)?' · não conta em compras novas':''}</div>`:''}${reimbursementBadge(t)}${isReimbursable(t)&&reimbursementInfo?.paid>0?`<div class="muted">↳ ${reimbursementInfo.paid>=reimbursementInfo.gross?'cobertura completa':'reembolso parcial'} · ${getLinkedPayments(t.id).length} pagamento${getLinkedPayments(t.id).length===1?'':'s'} vinculado${getLinkedPayments(t.id).length===1?'':'s'}</div>`:''}</div><div class="tx-actions"><div class="tx-amount" style="color:${color};">${sign}${money.format(Math.abs(t.amount))}</div>${removable?`<div class="row gap8"><button class="btn-text" data-edit-tx="${idx}">editar</button><button class="btn-text" data-del="${idx}">remover</button></div>`:''}</div></div>${removable?`<div class="edit-panel hidden" id="txEdit${idx}"><div class="stat-row" style="grid-template-columns:1fr 1fr;"><label><span class="eyebrow">descrição</span><input data-edit-field="desc" value="${t.desc||''}" /></label><label><span class="eyebrow">valor</span><input data-edit-field="amount" type="number" step="0.01" value="${Math.abs(Number(t.amount||0))}" /></label><label><span class="eyebrow">tipo</span><select data-edit-field="type"><option value="expense" ${t.type==='expense'?'selected':''}>Gasto</option><option value="income" ${t.type==='income'?'selected':''}>Receita</option><option value="investment" ${t.type==='investment'?'selected':''}>Investimento</option><option value="withdrawal" ${t.type==='withdrawal'?'selected':''}>Saque</option><option value="offset" ${t.type==='offset'?'selected':''}>Abatimento</option><option value="invoice_payment" ${t.type==='invoice_payment'?'selected':''}>Pagamento de fatura</option></select></label><label><span class="eyebrow">data</span><input data-edit-field="date" type="date" value="${t.date||''}" /></label></div><label style="display:block;margin-top:12px;"><span class="eyebrow">categoria</span><select data-edit-field="category">${categoryOptions}</select></label><div class="stat-row" style="grid-template-columns:1fr 1fr;margin-top:12px;"><label><span class="eyebrow">banco ou cartão</span><input data-edit-field="bank" value="${t.bank||''}" /></label><label><span class="eyebrow">parcelamento</span><input data-edit-field="installment" value="${t.installment||''}" placeholder="ex.: 1 de 12" /></label></div><label style="display:block;margin-top:12px;"><span class="eyebrow">usado por</span><select data-edit-field="debtor"><option value="">Eu</option>${state.debtors.map(d=>`<option value="${d.name}" ${t.debtor===d.name?'selected':''}>${d.emoji||'🙋'} ${d.name}</option>`).join('')}</select></label><label style="display:block;margin-top:12px;"><span class="eyebrow">classificação</span><select data-edit-field="ownerType"><option value="own" ${!t.ownerType||t.ownerType==='own'?'selected':''}>💗 meu gasto</option><option value="debtor" ${t.ownerType==='debtor'?'selected':''}>🤝 empréstimo</option><option value="reimbursable" ${t.ownerType==='reimbursable'?'selected':''}>↩️ reembolsável</option></select></label><div class="row" style="justify-content:flex-end;gap:10px;margin-top:12px;"><button class="btn-text" data-cancel-edit-tx="${idx}">cancelar</button><button class="btn btn-pink" data-save-tx="${idx}">salvar</button></div></div>`:''}`;
 }
 
 function renderTx(){
@@ -1262,7 +1304,7 @@ function applyTransactionToInvestment(tx,delta){
 function dateAfterMonthsSafe(dateStr,months){return dateAfterMonths(dateStr,months);}
 function dateAfterMonths(dateStr,months){const[y,m,d]=dateStr.split('-').map(Number);const target=new Date(y,m-1+months,1);const lastDay=new Date(target.getFullYear(),target.getMonth()+1,0).getDate();return`${target.getFullYear()}-${String(target.getMonth()+1).padStart(2,'0')}-${String(Math.min(d,lastDay)).padStart(2,'0')}`;}
 
-function txCategoriesForEdit(){return['Receitas','Rendimentos','Compromissos','Vale-Refeição','Viagens','Reembolso','Empréstimos','Abatimento de fatura',...state.budgets.map(b=>b.name),'Outros'];}
+function txCategoriesForEdit(){return['Receitas','Rendimentos','Compromissos','Vale-Refeição','Viagens','Reembolso','Empréstimos','Abatimento de fatura','Pagamento de fatura',...state.budgets.map(b=>b.name),'Outros'];}
 
 function renderMiles(){
   const goal=Math.max(0,Number(state.miles?.goal||0)),balances={XP:0,Livelo:0,Smiles:0,Outros:0,...(state.miles?.balances||{})},current=Object.values(balances).reduce((t,v)=>t+Math.max(0,Number(v||0)),0),progress=pct(current,goal),fmt=v=>Math.round(v).toLocaleString('pt-BR');
@@ -1315,6 +1357,8 @@ function wire(){
   document.getElementById('analysisMonth').addEventListener('change',renderAnalysis);
   document.getElementById('dashboardPrevMonth').addEventListener('click',()=>shiftDashboardMonth(-1));
   document.getElementById('dashboardNextMonth').addEventListener('click',()=>shiftDashboardMonth(1));
+  document.getElementById('payInvoice01').addEventListener('click',()=>payInvoice('01'));
+  document.getElementById('payInvoice15').addEventListener('click',()=>payInvoice('15'));
   document.getElementById('toggleDashboardDetails').addEventListener('click',()=>{const d=document.getElementById('dashboardDetails');const hidden=d.classList.toggle('hidden');document.getElementById('toggleDashboardDetails').textContent=hidden?'ver detalhes':'esconder detalhes';});
   updateCycleHint();
 
@@ -1347,8 +1391,8 @@ function wire(){
   document.getElementById('saveMilesGoal').addEventListener('click',()=>{state.miles.goal=Math.max(0,Number(document.getElementById('milesGoal').value||0));save();renderMiles();});
   document.getElementById('milesAddForm').addEventListener('submit',e=>{e.preventDefault();const miles=Number(document.getElementById('milesAdd').value),source=document.getElementById('milesSource').value,operation=document.getElementById('milesOperation').value;if(!miles)return;state.miles.balances={XP:0,Livelo:0,Smiles:0,Outros:0,...(state.miles.balances||{})};state.miles.balances[source]=operation==='remove'?Math.max(0,Number(state.miles.balances[source]||0)-miles):Number(state.miles.balances[source]||0)+miles;document.getElementById('milesAdd').value='';save();renderMiles();});
 
-  document.getElementById('btnExport').addEventListener('click',()=>{const blob=new Blob([JSON.stringify(state,null,2)],{type:'application/json'}),url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download='financinhas-giovanna-v4.json';a.click();URL.revokeObjectURL(url);});
-  document.getElementById('btnExportCsv').addEventListener('click',()=>{const cols=['Data','Descrição','Tipo','Valor','Categoria','Banco ou cartão','Parcelamento','Ciclo','Investimento','Pessoa','Classificação','Vinculado a'];const esc=v=>`"${String(v??'').replace(/"/g,'""')}"`;const rows=state.tx.map(t=>[t.date,t.desc,t.type,Number(t.amount||0).toFixed(2).replace('.',','),t.category,t.bank,t.installment,t.cycle,t.investmentName,t.debtor,t.ownerType,(t.linkedTransactionIds||[]).join(',')].map(esc).join(';'));const csv=`\uFEFF${cols.map(esc).join(';')}\r\n${rows.join('\r\n')}`,blob=new Blob([csv],{type:'text/csv;charset=utf-8'}),url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download='movimentacoes-financinhas-v4.csv';a.click();URL.revokeObjectURL(url);});
+  document.getElementById('btnExport').addEventListener('click',()=>{const blob=new Blob([JSON.stringify(state,null,2)],{type:'application/json'}),url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download='financinhas-giovanna-v4.1.json';a.click();URL.revokeObjectURL(url);});
+  document.getElementById('btnExportCsv').addEventListener('click',()=>{const cols=['Data','Descrição','Tipo','Valor','Categoria','Banco ou cartão','Parcelamento','Ciclo','Investimento','Pessoa','Classificação','Vinculado a'];const esc=v=>`"${String(v??'').replace(/"/g,'""')}"`;const rows=state.tx.map(t=>[t.date,t.desc,t.type,Number(t.amount||0).toFixed(2).replace('.',','),t.category,t.bank,t.installment,t.cycle,t.investmentName,t.debtor,t.ownerType,(t.linkedTransactionIds||[]).join(',')].map(esc).join(';'));const csv=`\uFEFF${cols.map(esc).join(';')}\r\n${rows.join('\r\n')}`,blob=new Blob([csv],{type:'text/csv;charset=utf-8'}),url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download='movimentacoes-financinhas-v4.1.csv';a.click();URL.revokeObjectURL(url);});
   document.getElementById('btnImport').addEventListener('click',()=>document.getElementById('backupFile').click());
   document.getElementById('backupFile').addEventListener('change',async e=>{const file=e.target.files[0];if(!file)return;try{const imported=JSON.parse(await file.text());if(!imported||typeof imported!=='object'||!Array.isArray(imported.tx))throw new Error('formato inválido');if(!confirm('Substituir os dados atuais pelos dados deste backup?'))return;state={...structuredClone(defaults),...imported};migrateLegacyCategories();save();renderAll();alert('Backup importado com sucesso! 🌸');}catch(err){alert('Não foi possível importar este arquivo. Escolha um backup exportado por este app.');}finally{e.target.value='';}});
   document.getElementById('btnClearTransactions').addEventListener('click',()=>{if(!confirm('Apagar somente todas as movimentações?'))return;state.tx=[];save();renderAll();});
