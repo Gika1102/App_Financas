@@ -1,25 +1,21 @@
 <!DOCTYPE html>
 <!--
   ============================================================
-  LIFE DASHBOARD — Planner Pessoal Completo (Sincronizado)
-  Um único arquivo. HTML + CSS + JavaScript puro.
+  LIFE DASHBOARD — Planner Pessoal Integrado & Reativo
+  Ecossistema Sincronizado: Daily, Weekly, Monthly, Hábitos & Review
   ============================================================
 -->
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Life Dashboard — Seu planner pessoal</title>
+<title>Life Dashboard — Seu planner pessoal 🌸</title>
 
 <style>
   :root{
-    --lavender: 184 169 232;
-    --lavender-dark: 138 122 199;
-    --pink: 246 201 217;
-    --pink-dark: 235 158 189;
-    --cream: 250 246 238;
-    --white: 255 255 255;
-
+    --font-display: "Trebuchet MS", "Segoe UI", Arial, sans-serif;
+    --font-body: "Segoe UI", -apple-system, BlinkMacSystemFont, Roboto, sans-serif;
+    
     --bg-grad-1: #FCF8FF;
     --bg-grad-2: #F7FAFF;
     --bg-grad-3: #FEF2F8;
@@ -33,20 +29,27 @@
     --card-border: rgba(87,79,107,0.075);
     --input-bg: #FFFFFF;
 
+    --pink: #FFD7E6;
+    --pink-deep: #FF8FB8;
+    --lilac: #E6D9FF;
+    --lilac-deep: #B79CF2;
+    --mint: #D3F5E3;
+    --mint-deep: #2E9F6B;
+    --butter: #FFF0C2;
+    --butter-deep: #D99A1E;
+    --peach: #FFDDC9;
+    --peach-deep: #E66A29;
+    --sky: #D7ECFF;
+    --sky-deep: #4A9BE0;
+
     --shadow-soft: 0 4px 14px rgba(183, 156, 242, 0.08);
     --shadow-hover: 0 8px 20px rgba(183, 156, 242, 0.13);
     --shadow-inset: inset 0 1px 2px rgba(140,120,180,0.08);
 
-    --accent: rgb(var(--lavender));
-    --accent-2: rgb(var(--pink));
     --radius-lg: 18px;
     --radius-md: 14px;
     --radius-sm: 12px;
-    --transition: 300ms cubic-bezier(.4,0,.2,1);
-
-    --success: #6FCF9C;
-    --warning: #ECB84A;
-    --danger: #F2987F;
+    --transition: 250ms cubic-bezier(.4,0,.2,1);
 
     --sidebar-w: 220px;
   }
@@ -67,19 +70,12 @@
 
     --shadow-soft: 0 8px 30px rgba(0,0,0,0.35);
     --shadow-hover: 0 14px 40px rgba(0,0,0,0.45);
-    --shadow-inset: inset 0 1px 2px rgba(0,0,0,0.3);
-
-    --lavender: 168 150 224;
-    --pink: 224 150 183;
-    --success: #6FA97D;
-    --warning: #D9A857;
-    --danger: #D97C8A;
   }
 
   *,*::before,*::after{ box-sizing:border-box; margin:0; padding:0; }
   html{ scroll-behavior:smooth; }
   body{
-    font-family:"Segoe UI", Arial, sans-serif;
+    font-family: var(--font-body);
     color: var(--text-primary);
     background:
       radial-gradient(circle at 8% 0%, rgba(255,215,230,.34), transparent 32%),
@@ -88,21 +84,19 @@
     min-height: 100vh;
     transition: background var(--transition), color var(--transition);
     -webkit-font-smoothing: antialiased;
+    line-height: 1.4;
   }
-  ::selection{ background: rgba(var(--lavender),0.35); }
 
-  ::-webkit-scrollbar{ width:10px; height:10px; }
+  ::-webkit-scrollbar{ width:8px; height:8px; }
   ::-webkit-scrollbar-track{ background:transparent; }
   ::-webkit-scrollbar-thumb{
-    background: linear-gradient(180deg, rgb(var(--lavender)), rgb(var(--pink)));
+    background: linear-gradient(180deg, var(--lilac-deep), var(--pink-deep));
     border-radius: 10px;
-    border: 2px solid transparent;
-    background-clip: padding-box;
   }
 
   button{ font-family:inherit; cursor:pointer; border:none; background:none; color:inherit; }
   input, textarea, select{ font-family:inherit; color:inherit; }
-  a{ color:inherit; }
+  a{ color:inherit; text-decoration:none; }
 
   .app{ display:flex; min-height:100vh; }
 
@@ -113,8 +107,8 @@
     display:flex;
     flex-direction:column;
     gap: 4px;
-    background: rgba(255,255,255,0.90);
-    border-right: 1px solid rgba(87,79,107,0.075);
+    background: rgba(255,255,255,0.92);
+    border-right: 1px solid var(--card-border);
     box-shadow: 3px 0 14px rgba(183,156,242,0.05);
     position: sticky;
     top:0;
@@ -122,35 +116,31 @@
     overflow-y:auto;
     scrollbar-width: none;
     z-index: 40;
-    transition: transform var(--transition), background var(--transition), width var(--transition), padding var(--transition);
+    transition: transform var(--transition), width var(--transition), padding var(--transition);
   }
   .sidebar::-webkit-scrollbar{ display:none; }
-  .sidebar__brand{
-    display:flex; align-items:center; gap:10px;
-    padding: 5px 9px 18px;
-  }
+  .sidebar__brand{ display:flex; align-items:center; gap:10px; padding: 5px 9px 18px; }
   .sidebar__brand-logo{
     width:36px; height:36px; border-radius:13px;
-    background: linear-gradient(135deg, #E6D9FF, #FFD7E6);
+    background: linear-gradient(135deg, var(--lilac), var(--pink));
     display:flex; align-items:center; justify-content:center;
     font-size:18px;
   }
-  .sidebar__brand-text{ font-family:"Trebuchet MS","Segoe UI",Arial,sans-serif; font-weight:700; font-size:17px; letter-spacing:-0.02em; color:#574F6B; }
+  .sidebar__brand-text{ font-family:var(--font-display); font-weight:700; font-size:17px; color:var(--text-primary); }
   .sidebar__brand-sub{ font-size:11px; color:var(--text-secondary); }
 
   .nav-item{
-    display:flex; align-items:center; gap:12px;
-    padding: 9px 11px;
+    display:flex; align-items:center; gap:10px;
+    padding: 9px 12px;
     border-radius: 999px;
     font-size: 13.5px;
     font-weight:700;
     color: var(--text-secondary);
     transition: all var(--transition);
-    text-decoration:none;
   }
   .nav-item .nav-icon{ font-size:16px; }
   .nav-item:hover{ background: #F7F2FB; color: var(--text-primary); }
-  .nav-item.active{ background: #E6D9FF; color: #574F6B; }
+  .nav-item.active{ background: var(--lilac); color: var(--text-primary); }
 
   .sidebar__footer{ margin-top:auto; padding: 14px 10px 4px; font-size:11px; color:var(--text-muted); text-align:center; }
   .sidebar-overlay{ display:none; }
@@ -169,55 +159,51 @@
     box-shadow: 0 5px 16px rgba(183,156,242,0.10);
   }
   .header__menu-btn{ display:flex; align-items:center; justify-content:center; font-size:20px; padding:6px; border-radius:999px; }
-
   .app.sidebar-collapsed .sidebar{ width:0; min-width:0; padding:0; border-right:none; overflow:hidden; }
   .header__left{ display:flex; flex-direction:column; gap:2px; }
-  .header__greeting{ font-family:"Trebuchet MS","Segoe UI",Arial,sans-serif; font-size: 18px; font-weight:700; letter-spacing:-0.02em; }
+  .header__greeting{ font-family:var(--font-display); font-size: 18px; font-weight:700; }
   .header__quote{ font-size:12px; font-weight:600; color:var(--text-secondary); max-width:420px; }
   .header__right{ display:flex; align-items:center; gap:14px; }
   .header__clockbox{ text-align:right; }
   .header__clock{ font-size:17px; font-weight:700; font-variant-numeric:tabular-nums; }
   .header__date{ font-size:11.5px; color:var(--text-secondary); text-transform:capitalize; }
   .icon-btn{
-    width:38px; height:38px; border-radius:999px;
+    width:36px; height:36px; border-radius:999px;
     display:flex; align-items:center; justify-content:center;
     background: #FFF; border:1px solid rgba(87,79,107,0.08);
-    font-size:16px;
+    font-size:15px;
     transition: all var(--transition);
   }
   .icon-btn:hover{ transform: translateY(-1px); box-shadow: 0 4px 12px rgba(183,156,242,0.10); }
-  .icon-btn.btn-sm{ width:30px; height:30px; font-size:13px; }
+  .icon-btn.btn-sm{ width:28px; height:28px; font-size:12px; }
 
   .search-wrap{ position:relative; }
   .search-input{
-    width:180px; padding:8px 14px 8px 34px;
+    width:170px; padding:8px 14px 8px 32px;
     background: #FFF; border:2px solid rgba(87,79,107,0.08);
-    border-radius: 999px; font-size:13px; color:var(--text-primary);
+    border-radius: 999px; font-size:12.5px; color:var(--text-primary);
     transition: all var(--transition);
   }
-  .search-input:focus{ outline:none; width:220px; box-shadow: 0 0 0 3px rgba(183,156,242,0.10); border-color:rgb(var(--lavender)); }
-  .search-wrap::before{ content:"🔎"; position:absolute; left:12px; top:50%; transform:translateY(-50%); font-size:12px; opacity:0.6; }
+  .search-input:focus{ outline:none; width:210px; box-shadow: 0 0 0 3px rgba(183,156,242,0.10); border-color:var(--lilac-deep); }
+  .search-wrap::before{ content:"🔎"; position:absolute; left:11px; top:50%; transform:translateY(-50%); font-size:12px; opacity:0.6; }
 
-  .page-area{ padding: 24px 28px 52px; flex:1; }
+  .page-area{ padding: 22px 24px 50px; flex:1; }
   .page{ display:none; }
-  .page.active{ display:block; animation: fadeIn 300ms ease; }
+  .page.active{ display:block; animation: fadeIn 250ms ease; }
   @keyframes fadeIn{ from{ opacity:0; transform: translateY(6px);} to{ opacity:1; transform:translateY(0);} }
-  .page.fading-out{ animation: fadeOut 180ms ease forwards; }
-  @keyframes fadeOut{ from{opacity:1;} to{opacity:0; transform:translateY(-4px);} }
 
-  .page-title{ font-family:"Trebuchet MS","Segoe UI",Arial,sans-serif; font-size:24px; font-weight:800; letter-spacing:-0.02em; margin-bottom:4px; }
-  .page-subtitle{ font-size:13px; color:#9A90AD; font-weight:600; margin-bottom:18px; }
+  .page-title{ font-family:var(--font-display); font-size:24px; font-weight:800; letter-spacing:-0.02em; margin-bottom:3px; }
+  .page-subtitle{ font-size:13px; color:var(--text-muted); font-weight:600; margin-bottom:16px; }
 
   .card{
-    background: rgba(255,255,255,0.88);
-    border: 1px solid rgba(87,79,107,0.07);
+    background: var(--card-bg);
+    border: 1px solid var(--card-border);
     border-radius: var(--radius-lg);
     padding: 16px;
-    box-shadow: none;
     transition: box-shadow var(--transition);
   }
   .card:hover{ box-shadow: 0 5px 16px rgba(183,156,242,0.08); }
-  .card-title{ font-family:"Trebuchet MS","Segoe UI",Arial,sans-serif; font-size:14px; font-weight:700; display:flex; align-items:center; gap:8px; margin-bottom:11px; }
+  .card-title{ font-family:var(--font-display); font-size:14px; font-weight:700; display:flex; align-items:center; gap:8px; margin-bottom:10px; }
   .card-title .em{ font-size:18px; }
 
   .grid{ display:grid; gap:12px; }
@@ -225,209 +211,191 @@
   .grid-3{ grid-template-columns: repeat(3, 1fr); }
   .grid-4{ grid-template-columns: repeat(4, 1fr); }
 
-  .stat-card{ display:flex; flex-direction:column; gap:7px; position:relative; overflow:hidden; }
+  .stat-card{ display:flex; flex-direction:column; gap:6px; position:relative; }
   .stat-card__top{ display:flex; align-items:center; justify-content:space-between; }
   .stat-card__icon{
-    width:38px; height:38px; border-radius:13px; display:flex; align-items:center; justify-content:center;
+    width:36px; height:36px; border-radius:12px; display:flex; align-items:center; justify-content:center;
     font-size:18px; background: #F7F2FB;
   }
-  .stat-card__value{ font-size:22px; font-weight:800; color:#574F6B; }
-  .stat-card__label{ font-size:12px; color:var(--text-secondary); }
+  .stat-card__value{ font-size:22px; font-weight:800; font-family:var(--font-display); color:var(--text-primary); }
+  .stat-card__label{ font-size:11.5px; color:var(--text-secondary); font-weight:600; }
 
-  .progress-track{
-    width:100%; height:9px; border-radius:20px;
-    background: #F1ECF9; overflow:hidden; position:relative;
-  }
-  .progress-fill{
-    height:100%; border-radius:20px;
-    background: linear-gradient(90deg, #B79CF2, #FF8FB8);
-    width:0%; transition: width 600ms ease;
-  }
+  .progress-track{ width:100%; height:8px; border-radius:20px; background: #F1ECF9; overflow:hidden; }
+  .progress-fill{ height:100%; border-radius:20px; background: linear-gradient(90deg, var(--lilac-deep), var(--pink-deep)); width:0%; transition: width 400ms ease; }
 
-  .priority-list{ display:flex; flex-direction:column; gap:8px; }
-  .priority-item{
-    display:flex; align-items:center; gap:10px; font-size:13px;
-    padding:8px 10px; border-radius:14px; background: #F9F5FC; font-weight:600;
-  }
-  .priority-num{
-    width:22px; height:22px; border-radius:50%; flex-shrink:0;
-    background: #E6D9FF; color:#574F6B; font-size:11px; font-weight:700; display:flex; align-items:center; justify-content:center;
-  }
-  .empty-state{
-    display:flex; flex-direction:column; align-items:center; justify-content:center;
-    gap:6px; padding:24px 10px; text-align:center; color:var(--text-secondary);
-  }
-  .empty-state .em{ font-size:28px; }
-  .empty-state .msg{ font-size:12.5px; max-width:220px; }
+  .priority-list{ display:flex; flex-direction:column; gap:6px; }
+  .priority-item{ display:flex; align-items:center; gap:10px; font-size:13px; padding:7px 10px; border-radius:12px; background: #F9F5FC; font-weight:600; }
+  .priority-num{ width:20px; height:20px; border-radius:50%; flex-shrink:0; background: var(--lilac); color:var(--text-primary); font-size:11px; font-weight:800; display:flex; align-items:center; justify-content:center; }
+  
+  .empty-state{ display:flex; flex-direction:column; align-items:center; justify-content:center; gap:4px; padding:20px 8px; text-align:center; color:var(--text-secondary); }
+  .empty-state .em{ font-size:24px; }
+  .empty-state .msg{ font-size:12px; max-width:220px; }
 
   .mini-stat-row{ display:flex; justify-content:space-between; align-items:center; }
   .mini-stat-row + .mini-stat-row{ margin-top:8px; }
-  .mini-stat-label{ font-size:12.5px; color:var(--text-secondary); display:flex; align-items:center; gap:6px; font-weight:600; }
-  .mini-stat-value{ font-size:13px; font-weight:700; }
-
-  .month-progress-wrap{ display:flex; flex-direction:column; gap:8px; }
+  .mini-stat-label{ font-size:12px; color:var(--text-secondary); display:flex; align-items:center; gap:6px; font-weight:600; }
+  .mini-stat-value{ font-size:12.5px; font-weight:700; font-family:var(--font-display); }
 
   .btn{
-    display:inline-flex; align-items:center; justify-content:center; gap:8px;
-    padding: 9px 15px; border-radius: 999px; font-family:"Trebuchet MS","Segoe UI",Arial,sans-serif;
+    display:inline-flex; align-items:center; justify-content:center; gap:6px;
+    padding: 8px 14px; border-radius: 999px; font-family:var(--font-display);
     font-size:13px; font-weight:700; transition: all var(--transition);
   }
-  .btn-primary{ background: #FF8FB8; color:#FFF; box-shadow: 0 3px 10px rgba(255,143,184,0.16); }
-  .btn-primary:hover{ background:#FF7EAC; transform: translateY(-1px); box-shadow: 0 5px 14px rgba(255,143,184,0.20); }
+  .btn-primary{ background: var(--pink-deep); color:#FFF; box-shadow: 0 3px 10px rgba(255,143,184,0.16); }
+  .btn-primary:hover{ background:#FF7EAC; transform: translateY(-1px); }
   .btn-secondary{ background: #F7F2FB; color:var(--text-primary); }
-  .btn-secondary:hover{ background: #E6D9FF; }
+  .btn-secondary:hover{ background: var(--lilac); }
   .btn-danger{ background: #FFF0EA; color:#D97C6A; }
-  .btn-sm{ padding:6px 12px; font-size:12px; }
-  .btn-row{ display:flex; gap:8px; flex-wrap:wrap; margin-top:16px; }
+  .btn-sm{ padding:5px 10px; font-size:11.5px; }
+  .btn-row{ display:flex; gap:8px; flex-wrap:wrap; margin-top:14px; }
 
   .fab{
-    position:fixed; bottom:24px; right:24px; z-index:35;
-    width:52px; height:52px; border-radius:50%;
-    background: #FF8FB8; color:#fff; font-size:22px; display:flex; align-items:center; justify-content:center;
-    box-shadow: 0 8px 20px rgba(255,143,184,0.22);
+    position:fixed; bottom:22px; right:22px; z-index:35;
+    width:50px; height:50px; border-radius:50%;
+    background: var(--pink-deep); color:#fff; font-size:22px; display:flex; align-items:center; justify-content:center;
+    box-shadow: 0 6px 18px rgba(255,143,184,0.25);
     transition: transform var(--transition);
   }
-  .fab:hover{ transform: scale(1.08) rotate(90deg); }
+  .fab:hover{ transform: scale(1.06); }
 
-  .field{ display:flex; flex-direction:column; gap:5px; margin-bottom:12px; }
-  .field label{ font-size:11.5px; font-weight:700; color:var(--text-secondary); text-transform:uppercase; letter-spacing:0.04em; }
+  .field{ display:flex; flex-direction:column; gap:4px; margin-bottom:10px; }
+  .field label{ font-size:11px; font-weight:700; color:var(--text-secondary); text-transform:uppercase; letter-spacing:0.04em; }
   .field input[type="text"], .field input[type="number"], .field input[type="date"],
   .field textarea, .field select, .hour-input, .week-mini-textarea, .add-row input{
-    padding:9px 12px; border-radius:12px; border:2px solid rgba(87,79,107,0.08);
+    padding:8px 11px; border-radius:12px; border:2px solid rgba(87,79,107,0.08);
     background: #FFF; font-size:13px; font-weight:600; color:var(--text-primary); outline:none; transition: all var(--transition);
   }
   .field input:focus, .field textarea:focus, .field select:focus,
   .hour-input:focus, .week-mini-textarea:focus, .add-row input:focus{
-    border-color: #B79CF2; box-shadow: 0 0 0 3px rgba(183,156,242,0.10);
+    border-color: var(--lilac-deep); box-shadow: 0 0 0 3px rgba(183,156,242,0.10);
   }
-  .field textarea{ resize:vertical; min-height:65px; line-height:1.4; }
+  .field textarea{ resize:vertical; min-height:60px; }
 
   .checkbox-custom{
-    width:20px; height:20px; border-radius:6px; border:2px solid #D7C7F5;
+    width:18px; height:18px; border-radius:6px; border:2px solid #D7C7F5;
     display:flex; align-items:center; justify-content:center; flex-shrink:0; cursor:pointer;
-    transition: all var(--transition); background: #FFF;
+    background: #FFF;
   }
-  .checkbox-custom.checked{ background: #FF8FB8; border-color: #FF8FB8; color:#fff; font-size:12px; font-weight:800; }
+  .checkbox-custom.checked{ background: var(--pink-deep); border-color: var(--pink-deep); color:#fff; font-size:11px; font-weight:800; }
 
-  .task-row{ display:flex; align-items:center; gap:10px; padding:8px 4px; border-bottom:1px solid var(--card-border); }
+  .task-row{ display:flex; align-items:center; gap:8px; padding:6px 2px; border-bottom:1px solid var(--card-border); }
   .task-row:last-child{ border-bottom:none; }
-  .task-row .task-text{ flex:1; font-size:13px; font-weight:600; }
+  .task-row .task-text{ flex:1; font-size:12.5px; font-weight:600; }
   .task-row.done .task-text{ text-decoration: line-through; color: var(--text-muted); }
-  .task-row .task-actions{ display:flex; gap:4px; opacity:0; }
+  .task-row .task-actions{ display:flex; gap:2px; opacity:0; }
   .task-row:hover .task-actions{ opacity:1; }
 
-  .add-row{ display:flex; gap:6px; margin-top:8px; }
+  .add-row{ display:flex; gap:6px; margin-top:6px; }
   .add-row input{ flex:1; }
 
-  .water-row, .mood-row{ display:flex; gap:6px; flex-wrap:wrap; align-items:center; }
+  .water-row, .mood-row{ display:flex; gap:5px; flex-wrap:wrap; align-items:center; }
   .water-drop{
-    width:34px; height:34px; border-radius:50%; display:flex; align-items:center; justify-content:center;
-    background: #FFF; border:1px solid rgba(87,79,107,0.08); font-size:15px; transition: all var(--transition);
+    width:32px; height:32px; border-radius:50%; display:flex; align-items:center; justify-content:center;
+    background: #FFF; border:1px solid rgba(87,79,107,0.08); font-size:14px; transition: all var(--transition);
   }
-  .water-drop.filled{ background: linear-gradient(135deg,#D7ECFF,#E6D9FF); border-color:transparent; transform: scale(1.05); }
+  .water-drop.filled{ background: linear-gradient(135deg,var(--sky),var(--lilac)); border-color:transparent; }
   .mood-btn{
-    font-size:20px; padding:8px 10px; border-radius:14px; background:#FFF; border:1px solid rgba(87,79,107,0.08);
+    font-size:18px; padding:6px 9px; border-radius:12px; background:#FFF; border:1px solid rgba(87,79,107,0.08);
     transition: all var(--transition);
   }
-  .mood-btn.selected{ background: #E6D9FF; transform: scale(1.08); }
+  .mood-btn.selected{ background: var(--lilac); transform: scale(1.06); }
 
-  .slider-wrap{ display:flex; align-items:center; gap:12px; }
+  .slider-wrap{ display:flex; align-items:center; gap:10px; }
   input[type=range]{ -webkit-appearance:none; flex:1; height:6px; border-radius:10px; background: #F1ECF9; outline:none; }
   input[type=range]::-webkit-slider-thumb{
-    -webkit-appearance:none; width:18px; height:18px; border-radius:50%;
-    background: #FF8FB8; cursor:pointer; border:2px solid #fff;
+    -webkit-appearance:none; width:16px; height:16px; border-radius:50%;
+    background: var(--pink-deep); cursor:pointer; border:2px solid #fff;
   }
-  .slider-value{ font-weight:800; font-size:16px; width:24px; text-align:center; }
+  .slider-value{ font-weight:800; font-size:15px; width:22px; text-align:center; font-family:var(--font-display); }
 
-  .hour-row{ display:flex; align-items:center; gap:8px; padding:4px 0; }
-  .hour-label{ width:auto; min-width:60px; font-size:11.5px; font-weight:700; color:var(--text-secondary); }
+  .hour-row{ display:flex; align-items:center; gap:8px; padding:3px 0; }
+  .hour-label{ width:auto; min-width:55px; font-size:11px; font-weight:700; color:var(--text-secondary); }
 
   .weekly-days-grid{ grid-template-columns: repeat(4, minmax(0,1fr)); align-items: start; }
-  .week-day-card{ display:flex; flex-direction:column; gap:8px; min-height: 220px; }
-  .week-day-card.is-weekend{ background: rgba(255,215,230,0.25); }
+  .week-day-card{ display:flex; flex-direction:column; gap:7px; min-height: 200px; }
+  .week-day-card.is-weekend{ background: rgba(255,215,230,0.22); }
   .week-day-card__head{ display:flex; justify-content:space-between; align-items:baseline; }
-  .week-day-card__name{ font-weight:800; font-size:13.5px; }
-  .week-day-card__date{ font-size:11px; color:var(--text-secondary); }
-  .stars-row{ display:flex; gap:4px; }
-  .star{ font-size:20px; opacity:0.3; cursor:pointer; transition: all var(--transition); color:var(--warning); }
+  .week-day-card__name{ font-weight:800; font-size:13px; font-family:var(--font-display); }
+  .week-day-card__date{ font-size:10.5px; color:var(--text-secondary); }
+  .stars-row{ display:flex; gap:3px; }
+  .star{ font-size:18px; opacity:0.3; cursor:pointer; color:var(--butter-deep); }
   .star.filled{ opacity:1; }
 
   @media (min-width: 1400px){ .weekly-days-grid{ grid-template-columns: repeat(7, minmax(0,1fr)); } }
   @media (max-width: 900px){ .weekly-days-grid{ grid-template-columns: repeat(2, minmax(0,1fr)); } }
 
   .pomodoro-ring{
-    width:190px; height:190px; border-radius:50%;
-    background: conic-gradient(#B79CF2 calc(var(--progress, 0) * 1%), #F1ECF9 0);
-    display:flex; align-items:center; justify-content:center; margin: 4px auto;
+    width:180px; height:180px; border-radius:50%;
+    background: conic-gradient(var(--lilac-deep) calc(var(--progress, 0) * 1%), #F1ECF9 0);
+    display:flex; align-items:center; justify-content:center; margin: 0 auto;
   }
   .pomodoro-ring-inner{
-    width:155px; height:155px; border-radius:50%; background: #FFF;
+    width:145px; height:145px; border-radius:50%; background: #FFF;
     display:flex; flex-direction:column; align-items:center; justify-content:center;
   }
-  .pomodoro-time{ font-size:2.2rem; font-weight:800; font-variant-numeric:tabular-nums; }
-  .pomodoro-phase{ font-size:12px; color:var(--text-secondary); margin-top:2px; font-weight:700; }
+  .pomodoro-time{ font-size:2rem; font-weight:800; font-variant-numeric:tabular-nums; font-family:var(--font-display); }
+  .pomodoro-phase{ font-size:11.5px; color:var(--text-secondary); margin-top:2px; font-weight:700; }
 
-  .cal-header{ display:flex; align-items:center; justify-content:space-between; margin-bottom:14px; }
-  .cal-title{ font-size:17px; font-weight:800; text-transform:capitalize; }
-  .cal-weekdays{ display:grid; grid-template-columns: repeat(7,1fr); gap:6px; margin-bottom:6px; }
-  .cal-weekdays div{ text-align:center; font-size:10.5px; font-weight:700; color:var(--text-secondary); text-transform:uppercase; }
-  .cal-grid{ display:grid; grid-template-columns: repeat(7,1fr); gap:6px; }
+  .cal-header{ display:flex; align-items:center; justify-content:space-between; margin-bottom:12px; }
+  .cal-title{ font-size:16px; font-weight:800; text-transform:capitalize; font-family:var(--font-display); }
+  .cal-weekdays{ display:grid; grid-template-columns: repeat(7,1fr); gap:5px; margin-bottom:5px; }
+  .cal-weekdays div{ text-align:center; font-size:10px; font-weight:700; color:var(--text-secondary); text-transform:uppercase; }
+  .cal-grid{ display:grid; grid-template-columns: repeat(7,1fr); gap:5px; }
   .cal-day{
-    aspect-ratio: 1/0.85; border-radius:12px; padding:6px; background: #FFF;
+    aspect-ratio: 1/0.85; border-radius:10px; padding:5px; background: #FFF;
     border:1px solid rgba(87,79,107,0.07); display:flex; flex-direction:column; justify-content:space-between;
-    font-size:12px; cursor:pointer; transition: all var(--transition);
+    font-size:11.5px; cursor:pointer; transition: all var(--transition);
   }
   .cal-day:hover{ background: #F7F2FB; }
   .cal-day.other-month{ opacity:0.35; }
-  .cal-day.today{ background: #E6D9FF; font-weight:800; }
+  .cal-day.today{ background: var(--lilac); font-weight:800; }
   .cal-dots{ display:flex; gap:3px; }
   .cal-dot{ width:5px; height:5px; border-radius:50%; }
-  .dot-task{ background: #B79CF2; }
-  .dot-habit{ background: #6FCF9C; }
-  .dot-event{ background: #F2987F; }
-  .dot-workout{ background: #FF8FB8; }
+  .dot-task{ background: var(--lilac-deep); }
+  .dot-habit{ background: var(--mint-deep); }
+  .dot-event{ background: var(--peach-deep); }
+  .dot-workout{ background: var(--pink-deep); }
 
-  .tag-item{ display:flex; justify-content:space-between; align-items:center; font-size:12px; background:#F9F5FC; padding:7px 9px; border-radius:10px; font-weight:600; }
-  .gratitude-list{ display:flex; flex-direction:column; gap:10px; }
-  .gratitude-entry{ display:grid; grid-template-columns:110px 1fr; gap:12px; align-items:start; }
-  .gratitude-entry__date{ font-size:11.5px; font-weight:800; color:var(--text-secondary); }
-  .gratitude-entry__text{ font-size:13.5px; line-height:1.5; font-weight:600; }
-  .synced-event{ display:flex; align-items:flex-start; gap:8px; padding:8px 10px; border-radius:10px; background:rgba(234,154,164,0.12); font-size:12px; font-weight:700; }
+  .tag-item{ display:flex; justify-content:space-between; align-items:center; font-size:11.5px; background:#F9F5FC; padding:6px 9px; border-radius:10px; font-weight:600; }
+  .gratitude-entry{ display:grid; grid-template-columns:105px 1fr; gap:10px; align-items:start; }
+  .gratitude-entry__date{ font-size:11px; font-weight:800; color:var(--text-secondary); }
+  .gratitude-entry__text{ font-size:13px; line-height:1.4; font-weight:600; }
+  .synced-event{ display:flex; align-items:flex-start; gap:6px; padding:7px 9px; border-radius:10px; background:rgba(255,221,201,0.5); font-size:11.5px; font-weight:700; color:var(--peach-deep); }
   .week-event-list{ display:flex; flex-direction:column; gap:4px; }
-  .week-event-item{ font-size:11px; padding:5px 7px; border-radius:8px; background:rgba(234,154,164,0.12); font-weight:700; }
+  .week-event-item{ font-size:10.5px; padding:4px 6px; border-radius:8px; background:rgba(255,221,201,0.5); font-weight:700; color:var(--peach-deep); }
 
   .habit-card{ padding:12px 14px; }
-  .habit-main-row{ display:grid; grid-template-columns:minmax(160px,1.5fr) minmax(180px,1fr) auto auto; align-items:center; gap:14px; }
+  .habit-main-row{ display:grid; grid-template-columns:minmax(150px,1.5fr) minmax(170px,1fr) auto auto; align-items:center; gap:12px; }
   .habit-identity{ display:flex; align-items:center; gap:8px; }
   .habit-dot{ width:9px; height:9px; border-radius:50%; }
-  .habit-card__name{ font-weight:800; font-size:13.5px; }
-  .habit-cat{ font-size:10px; padding:2px 6px; border-radius:6px; background:#F7F2FB; color:var(--text-secondary); width:fit-content; }
+  .habit-card__name{ font-weight:800; font-size:13px; }
+  .habit-cat{ font-size:9.5px; padding:2px 6px; border-radius:6px; background:#F7F2FB; color:var(--text-secondary); width:fit-content; }
   .habit-week-strip{ display:grid; grid-template-columns:repeat(7,1fr); gap:4px; }
-  .habit-week-day{ display:flex; flex-direction:column; align-items:center; gap:3px; }
-  .habit-week-label{ font-size:9px; color:var(--text-muted); text-transform:uppercase; font-weight:700; }
-  .habit-week-dot{ width:20px; height:20px; border-radius:6px; background:#F7F2FB; border:1px solid transparent; cursor:pointer; }
-  .habit-week-dot.done{ background:#6FCF9C !important; }
-  .habit-percent{ font-size:11.5px; font-weight:800; padding:4px 8px; border-radius:999px; background:#F7F2FB; }
+  .habit-week-day{ display:flex; flex-direction:column; align-items:center; gap:2px; }
+  .habit-week-label{ font-size:8.5px; color:var(--text-muted); text-transform:uppercase; font-weight:700; }
+  .habit-week-dot{ width:19px; height:19px; border-radius:6px; background:#F7F2FB; border:1px solid transparent; cursor:pointer; }
+  .habit-week-dot.done{ background:var(--mint-deep) !important; }
+  .habit-percent{ font-size:11px; font-weight:800; padding:3px 7px; border-radius:999px; background:#F7F2FB; font-family:var(--font-display); }
 
-  .toast-container{ position:fixed; bottom:20px; left:50%; transform:translateX(-50%); z-index:200; display:flex; flex-direction:column; gap:8px; }
-  .toast{ padding:10px 18px; border-radius:999px; background: #FFF; border:1px solid rgba(87,79,107,0.1); box-shadow: var(--shadow-hover); font-size:13px; font-weight:700; display:flex; align-items:center; gap:8px; }
-  .toast.success{ color:#4E9A5D; } .toast.error{ color:#C5586A; }
+  .toast-container{ position:fixed; bottom:20px; left:50%; transform:translateX(-50%); z-index:200; display:flex; flex-direction:column; gap:6px; }
+  .toast{ padding:9px 16px; border-radius:999px; background: #FFF; border:1px solid rgba(87,79,107,0.1); box-shadow: var(--shadow-hover); font-size:12.5px; font-weight:700; display:flex; align-items:center; gap:8px; }
+  .toast.success{ color:var(--mint-deep); } .toast.error{ color:var(--peach-deep); }
   
   .modal-overlay{ position:fixed; inset:0; background: rgba(20,15,30,0.4); backdrop-filter: blur(4px); display:flex; align-items:center; justify-content:center; z-index:300; opacity:0; pointer-events:none; transition: opacity var(--transition); }
   .modal-overlay.show{ opacity:1; pointer-events:all; }
-  .modal-box{ background: #FFF; border-radius: var(--radius-lg); padding:24px; max-width:400px; width:90%; box-shadow: var(--shadow-hover); }
+  .modal-box{ background: #FFF; border-radius: var(--radius-lg); padding:22px; max-width:380px; width:90%; box-shadow: var(--shadow-hover); }
 
   .flex{ display:flex; }
   .flex-between{ display:flex; align-items:center; justify-content:space-between; }
   .flex-col{ display:flex; flex-direction:column; }
   .gap-8{ gap:8px; } .gap-12{ gap:12px; } .gap-16{ gap:16px; }
-  .mt-8{ margin-top:8px; } .mt-16{ margin-top:16px; } .mt-24{ margin-top:24px; }
-  .text-sm{ font-size:12px; color:var(--text-secondary); font-weight:600; }
-  .badge{ font-size:11px; font-weight:700; padding:4px 9px; border-radius:20px; background:#F7F2FB; color:var(--text-secondary); }
-  .divider{ height:1px; background: rgba(87,79,107,0.07); margin:12px 0; }
-  .color-swatch{ width:28px; height:28px; border-radius:8px; cursor:pointer; }
+  .mt-8{ margin-top:8px; } .mt-16{ margin-top:16px; }
+  .text-sm{ font-size:11.5px; color:var(--text-secondary); font-weight:600; }
+  .badge{ font-size:10.5px; font-weight:700; padding:3px 8px; border-radius:20px; background:#F7F2FB; color:var(--text-secondary); }
+  .divider{ height:1px; background: rgba(87,79,107,0.07); margin:10px 0; }
+  .color-swatch{ width:26px; height:26px; border-radius:8px; cursor:pointer; }
   .color-swatch.active{ outline:2px solid var(--text-primary); }
-  .color-swatch-row{ display:flex; gap:8px; flex-wrap:wrap; }
+  .color-swatch-row{ display:flex; gap:6px; flex-wrap:wrap; }
 
   @media (max-width:900px){
     .sidebar{ position:fixed; left:0; top:0; transform: translateX(-100%); }
@@ -437,7 +405,7 @@
   }
   @media (max-width:600px){
     .grid-2, .grid-3, .grid-4{ grid-template-columns:1fr; }
-    .page-area{ padding:16px 12px 42px; }
+    .page-area{ padding:14px 10px 38px; }
     .habit-main-row{ grid-template-columns:1fr auto; }
     .habit-week-strip{ grid-column:1/-1; }
   }
@@ -454,7 +422,7 @@
       <div class="sidebar__brand-logo">🌸</div>
       <div>
         <div class="sidebar__brand-text">Life Dashboard</div>
-        <div class="sidebar__brand-sub">seu planner pessoal</div>
+        <div class="sidebar__brand-sub">seu planner pessoal ✨</div>
       </div>
     </div>
 
@@ -463,7 +431,7 @@
       <button class="nav-item" data-page="daily"><span class="nav-icon">📅</span> Daily Planner</button>
       <button class="nav-item" data-page="weekly"><span class="nav-icon">📆</span> Weekly Planner</button>
       <button class="nav-item" data-page="monthly"><span class="nav-icon">🗓</span> Monthly Planner</button>
-      <button class="nav-item" data-page="gratitude"><span class="nav-icon">🙏</span> Diário da Gratidão</button>
+      <button class="nav-item" data-page="gratitude"><span class="nav-icon">🙏</span> Diário Gratidão</button>
       <button class="nav-item" data-page="review"><span class="nav-icon">📖</span> Monthly Review</button>
       <button class="nav-item" data-page="habits"><span class="nav-icon">🌱</span> Habit Tracker</button>
       <button class="nav-item" data-page="pomodoro"><span class="nav-icon">🍅</span> Pomodoro</button>
@@ -476,7 +444,7 @@
       <a class="nav-item" href="financas.html"><span class="nav-icon">💰</span> Finanças</a>
     </nav>
 
-    <div class="sidebar__footer">Life Dashboard · Sincronizado</div>
+    <div class="sidebar__footer">Life Dashboard · v2.0</div>
   </aside>
 
   <!-- MAIN COLUMN -->
@@ -508,7 +476,7 @@
         <div class="page-title">Dashboard</div>
         <div class="page-subtitle">Sua visão geral de hoje, da semana e do mês</div>
 
-        <div class="grid grid-4" id="dashStatsGrid" style="margin-bottom:16px;"></div>
+        <div class="grid grid-4" id="dashStatsGrid" style="margin-bottom:14px;"></div>
 
         <div class="grid grid-3">
           <div class="card">
@@ -533,7 +501,7 @@
           </div>
         </div>
 
-        <div class="grid grid-4" style="margin-top:16px;">
+        <div class="grid grid-4" style="margin-top:14px;">
           <div class="card">
             <div class="card-title"><span class="em">📚</span> Livros</div>
             <div class="stat-card__value" id="cardBooks">0</div>
@@ -576,7 +544,7 @@
           </div>
         </div>
 
-        <div class="grid grid-2" style="margin-top:16px;">
+        <div class="grid grid-2" style="margin-top:14px;">
           <div class="card">
             <div class="card-title"><span class="em">📆</span> Resumo da semana</div>
             <div id="dashWeekSummary" class="flex-col gap-8"></div>
@@ -599,12 +567,12 @@
             <button class="btn btn-primary btn-sm" id="dailySaveBtnTop">💾 Salvar</button>
             <button class="icon-btn btn-sm" id="dailyPrevBtn">←</button>
             <span class="badge" id="dailyWeekdayLabel">-</span>
-            <input type="date" class="hour-input" id="dailyDateInput" style="width:auto; padding:6px 10px;">
+            <input type="date" class="hour-input" id="dailyDateInput" style="width:auto; padding:5px 9px;">
             <button class="icon-btn btn-sm" id="dailyNextBtn">→</button>
           </div>
         </div>
 
-        <div class="grid grid-2" style="margin-top:16px; align-items:start;">
+        <div class="grid grid-2" style="margin-top:14px; align-items:start;">
           <div class="flex-col gap-16">
             <div class="card">
               <div class="card-title"><span class="em">🎯</span> Top 3 prioridades</div>
@@ -624,7 +592,7 @@
               <div class="card-title"><span class="em">🕐</span> Agenda</div>
               <div class="flex-col gap-8" id="dailyAgenda"></div>
               <div class="add-row">
-                <input type="text" id="dailyAgendaTime" placeholder="Horário" style="max-width:110px;">
+                <input type="text" id="dailyAgendaTime" placeholder="Horário (ex: 08:30)" style="max-width:110px;">
                 <input type="text" id="dailyAgendaText" placeholder="Atividade...">
                 <button class="btn btn-primary btn-sm" id="dailyAgendaAddBtn">+</button>
               </div>
@@ -659,10 +627,10 @@
                 <span class="mini-stat-label">🏃 Corrida (km)</span>
                 <input type="number" min="0" step="0.1" class="hour-input" id="dailyRunsKm" placeholder="0.0" style="max-width:90px; text-align:right;">
               </div>
-              <div class="text-sm mt-8" style="font-size:11px;">💡 Corridas com km $> 0$ contam automaticamente como treino do dia!</div>
+              <div class="text-sm mt-8">💡 Corridas $> 0\text{ km}$ contam automaticamente como treino concluído!</div>
             </div>
 
-            <div class="grid grid-2" style="gap:12px;">
+            <div class="grid grid-2" style="gap:10px;">
               <div class="card">
                 <div class="card-title"><span class="em">💧</span> Água</div>
                 <div class="water-row" id="dailyWater"></div>
@@ -720,14 +688,14 @@
           </div>
         </div>
 
-        <div class="grid grid-4" style="margin:16px 0;">
+        <div class="grid grid-4" style="margin:14px 0;">
           <div class="card">
             <div class="card-title"><span class="em">🎯</span> Meta principal</div>
             <input type="text" class="hour-input" id="weekMainObjective" placeholder="Meta da semana...">
           </div>
           <div class="card">
             <div class="card-title"><span class="em">📖</span> Horas de estudo</div>
-            <input type="number" min="0" class="hour-input" id="weekStudyHours" placeholder="0">
+            <input type="number" min="0" step="0.5" class="hour-input" id="weekStudyHours" placeholder="0">
           </div>
           <div class="card">
             <div class="card-title"><span class="em">🏋️</span> Treinos realizados</div>
@@ -741,7 +709,7 @@
 
         <div class="grid weekly-days-grid" id="weeklyDaysGrid"></div>
 
-        <div class="grid grid-2" style="margin-top:16px;">
+        <div class="grid grid-2" style="margin-top:14px;">
           <div class="card">
             <div class="card-title"><span class="em">⭐</span> Avaliação da semana</div>
             <div class="stars-row" id="weekStars"></div>
@@ -769,7 +737,7 @@
         <div class="page-title">Pomodoro</div>
         <div class="page-subtitle">Sessões de foco e estudo</div>
 
-        <div class="grid grid-2" style="margin-top:16px; align-items:start;">
+        <div class="grid grid-2" style="margin-top:14px; align-items:start;">
           <div class="flex-col gap-16">
             <div class="card" style="text-align:center;">
               <div class="pomodoro-ring" id="pomodoroRing" style="--progress:0;">
@@ -829,7 +797,7 @@
         <div class="page-title">Monthly Planner</div>
         <div class="page-subtitle">Seu calendário mensal integrado aos treinos e eventos</div>
 
-        <div class="grid" style="grid-template-columns: 2.2fr 1fr; align-items:start; margin-top:16px;">
+        <div class="grid" style="grid-template-columns: 2.2fr 1fr; align-items:start; margin-top:14px;">
           <div class="card">
             <div class="cal-header">
               <button class="icon-btn btn-sm" id="calPrevBtn">←</button>
@@ -840,11 +808,11 @@
               <div>Dom</div><div>Seg</div><div>Ter</div><div>Qua</div><div>Qui</div><div>Sex</div><div>Sáb</div>
             </div>
             <div class="cal-grid" id="calGrid"></div>
-            <div class="chart-legend" style="margin-top:10px; display:flex; gap:10px; font-size:11px; font-weight:700;">
-              <span><i style="display:inline-block; width:6px; height:6px; border-radius:50%; background:#B79CF2; margin-right:4px;"></i>tarefas</span>
-              <span><i style="display:inline-block; width:6px; height:6px; border-radius:50%; background:#6FCF9C; margin-right:4px;"></i>hábitos</span>
-              <span><i style="display:inline-block; width:6px; height:6px; border-radius:50%; background:#FF8FB8; margin-right:4px;"></i>treino</span>
-              <span><i style="display:inline-block; width:6px; height:6px; border-radius:50%; background:#F2987F; margin-right:4px;"></i>evento</span>
+            <div style="margin-top:12px; display:flex; gap:12px; font-size:11px; font-weight:700; flex-wrap:wrap;">
+              <span><i style="display:inline-block; width:6px; height:6px; border-radius:50%; background:var(--lilac-deep); margin-right:4px;"></i>tarefas</span>
+              <span><i style="display:inline-block; width:6px; height:6px; border-radius:50%; background:var(--mint-deep); margin-right:4px;"></i>hábitos</span>
+              <span><i style="display:inline-block; width:6px; height:6px; border-radius:50%; background:var(--pink-deep); margin-right:4px;"></i>treino</span>
+              <span><i style="display:inline-block; width:6px; height:6px; border-radius:50%; background:var(--peach-deep); margin-right:4px;"></i>evento</span>
             </div>
           </div>
 
@@ -909,7 +877,7 @@
           </div>
         </div>
 
-        <div class="grid grid-2" style="margin-top:16px; align-items:start;">
+        <div class="grid grid-2" style="margin-top:14px; align-items:start;">
           <div class="flex-col gap-16">
             <div class="card"><div class="card-title"><span class="em">🏆</span> Conquistas</div><textarea class="week-mini-textarea" id="revAchievements"></textarea></div>
             <div class="card"><div class="card-title"><span class="em">🧗</span> Desafios</div><textarea class="week-mini-textarea" id="revChallenges"></textarea></div>
@@ -941,12 +909,12 @@
               <div class="card">
                 <div class="card-title"><span class="em">🏋️</span> Treinos Totais</div>
                 <input class="hour-input" type="number" id="revWorkouts" placeholder="0">
-                <div class="text-sm mt-8" style="font-size:10.5px;">Força + Pilates + Corridas</div>
+                <div class="text-sm mt-8">Força + Pilates + Corridas</div>
               </div>
               <div class="card">
                 <div class="card-title"><span class="em">🏃</span> Km de Corrida</div>
                 <input class="hour-input" type="number" step="0.1" id="revRuns" placeholder="0.0">
-                <div class="text-sm mt-8" style="font-size:10.5px;">Total acumulado no mês</div>
+                <div class="text-sm mt-8">Total acumulado no mês</div>
               </div>
               <div class="card"><div class="card-title"><span class="em">😴</span> Dias dormindo bem</div><input class="hour-input" type="number" id="revSleepDays" placeholder="0"></div>
               <div class="card"><div class="card-title"><span class="em">💰</span> Economizado</div><input class="hour-input" type="text" id="revSaved" placeholder="R$ 0,00"></div>
@@ -955,7 +923,7 @@
               <div class="card-title"><span class="em">⭐</span> Nota do mês</div>
               <div class="stars-row" id="revRatingStars"></div>
             </div>
-            <div class="card"><div class="card-title"><span class="em">🔤</span> Palavra do mês</div><input class="hour-input" type="text" id="revWord" placeholder="Ex: Foco, Transição, Força..."></div>
+            <div class="card"><div class="card-title"><span class="em">🔤</span> Palavra do mês</div><input class="hour-input" type="text" id="revWord" placeholder="Ex: Foco, Transição..."></div>
             <div class="card"><div class="card-title"><span class="em">🎯</span> Objetivo para o próximo mês</div><textarea class="week-mini-textarea" id="revNextGoal"></textarea></div>
           </div>
         </div>
@@ -970,7 +938,7 @@
         <div class="page-title">Configurações</div>
         <div class="page-subtitle">Backup e personalização</div>
 
-        <div class="grid grid-2" style="margin-top:16px; align-items:start;">
+        <div class="grid grid-2" style="margin-top:14px; align-items:start;">
           <div class="card">
             <div class="card-title"><span class="em">🎨</span> Aparência</div>
             <div class="flex-between mt-8">
@@ -986,7 +954,7 @@
 
           <div class="card">
             <div class="card-title"><span class="em">💾</span> Dados & Backup</div>
-            <p class="text-sm">Exporte seus dados locais para manter seguro.</p>
+            <p class="text-sm">Exporte seus dados locais para manter seus registros seguros.</p>
             <div class="btn-row">
               <button class="btn btn-secondary" id="exportBtn">⬇️ Exportar JSON</button>
               <button class="btn btn-secondary" id="importBtn">⬆️ Importar JSON</button>
@@ -1081,6 +1049,7 @@ function defaultData(){
 }
 
 let plannerData = defaultData();
+let saveDebounceTimer = null;
 
 function loadData(){
   try{
@@ -1114,9 +1083,12 @@ function saveData(silent){
   }
 }
 
-/* ================================================================
-   REGRA DE TREINOS DO DIA: Força + Pilates + Corrida (>0km)
-   ================================================================ */
+function autoSave(){
+  clearTimeout(saveDebounceTimer);
+  saveDebounceTimer = setTimeout(()=>{ saveData(true); }, 300);
+}
+
+/* REGRA DE TREINOS DO DIA */
 function getDayTotalWorkouts(dailyRec){
   if(!dailyRec) return 0;
   const strength = Number(dailyRec.strengthWorkouts) || 0;
@@ -1207,7 +1179,7 @@ function showModal({title, text, confirmLabel='Confirmar', cancelLabel='Cancelar
   const overlay = $('#modalOverlay');
   const box = $('#modalBox');
   box.innerHTML = `
-    <div style="font-size:16px; font-weight:800; margin-bottom:8px;">${escapeHTML(title||'')}</div>
+    <div style="font-size:16px; font-weight:800; margin-bottom:8px; font-family:var(--font-display);">${escapeHTML(title||'')}</div>
     <div style="font-size:13px; color:var(--text-secondary); margin-bottom:16px; line-height:1.4;">${escapeHTML(text||'')}</div>
     <div class="btn-row">
       <button class="btn ${danger?'btn-danger':'btn-primary'}" id="modalConfirmBtn">${escapeHTML(confirmLabel)}</button>
@@ -1230,8 +1202,8 @@ function switchTheme(theme){
 function toggleTheme(){ switchTheme(plannerData.settings.theme === 'dark' ? 'light' : 'dark'); }
 
 function applyThemeColors(){
-  document.documentElement.style.setProperty('--lavender', plannerData.settings.primaryColor);
-  document.documentElement.style.setProperty('--pink', plannerData.settings.secondaryColor);
+  document.documentElement.style.setProperty('--lilac-deep', `rgb(${plannerData.settings.primaryColor})`);
+  document.documentElement.style.setProperty('--pink-deep', `rgb(${plannerData.settings.secondaryColor})`);
 }
 
 function renderClock(){
@@ -1247,15 +1219,16 @@ function renderQuote(){
   $('#headerQuote').textContent = `"${MOTIVATIONAL_QUOTES[Math.floor(Math.random()*MOTIVATIONAL_QUOTES.length)]}"`;
 }
 
-/* ================================================================
-   CÁLCULOS DINÂMICOS CONSOLIDADOS (SEMANA & MÊS)
-   ================================================================ */
+/* CÁLCULOS SINCRONIZADOS */
 function computeWeekStatsUpTo(refDate){
   const start = startOfWeek(refDate);
-  let tasksTotal=0, tasksDone=0, energySum=0, energyCount=0, workouts=0, runsKm=0;
+  let tasksTotal=0, tasksDone=0, energySum=0, energyCount=0, workouts=0, runsKm=0, studyMinutes=0;
+  const pomLog = getPomodoroData().log;
+
   for(let i=0;i<7;i++){
     const d = addDays(start,i);
-    const rec = plannerData.daily[dateKey(d)];
+    const dk = dateKey(d);
+    const rec = plannerData.daily[dk];
     if(rec){
       tasksTotal += rec.tasks.length;
       tasksDone += rec.tasks.filter(t=>t.done).length;
@@ -1263,24 +1236,30 @@ function computeWeekStatsUpTo(refDate){
       workouts += getDayTotalWorkouts(rec);
       runsKm += Number(rec.runs) || 0;
     }
+    if(pomLog[dk]){
+      studyMinutes += pomLog[dk].reduce((sum,s)=> sum + (Number(s.minutes)||0), 0);
+    }
   }
-  return {tasksTotal, tasksDone, energyAvg: energyCount ? (energySum/energyCount) : 0, workouts, runsKm};
+  const studyHours = Math.round((studyMinutes / 60) * 10) / 10;
+  return {tasksTotal, tasksDone, energyAvg: energyCount ? (energySum/energyCount) : 0, workouts, runsKm, studyHours};
 }
 
 function computeMonthActivity(refDate){
   const y = refDate.getFullYear(), m = refDate.getMonth();
   const total = daysInMonth(y,m);
-  let runsKm = 0, runsCount = 0, workouts = 0;
+  let runsKm = 0, runsCount = 0, workouts = 0, strengthCount = 0, pilatesCount = 0;
   for(let d=1; d<=total; d++){
     const rec = plannerData.daily[dateKey(new Date(y,m,d))];
     if(rec){
       const km = Number(rec.runs) || 0;
       runsKm += km;
       if(km > 0) runsCount++;
+      strengthCount += Number(rec.strengthWorkouts) || 0;
+      pilatesCount += Number(rec.pilatesWorkouts) || 0;
       workouts += getDayTotalWorkouts(rec);
     }
   }
-  return {runsKm, runsCount, workouts};
+  return {runsKm, runsCount, workouts, strengthCount, pilatesCount};
 }
 
 function computeMonthProgress(refDate){
@@ -1316,7 +1295,6 @@ function renderDashboard(){
   const todayKey = dateKey(today);
   const rec = getDaily(todayKey);
 
-  // Prioridades
   const prioritiesEl = $('#dashPriorities');
   const priorities = rec.priorities.filter(p=>p && p.trim());
   if(priorities.length===0){
@@ -1325,7 +1303,6 @@ function renderDashboard(){
     prioritiesEl.innerHTML = priorities.map((p,i)=>`<div class="priority-item"><div class="priority-num">${i+1}</div><div>${escapeHTML(p)}</div></div>`).join('');
   }
 
-  // Tarefas resumo
   const tasksEl = $('#dashTasksSummary');
   const doneCount = rec.tasks.filter(t=>t.done).length;
   const totalCount = rec.tasks.length;
@@ -1337,7 +1314,6 @@ function renderDashboard(){
     <div class="mini-stat-row"><span class="mini-stat-label">💧 Água</span><span class="mini-stat-value">${rec.water||0}/8</span></div>
   `;
 
-  // Progresso do mês
   const mp = computeMonthProgress(today);
   $('#dashMonthLabel').textContent = `${MONTH_NAMES[today.getMonth()]} — dia ${mp.day} de ${mp.totalDays}`;
   $('#dashMonthPct').textContent = `${mp.pct}%`;
@@ -1379,6 +1355,7 @@ function renderDashboard(){
     <div class="mini-stat-row"><span class="mini-stat-label">✅ Tarefas concluídas</span><span class="mini-stat-value">${weekStats.tasksDone}/${weekStats.tasksTotal}</span></div>
     <div class="mini-stat-row"><span class="mini-stat-label">🏋️ Treinos feitos</span><span class="mini-stat-value">${weekStats.workouts}</span></div>
     <div class="mini-stat-row"><span class="mini-stat-label">🏃 Km percorridos</span><span class="mini-stat-value">${weekStats.runsKm.toFixed(1)} km</span></div>
+    <div class="mini-stat-row"><span class="mini-stat-label">⏱️ Horas de estudo</span><span class="mini-stat-value">${weekStats.studyHours} h</span></div>
   `;
 
   $('#dashMonthSummary').innerHTML = `
@@ -1429,7 +1406,7 @@ function renderDaily(){
     prEl.appendChild(wrap);
   }
   $all('#dailyPriorities input').forEach(inp=>{
-    inp.addEventListener('input', e=>{ rec.priorities[Number(e.target.dataset.idx)] = e.target.value; });
+    inp.addEventListener('input', e=>{ rec.priorities[Number(e.target.dataset.idx)] = e.target.value; autoSave(); });
   });
 
   renderDailyChecklist(rec);
@@ -1446,14 +1423,14 @@ function renderDaily(){
     const drop = document.createElement('button');
     drop.className = 'water-drop' + (i<=rec.water ? ' filled':'');
     drop.textContent = '💧';
-    drop.addEventListener('click', ()=>{ rec.water = (rec.water === i) ? i-1 : i; renderDaily(); });
+    drop.addEventListener('click', ()=>{ rec.water = (rec.water === i) ? i-1 : i; autoSave(); renderDaily(); });
     waterEl.appendChild(drop);
   }
 
   const moodEl = $('#dailyMood');
   moodEl.innerHTML = MOODS.map(m=>`<button class="mood-btn ${rec.mood===m?'selected':''}" data-mood="${m}">${m}</button>`).join('');
   $all('#dailyMood .mood-btn').forEach(btn=>{
-    btn.addEventListener('click', ()=>{ rec.mood = btn.dataset.mood; renderDaily(); });
+    btn.addEventListener('click', ()=>{ rec.mood = btn.dataset.mood; autoSave(); renderDaily(); });
   });
 
   $('#dailyEnergy').value = rec.energy || 3;
@@ -1491,10 +1468,10 @@ function renderDailyChecklist(rec){
     const id = row.dataset.id;
     const task = rec.tasks.find(t=>t.id===id);
     row.querySelector('[data-action="toggle"]').addEventListener('click', ()=>{
-      task.done = !task.done; renderDailyChecklist(rec);
+      task.done = !task.done; autoSave(); renderDailyChecklist(rec);
     });
     row.querySelector('[data-action="delete"]').addEventListener('click', ()=>{
-      rec.tasks = rec.tasks.filter(t=>t.id!==id); renderDailyChecklist(rec);
+      rec.tasks = rec.tasks.filter(t=>t.id!==id); autoSave(); renderDailyChecklist(rec);
     });
   });
 }
@@ -1514,20 +1491,18 @@ function renderDailyAgenda(rec){
   $all('[data-agenda-text]', el).forEach(inp=>{
     inp.addEventListener('input', e=>{
       const item = rec.agenda.find(a=>a.id===e.target.dataset.agendaText);
-      if(item) item.text = e.target.value;
+      if(item) { item.text = e.target.value; autoSave(); }
     });
   });
   $all('[data-agenda-delete]', el).forEach(btn=>{
     btn.addEventListener('click', ()=>{
       rec.agenda = rec.agenda.filter(a=>a.id!==btn.dataset.agendaDelete);
-      renderDailyAgenda(rec);
+      autoSave(); renderDailyAgenda(rec);
     });
   });
 }
 
-/* ================================================================
-   WEEKLY PLANNER COM TREINOS DO DIA REFLETINDO NA SEMANA
-   ================================================================ */
+/* WEEKLY PLANNER */
 function renderWeekly(){
   const key = weekKey(appState.weeklyDate);
   const rec = getWeekly(key);
@@ -1535,19 +1510,18 @@ function renderWeekly(){
   const end = addDays(start,6);
   $('#weeklyLabel').textContent = `${fmtDateBR(start)} – ${fmtDateBR(end)}`;
 
-  // Treinos calculados diretamente da semana
   const autoWeekStats = computeWeekStatsUpTo(appState.weeklyDate);
 
   $('#weekMainObjective').value = rec.mainObjective||'';
-  $('#weekStudyHours').value = rec.studyHours||0;
-  $('#weekWorkouts').value = autoWeekStats.workouts; // Sincronizado automaticamente!
+  $('#weekStudyHours').value = (rec.studyHours > 0) ? rec.studyHours : autoWeekStats.studyHours;
+  $('#weekWorkouts').value = autoWeekStats.workouts;
   $('#weekBooks').value = rec.books||0;
   $('#weekWins').value = rec.wins||'';
   $('#weekChallenges').value = rec.challenges||'';
   $('#weekBestMoment').value = rec.bestMoment||'';
   $('#weekLesson').value = rec.lesson||'';
 
-  renderStarsRow($('#weekStars'), rec.stars||0, (v)=>{ rec.stars = v; renderWeekly(); });
+  renderStarsRow($('#weekStars'), rec.stars||0, (v)=>{ rec.stars = v; autoSave(); renderWeekly(); });
 
   const daysGrid = $('#weeklyDaysGrid');
   daysGrid.innerHTML = '';
@@ -1574,7 +1548,7 @@ function renderWeekly(){
       
       <div class="flex-between mt-8">
         <label class="text-sm">Treino Feito:</label>
-        <span class="badge" style="background:#FF8FB8; color:#fff;">${dayWorkoutsCount > 0 ? `🏋️ ${dayWorkoutsCount} treino(s)` : 'Nenhum'}</span>
+        <span class="badge" style="background:var(--pink-deep); color:#fff;">${dayWorkoutsCount > 0 ? `🏋️ ${dayWorkoutsCount} treino(s)` : 'Nenhum'}</span>
       </div>
       
       <label class="text-sm mt-8">Planejado</label>
@@ -1586,8 +1560,8 @@ function renderWeekly(){
           ${syncedEvents.map(ev=>`<div class="week-event-item">📌 ${escapeHTML(ev.text)}</div>`).join('')}
         </div>` : ''}
     `;
-    card.querySelector('[data-field="objectives"]').addEventListener('input', e=> dayRec.objectives = e.target.value);
-    card.querySelector('[data-field="workout"]').addEventListener('input', e=> dayRec.workout = e.target.value);
+    card.querySelector('[data-field="objectives"]').addEventListener('input', e=> { dayRec.objectives = e.target.value; autoSave(); });
+    card.querySelector('[data-field="workout"]').addEventListener('input', e=> { dayRec.workout = e.target.value; autoSave(); });
     daysGrid.appendChild(card);
   }
 }
@@ -1603,9 +1577,7 @@ function renderStarsRow(container, value, onChange){
   }
 }
 
-/* ================================================================
-   POMODORO
-   ================================================================ */
+/* POMODORO */
 function getPomodoroData(){
   if(!plannerData.pomodoro) plannerData.pomodoro = { settings:{work:25, shortBreak:5, longBreak:15, cyclesBeforeLong:4}, log:{} };
   return plannerData.pomodoro;
@@ -1688,9 +1660,7 @@ function renderPomodoroPage(){
   renderPomodoro();
 }
 
-/* ================================================================
-   MONTHLY PLANNER
-   ================================================================ */
+/* MONTHLY PLANNER */
 function renderMonthly(){
   const y = appState.monthlyDate.getFullYear();
   const m = appState.monthlyDate.getMonth();
@@ -1777,9 +1747,7 @@ function renderMonthEvents(events){
   });
 }
 
-/* ================================================================
-   HABIT TRACKER
-   ================================================================ */
+/* HABIT TRACKER */
 function habitStats(habit, refDate){
   const y = refDate.getFullYear(), m = refDate.getMonth();
   const total = daysInMonth(y,m);
@@ -1801,7 +1769,6 @@ function renderHabits(){
   const list = $('#habitsList');
   const habitIds = Object.keys(plannerData.habits);
   
-  // Overview
   const ovEl = $('#habitsOverview');
   if(!habitIds.length){
     ovEl.innerHTML = `<div class="empty-state" style="grid-column: span 3;"><div class="msg">Nenhum hábito cadastrado.</div></div>`;
@@ -1870,7 +1837,7 @@ function openHabitModal(){
   const overlay = $('#modalOverlay');
   const box = $('#modalBox');
   box.innerHTML = `
-    <div style="font-size:16px; font-weight:800; margin-bottom:12px;">Novo Hábito</div>
+    <div style="font-size:16px; font-weight:800; margin-bottom:12px; font-family:var(--font-display);">Novo Hábito</div>
     <div class="field"><label>Nome</label><input type="text" id="habitNameInput" placeholder="Ex: Ler 10 páginas"></div>
     <div class="field"><label>Categoria</label>
       <select id="habitCategoryInput">${HABIT_CATEGORIES.map(c=>`<option value="${c.id}">${c.label}</option>`).join('')}</select>
@@ -1908,9 +1875,7 @@ function renderGratitudeJournal(){
   }).join('<div class="divider"></div>');
 }
 
-/* ================================================================
-   MONTHLY REVIEW COM TREINOS E KM ACUMULADOS
-   ================================================================ */
+/* MONTHLY REVIEW */
 function renderReview(){
   const mk = monthKey(appState.reviewDate);
   const rec = getReview(mk);
@@ -1921,7 +1886,7 @@ function renderReview(){
   $('#revChallenges').value = rec.challenges||'';
   $('#revLearnings').value = rec.learnings||'';
 
-  // Carrega automaticamente o somatório real do mês!
+  // Somatório real integrado do mês
   $('#revWorkouts').value = monthActivity.workouts;
   $('#revRuns').value = monthActivity.runsKm.toFixed(1);
 
@@ -1930,7 +1895,6 @@ function renderReview(){
   $('#revWord').value = rec.word||'';
   $('#revNextGoal').value = rec.nextGoal||'';
 
-  // Gratidões do mês
   const gratEl = $('#revGratitudeSummary');
   const gratEntries = getGratitudeEntries().filter(item=> item.date.startsWith(mk));
   gratEl.innerHTML = gratEntries.length 
@@ -1938,7 +1902,7 @@ function renderReview(){
     : '<div class="text-sm">Nenhuma gratidão registrada neste mês.</div>';
 
   renderReviewBooks(rec);
-  renderStarsRow($('#revRatingStars'), rec.rating||0, v=>{ rec.rating = v; renderReview(); });
+  renderStarsRow($('#revRatingStars'), rec.rating||0, v=>{ rec.rating = v; autoSave(); renderReview(); });
 }
 
 function renderReviewBooks(rec){
@@ -1985,7 +1949,7 @@ function importJSON(file){
     try{
       plannerData = Object.assign(defaultData(), JSON.parse(e.target.result));
       saveData(true); applyThemeColors(); switchTheme(plannerData.settings.theme||'light');
-      renderCurrentPage(); showToast('Backup importado!');
+      renderCurrentPage(); showToast('Backup importado com sucesso!');
     }catch(err){ showToast('Arquivo inválido.', 'error'); }
   };
   reader.readAsText(file);
@@ -2071,10 +2035,12 @@ function bindEvents(){
     const text = input.value.trim();
     if(!text) return;
     getDaily(dateKey(appState.dailyDate)).tasks.push({id: uid(), text, done:false});
-    input.value=''; renderDailyChecklist(getDaily(dateKey(appState.dailyDate)));
+    input.value=''; autoSave(); renderDailyChecklist(getDaily(dateKey(appState.dailyDate)));
   }
 
-  $('#dailyEnergy').addEventListener('input', e=>{ $('#dailyEnergyVal').textContent = e.target.value; });
+  $('#dailyEnergy').addEventListener('input', e=>{ $('#dailyEnergyVal').textContent = e.target.value; autoSave(); });
+  $('#dailyGratitude').addEventListener('input', e=>{ getDaily(dateKey(appState.dailyDate)).gratitude = e.target.value; autoSave(); });
+  $('#dailyNotes').addEventListener('input', e=>{ getDaily(dateKey(appState.dailyDate)).notes = e.target.value; autoSave(); });
 
   $('#dailyAgendaAddBtn').addEventListener('click', ()=>{
     const time = $('#dailyAgendaTime').value.trim();
@@ -2082,26 +2048,27 @@ function bindEvents(){
     if(!time && !text) return;
     getDaily(dateKey(appState.dailyDate)).agenda.push({ id: uid(), time: time||'—', text });
     $('#dailyAgendaTime').value=''; $('#dailyAgendaText').value='';
-    renderDailyAgenda(getDaily(dateKey(appState.dailyDate)));
+    autoSave(); renderDailyAgenda(getDaily(dateKey(appState.dailyDate)));
   });
 
   $all('[data-activity-plus]').forEach(btn=>{
     btn.addEventListener('click', ()=>{
       const rec = getDaily(dateKey(appState.dailyDate));
       rec[btn.dataset.activityPlus] = (Number(rec[btn.dataset.activityPlus])||0) + 1;
-      renderDaily();
+      autoSave(); renderDaily();
     });
   });
   $all('[data-activity-minus]').forEach(btn=>{
     btn.addEventListener('click', ()=>{
       const rec = getDaily(dateKey(appState.dailyDate));
       rec[btn.dataset.activityMinus] = Math.max(0, (Number(rec[btn.dataset.activityMinus])||0) - 1);
-      renderDaily();
+      autoSave(); renderDaily();
     });
   });
   $('#dailyRunsKm').addEventListener('input', e=>{
     const rec = getDaily(dateKey(appState.dailyDate));
     rec.runs = Math.max(0, Number(e.target.value) || 0);
+    autoSave();
   });
 
   function saveDailyData(){
