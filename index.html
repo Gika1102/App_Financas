@@ -3,11 +3,11 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Início — Meu Espaço</title>
+<title>Início — Meu Espaço 🌸</title>
 <style>
   :root{
     --font-display:"Trebuchet MS","Segoe UI",Arial,sans-serif;
-    --font-body:"Segoe UI",Arial,sans-serif;
+    --font-body:"Segoe UI", -apple-system, BlinkMacSystemFont, Roboto, sans-serif;
     --bg:#fbf5ff;
     --bg2:#fef2f8;
     --card:#ffffff;
@@ -16,18 +16,18 @@
     --lilac:#e6d9ff;
     --lilac-deep:#b79cf2;
     --mint:#d3f5e3;
-    --mint-deep:#6fcf9c;
+    --mint-deep:#2e9f6b;
     --butter:#fff0c2;
-    --butter-deep:#ecb84a;
+    --butter-deep:#d99a1e;
     --peach:#ffddc9;
-    --peach-deep:#f2985f;
+    --peach-deep:#e66a29;
     --sky:#d7ecff;
-    --sky-deep:#7fbdf0;
+    --sky-deep:#4a9be0;
     --ink:#574f6b;
-    --ink-soft:#9a90ad;
-    --line:rgba(87,79,107,.09);
-    --shadow:0 5px 16px rgba(183,156,242,.10);
-    --transition:180ms ease;
+    --ink-soft:#8e849f;
+    --line:rgba(87,79,107,.08);
+    --shadow:0 4px 14px rgba(183,156,242,.08);
+    --transition:200ms ease;
   }
   [data-theme="dark"]{
     --bg:#191623;
@@ -54,104 +54,89 @@
       radial-gradient(circle at 12% 0%, rgba(255,215,230,.45), transparent 34%),
       radial-gradient(circle at 88% 8%, rgba(215,236,255,.5), transparent 34%),
       linear-gradient(180deg,var(--bg) 0%,#f8faff 100%);
-    padding:18px;
+    padding:20px 16px 40px;
     transition:background .25s ease,color .25s ease;
+    line-height:1.45;
   }
   [data-theme="dark"] body{background:var(--bg)}
   button,a{font:inherit}
-  .wrap{max-width:1120px;margin:0 auto}
-  .topbar{display:flex;justify-content:flex-end;margin-bottom:10px}
+  .wrap{max-width:1080px;margin:0 auto}
+  .topbar{display:flex;justify-content:flex-end;margin-bottom:12px}
   .icon-btn{
-    width:40px;height:40px;border:1px solid var(--line);border-radius:999px;
-    background:rgba(255,255,255,.82);color:var(--ink);cursor:pointer;box-shadow:var(--shadow)
+    width:38px;height:38px;border:1px solid var(--line);border-radius:999px;
+    background:rgba(255,255,255,.9);color:var(--ink);cursor:pointer;box-shadow:var(--shadow);
+    display:flex;align-items:center;justify-content:center;transition:transform var(--transition);
   }
+  .icon-btn:hover{transform:translateY(-1px)}
   [data-theme="dark"] .icon-btn{background:var(--card)}
+  
   .hero{
-    position:relative;overflow:hidden;text-align:center;padding:24px 20px;margin-bottom:12px;
-    background:linear-gradient(120deg,rgba(255,255,255,.94),rgba(255,231,241,.86),rgba(230,243,255,.88));
-    border:1px solid rgba(255,255,255,.8);border-radius:22px;box-shadow:var(--shadow)
+    position:relative;overflow:hidden;text-align:center;padding:26px 20px;margin-bottom:16px;
+    background:linear-gradient(120deg,rgba(255,255,255,.96),rgba(255,239,246,.90),rgba(235,246,255,.90));
+    border:1px solid rgba(255,255,255,.88);border-radius:22px;box-shadow:var(--shadow)
   }
   [data-theme="dark"] .hero{background:linear-gradient(120deg,#272231,#2b2330,#202b34);border-color:var(--line)}
-  .hero:before,.hero:after{content:"";position:absolute;border-radius:50%;opacity:.6;pointer-events:none}
+  .hero:before,.hero:after{content:"";position:absolute;border-radius:50%;opacity:.55;pointer-events:none}
   .hero:before{width:120px;height:120px;background:var(--butter);left:-35px;top:-65px}
   .hero:after{width:100px;height:100px;background:var(--lilac);right:-30px;bottom:-55px}
   .hero>*{position:relative;z-index:1}
-  .hero .logo{font-size:38px;margin-bottom:4px}
-  .hero h1{font-family:var(--font-display);font-size:1.7rem;margin:0}
-  .hero p{margin:4px 0 0;color:var(--ink-soft);font-weight:700;font-size:.9rem}
-  .overview{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin-bottom:10px}
-  .summary-card{background:rgba(255,255,255,.88);border:1px solid var(--line);border-radius:18px;padding:16px}
+  .hero .logo{font-size:36px;margin-bottom:4px}
+  .hero h1{font-family:var(--font-display);font-size:1.75rem;margin:0;letter-spacing:-0.02em}
+  .hero p{margin:4px 0 0;color:var(--ink-soft);font-weight:700;font-size:.92rem}
+
+  .overview{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px;margin-bottom:14px}
+  .summary-card{background:rgba(255,255,255,.88);border:1px solid var(--line);border-radius:20px;padding:18px;display:flex;flex-direction:column;justify-content:space-between}
   [data-theme="dark"] .summary-card{background:var(--card)}
-  .summary-head{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:12px}
-  .summary-title{font-family:var(--font-display);font-size:1.02rem;font-weight:800}
-  .summary-link{text-decoration:none;color:var(--ink-soft);font-size:.75rem;font-weight:800;padding:5px 9px;border-radius:999px;background:var(--bg2)}
-  .summary-link:hover{background:var(--lilac);color:var(--ink)}
-  .metrics{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:7px}
-  .metric{border-radius:14px;padding:10px 8px;background:var(--bg2);min-width:0}
+  .summary-head{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:14px}
+  .summary-title{font-family:var(--font-display);font-size:1.1rem;font-weight:800}
+  .summary-link{text-decoration:none;color:var(--ink-soft);font-size:.76rem;font-weight:800;padding:5px 11px;border-radius:999px;background:var(--bg2);transition:all var(--transition)}
+  .summary-link:hover{background:var(--lilac);color:var(--ink);transform:translateY(-1px)}
+  
+  .metrics{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+  .metric{border-radius:14px;padding:10px 8px;background:var(--bg2);min-width:0;text-align:center}
   .metric.pink{background:rgba(255,215,230,.45)}
   .metric.lilac{background:rgba(230,217,255,.55)}
   .metric.mint{background:rgba(211,245,227,.62)}
   .metric.sky{background:rgba(215,236,255,.62)}
   .metric.butter{background:rgba(255,240,194,.62)}
-  .metric .label{display:block;font-size:.64rem;font-weight:800;color:var(--ink-soft);text-transform:uppercase;letter-spacing:.04em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-  .metric strong{display:block;margin-top:4px;font-family:var(--font-display);font-size:1.02rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-  .metric small{display:block;margin-top:2px;color:var(--ink-soft);font-size:.67rem;font-weight:700}
-  .section-label{font-size:.72rem;color:var(--ink-soft);font-weight:800;text-transform:uppercase;letter-spacing:.08em;margin:16px 2px 8px}
-  .apps{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+  .metric .label{display:block;font-size:.65rem;font-weight:800;color:var(--ink-soft);text-transform:uppercase;letter-spacing:.04em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .metric strong{display:block;margin-top:4px;font-family:var(--font-display);font-size:1.05rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .metric small{display:block;margin-top:2px;color:var(--ink-soft);font-size:.68rem;font-weight:700}
+  
+  .empty-note{font-size:.78rem;color:var(--ink-soft);margin-top:12px;font-weight:600;display:flex;gap:6px;flex-wrap:wrap;align-items:center}
+  
+  .section-label{font-size:.72rem;color:var(--ink-soft);font-weight:800;text-transform:uppercase;letter-spacing:.08em;margin:20px 4px 10px}
+  .apps{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
   .app-card{
     text-decoration:none;color:inherit;background:rgba(255,255,255,.9);border:1px solid var(--line);
-    border-radius:20px;padding:18px;display:flex;align-items:center;gap:14px;transition:transform var(--transition),background var(--transition)
+    border-radius:20px;padding:18px;display:flex;align-items:center;gap:14px;transition:transform var(--transition),box-shadow var(--transition)
   }
   [data-theme="dark"] .app-card{background:var(--card)}
-  .app-card:hover{transform:translateY(-2px);background:#fff}
-  [data-theme="dark"] .app-card:hover{background:#2a2536}
-  .app-icon{width:48px;height:48px;border-radius:16px;display:grid;place-items:center;font-size:23px;flex:none}
+  .app-card:hover{transform:translateY(-2px);box-shadow:0 6px 18px rgba(183,156,242,.12)}
+  .app-icon{width:46px;height:46px;border-radius:15px;display:grid;place-items:center;font-size:22px;flex:none}
   .finance-icon{background:linear-gradient(135deg,var(--mint),var(--sky))}
   .life-icon{background:linear-gradient(135deg,var(--lilac),var(--pink))}
   .app-copy{min-width:0;flex:1}
-  .app-copy h2{font-family:var(--font-display);font-size:1.05rem;margin:0 0 3px}
-  .app-copy p{font-size:.8rem;color:var(--ink-soft);margin:0;line-height:1.35}
-  .arrow{font-size:1.25rem;color:var(--ink-soft);transition:transform var(--transition)}
-  .app-card:hover .arrow{transform:translateX(3px)}
-  .empty-note{font-size:.77rem;color:var(--ink-soft);margin-top:9px}
-  footer{text-align:center;color:var(--ink-soft);font-size:.74rem;margin-top:18px;padding:10px}
+  .app-copy h2{font-family:var(--font-display);font-size:1.05rem;margin:0 0 2px;font-weight:800}
+  .app-copy p{font-size:.82rem;color:var(--ink-soft);margin:0;line-height:1.35;font-weight:500}
+  .arrow{font-size:1.2rem;color:var(--ink-soft);transition:transform var(--transition);font-weight:800}
+  .app-card:hover .arrow{transform:translateX(4px);color:var(--pink-deep)}
+
+  .site-footer{
+    width:100%;margin-top:36px;padding:16px 12px;text-align:center;
+    color:var(--ink-soft);font-size:.76rem;font-weight:600;
+  }
+  .footer-dot{margin:0 6px;opacity:.5}
+
   @media(max-width:760px){
-    body{padding:12px}
+    body{padding:14px}
     .overview,.apps{grid-template-columns:1fr}
-    .metrics{grid-template-columns:repeat(3,1fr)}
     .hero{padding:20px 14px}
   }
   @media(max-width:440px){
     .metrics{grid-template-columns:1fr 1fr}
     .metric:last-child{grid-column:1/-1}
   }
-  .site-footer{
-  width:100%;
-  max-width:900px;
-  margin-top:42px;
-  padding:16px 12px 6px;
-  text-align:center;
-  color:var(--ink-soft);
-  font-size:12px;
-  font-weight:600;
-}
-
-.footer-dot{
-  margin:0 6px;
-  opacity:.55;
-}
-
-@media (max-width:480px){
-  .site-footer{
-    display:flex;
-    flex-direction:column;
-    gap:3px;
-  }
-
-  .footer-dot{
-    display:none;
-  }
-}
 </style>
 </head>
 <body data-theme="light">
@@ -165,6 +150,7 @@
   </header>
 
   <div class="overview">
+    <!-- CARD FINANÇAS -->
     <section class="summary-card">
       <div class="summary-head">
         <div class="summary-title">💰 Finanças</div>
@@ -172,12 +158,13 @@
       </div>
       <div class="metrics">
         <div class="metric mint"><span class="label">saldo em conta</span><strong id="homeBalance">—</strong><small id="homeBalanceSub">agora</small></div>
-        <div class="metric sky"><span class="label">faturas</span><strong id="homeInvoices">—</strong><small>dia 01 + dia 15</small></div>
-        <div class="metric lilac"><span class="label">investido</span><strong id="homeInvested">—</strong><small>patrimônio aplicado</small></div>
+        <div class="metric sky"><span class="label">faturas em aberto</span><strong id="homeInvoices">—</strong><small>dia 01 + dia 15</small></div>
+        <div class="metric lilac"><span class="label">investido</span><strong id="homeInvested">—</strong><small>total aplicado</small></div>
       </div>
       <div class="empty-note" id="financeNote"></div>
     </section>
 
+    <!-- CARD LIFE DASHBOARD -->
     <section class="summary-card">
       <div class="summary-head">
         <div class="summary-title">🌸 Life Dashboard</div>
@@ -196,12 +183,12 @@
   <div class="apps">
     <a class="app-card" href="financas.html">
       <div class="app-icon finance-icon">💰</div>
-      <div class="app-copy"><h2>Finanças</h2><p>Gastos, receitas, faturas, investimentos e metas.</p></div>
+      <div class="app-copy"><h2>Finanças</h2><p>Gastos, receitas, faturas, rateios e investimentos.</p></div>
       <div class="arrow">→</div>
     </a>
     <a class="app-card" href="life-dashboard.html">
       <div class="app-icon life-icon">🌸</div>
-      <div class="app-copy"><h2>Life Dashboard</h2><p>Rotina, hábitos, foco, planejamento semanal e mensal.</p></div>
+      <div class="app-copy"><h2>Life Dashboard</h2><p>Rotina, hábitos, treinos, foco, visão semanal e mensal.</p></div>
       <div class="arrow">→</div>
     </a>
   </div>
@@ -209,7 +196,7 @@
   <footer class="site-footer">
     <span>feito com carinho para sua vida florescer 🌷✨</span>
     <span class="footer-dot">·</span>
-    <span>meu espaço pessoal</span>
+    <span>meu ecossistema pessoal</span>
   </footer>
 </div>
 
@@ -219,6 +206,7 @@
   const THEME_KEY='homeThemePref';
   const FINANCE_KEY='finance-state-cute';
   const LIFE_KEY='lifeDashboardData_v1';
+  
   const money=new Intl.NumberFormat('pt-BR',{style:'currency',currency:'BRL',maximumFractionDigits:0});
   const $=id=>document.getElementById(id);
   const pad2=n=>String(n).padStart(2,'0');
@@ -242,69 +230,106 @@
     try{const raw=localStorage.getItem(key);return raw?JSON.parse(raw):null}catch(e){return null}
   }
 
-  function isReimbursable(t){return t&&t.type==='expense'&&(t.ownerType==='reimbursable'||t.category==='Reembolso')}
-  function isThirdParty(t){return t&&t.type==='expense'&&!!t.debtor}
+  /* SINCRONIA FINANCEIRA */
   function transactionCashImpact(t){
-    if(!t)return 0;
-    if(t.category==='Vale-Refeição'||t.type==='offset')return 0;
-    if(t.type==='expense'&&t.paymentMethod==='credito')return 0;
+    if(!t) return 0;
+    if(t.category==='Vale-Refeição') return 0;
+    if(t.type==='expense' && t.paymentMethod==='credito') return 0;
     const amount=Math.abs(Number(t.amount||0));
+    if(t.type==='invoice_payment' || t.type==='offset') return -amount;
     return ['income','withdrawal'].includes(t.type)?amount:-amount;
   }
-  function invoiceTotal(state,month,day){
-    const tx=Array.isArray(state.tx)?state.tx:[];
-    const credit=tx.filter(t=>t.type==='expense'&&(t.paymentMethod||'')==='credito'&&(t.faturaDay||'01')===day&&String(t.date||'').slice(0,7)===month);
-    const gross=credit.reduce((s,t)=>s+Math.abs(Number(t.amount||0)),0);
-    const offset=tx.filter(t=>t.type==='offset'&&(t.faturaDay||'01')===day&&String(t.date||'').slice(0,7)===month).reduce((s,t)=>s+Math.abs(Number(t.amount||0)),0);
-    return Math.max(0,gross-offset);
+
+  function getOpenInvoiceTotal(state, month, faturaDay){
+    const tx = Array.isArray(state.tx) ? state.tx : [];
+    const creditTx = tx.filter(t => t.type==='expense' && t.paymentMethod==='credito' && (t.faturaDay||'01')===faturaDay && String(t.date||'').slice(0,7)===month);
+    const gross = creditTx.reduce((s,t)=>s+Math.abs(Number(t.amount||0)), 0);
+    const offset = tx.filter(t => t.type==='offset' && (t.faturaDay||'01')===faturaDay && String(t.date||'').slice(0,7)===month).reduce((s,t)=>s+Math.abs(Number(t.amount||0)), 0);
+    const paid = tx.filter(t => t.type==='invoice_payment' && (t.faturaDay||'01')===faturaDay && (t.invoiceMonth||String(t.date||'').slice(0,7))===month).reduce((s,t)=>s+Math.abs(Number(t.amount||0)), 0);
+    const totalGross = Math.max(0, gross - offset);
+    return Math.max(0, totalGross - paid);
   }
 
   function renderFinance(){
     const state=parseStorage(FINANCE_KEY);
-    if(!state){$('financeNote').textContent='Abra o app de Finanças e registre seus dados para ver o resumo aqui.';return}
+    if(!state){
+      $('homeBalance').textContent='—';
+      $('homeInvoices').textContent='—';
+      $('homeInvested').textContent='—';
+      $('financeNote').textContent='Abra o app de Finanças para sincronizar seus dados.';
+      return;
+    }
     const tx=Array.isArray(state.tx)?state.tx:[];
     const today=dateKey(new Date());
     const month=today.slice(0,7);
+
     const balance=Number(state.patrimonio||0)+tx.filter(t=>!t.date||t.date<=today).reduce((s,t)=>s+transactionCashImpact(t),0);
-    const invoices=invoiceTotal(state,month,'01')+invoiceTotal(state,month,'15');
+    const openInvoices=getOpenInvoiceTotal(state,month,'01')+getOpenInvoiceTotal(state,month,'15');
     const invested=(Array.isArray(state.investments)?state.investments:[]).reduce((s,i)=>s+Math.max(0,Number(i.current||0)),0);
+
     $('homeBalance').textContent=money.format(balance);
-    $('homeInvoices').textContent=money.format(invoices);
+    $('homeInvoices').textContent=money.format(openInvoices);
     $('homeInvested').textContent=money.format(invested);
-    $('financeNote').textContent=state.updatedAt?`última atualização: ${new Date(state.updatedAt).toLocaleString('pt-BR',{dateStyle:'short',timeStyle:'short'})}`:'';
+    $('financeNote').textContent=state.updatedAt?`última alteração: ${new Date(state.updatedAt).toLocaleString('pt-BR',{dateStyle:'short',timeStyle:'short'})}`:'';
   }
 
+  /* SINCRONIA LIFE DASHBOARD */
   function renderLife(){
     const data=parseStorage(LIFE_KEY);
-    if(!data){$('lifeNote').textContent='Abra o Life Dashboard e registre seu dia para ver o resumo aqui.';return}
+    if(!data){
+      $('homeTasks').textContent='—';
+      $('homeHabits').textContent='—';
+      $('homeFocus').textContent='—';
+      $('lifeNote').textContent='Abra o Life Dashboard para registrar sua rotina.';
+      return;
+    }
     const today=dateKey(new Date());
     const daily=(data.daily&&data.daily[today])||{};
+    
+    // Tarefas
     const tasks=Array.isArray(daily.tasks)?daily.tasks:[];
     const done=tasks.filter(t=>t.done).length;
     $('homeTasks').textContent=`${done}/${tasks.length}`;
-    $('homeTasksSub').textContent=tasks.length?`${Math.round(done/tasks.length*100)}% concluído`:'nenhuma tarefa';
+    $('homeTasksSub').textContent=tasks.length?`${Math.round((done/tasks.length)*100)}% concluído`:'nenhuma tarefa';
 
+    // Hábitos
     const habits=data.habits&&typeof data.habits==='object'?Object.values(data.habits):[];
     const habitsDone=habits.filter(h=>h&&h.completions&&h.completions[today]).length;
-    $('homeHabits').textContent=habits.length?`${Math.round(habitsDone/habits.length*100)}%`:'0%';
+    $('homeHabits').textContent=habits.length?`${Math.round((habitsDone/habits.length)*100)}%`:'0%';
 
+    // Pomodoro (converte segundos ou minutos)
     const sessions=data.pomodoro&&data.pomodoro.log&&Array.isArray(data.pomodoro.log[today])?data.pomodoro.log[today]:[];
-    const focusMin=sessions.reduce((s,item)=>s+Math.max(0,Number(item.minutes||0)),0);
-    $('homeFocus').textContent=focusMin>=60?`${Math.floor(focusMin/60)}h ${focusMin%60}m`:`${focusMin} min`;
+    const totalSecs=sessions.reduce((s,item)=> s + (Number(item.durationSeconds) || Math.round((Number(item.minutes)||0)*60)), 0);
+    const focusMin=Math.round(totalSecs/60);
+    $('homeFocus').textContent=focusMin>=60 ? `${Math.floor(focusMin/60)}h ${focusMin%60}m` : `${focusMin} min`;
+
+    // Treinos & Extras do Dia
+    const strength=Number(daily.strengthWorkouts)||0;
+    const pilates=Number(daily.pilatesWorkouts)||0;
+    const runsKm=Number(daily.runs)||0;
+    const totalWorkouts=strength + pilates + (runsKm > 0 ? 1 : 0);
 
     const water=Number(daily.water||0);
     const energy=Number(daily.energy||0);
+    
     const extras=[];
-    if(water)extras.push(`💧 ${water}/8`);
-    if(energy)extras.push(`⚡ energia ${energy}/5`);
-    $('lifeNote').textContent=extras.length?extras.join(' · '):'seu resumo de hoje aparece aqui conforme você usa o app.';
+    if(totalWorkouts > 0) extras.push(`🏋️ ${totalWorkouts} treino${totalWorkouts>1?'s':''}`);
+    if(runsKm > 0) extras.push(`🏃 ${runsKm.toFixed(1)} km`);
+    if(water > 0) extras.push(`💧 ${water}/8`);
+    if(energy > 0) extras.push(`⚡ energia ${energy}/5`);
+    
+    $('lifeNote').textContent=extras.length ? extras.join(' · ') : 'seu resumo do dia aparece aqui conforme você usa o planner.';
   }
 
-  renderFinance();
-  renderLife();
+  function renderAll(){
+    renderFinance();
+    renderLife();
+  }
 
-  window.addEventListener('storage',()=>{renderFinance();renderLife()});
-  window.addEventListener('focus',()=>{renderFinance();renderLife()});
+  renderAll();
+
+  window.addEventListener('storage', renderAll);
+  window.addEventListener('focus', renderAll);
 })();
 </script>
 </body>
