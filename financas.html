@@ -1227,15 +1227,70 @@ function debtorCard(d,i){
 }
 
 function renderDebtTable(){
-  const rows = state.tx.filter(t=>isThirdParty(t)).sort((a,b)=>(b.date||'').localeCompare(a.date||''));
+  const rows = state.tx.filter(t => isThirdParty(t)).sort((a,b) => (b.date||'').localeCompare(a.date||''));
   const container = document.getElementById('debtTable');
-  if(!rows.length){ container.innerHTML = '<div class="empty">nenhuma compra atribuída a alguém ainda ✨</div>'; return; }
-  container.innerHTML = `<div style="overflow-x:auto;"><table class="installment-table"><thead><tr><th>compra</th><th>pessoa</th><th>valor</th><th>data</th></tr></thead><tbody>${rows.map(t=>{
-    const d = state.debtors.find(x=>x.name===t.debtor);
-    const dl = t.date ? new Date(`${t.date}T12:00:00`).toLocaleDateString('pt-BR') : 'sem data';
-    const status = getReimbursementStatus(t);
-    return `<tr><td><strong>${t.desc}</strong><span class="muted" style="font-size:.74rem;">${status.paid>0 ? `recebido ${money.format(status.paid)} · falta ${money.format(status.remaining)}` : 'em aberto'}</span></td><td>${d?.emoji||'🙋'} ${t.debtor}</td><td>${money.format(Math.abs(t.amount))}</td><td>${dl}</td></tr>`;
-  }).join('')}</tbody></table></div>`;
+  
+  if(!rows.length){ 
+    container.innerHTML = '<div class="empty">nenhuma compra atribuída a alguém ainda ✨</div>'; 
+    return; 
+  }
+  
+  container.innerHTML = `
+    <div style="overflow-x:auto; margin-top:6px;">
+      <table class="installment-table" style="width:100%;">
+        <thead>
+          <tr>
+            <th style="min-width:180px;">Compra</th>
+            <th>Pessoa</th>
+            <th style="text-align:right;">Valor</th>
+            <th style="text-align:center;">Data</th>
+            <th style="text-align:center;">Status</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${rows.map(t => {
+            const d = state.debtors.find(x => x.name === t.debtor);
+            const dl = t.date ? new Date(`${t.date}T12:00:00`).toLocaleDateString('pt-BR') : 'sem data';
+            const status = getReimbursementStatus(t);
+            
+            // Badge de status
+            const isPaid = status.paid >= status.gross && status.gross > 0;
+            const isPartial = status.paid > 0 && !isPaid;
+            
+            const badgeClass = isPaid ? 'reimbursement-status paid' : (isPartial ? 'reimbursement-status partial' : 'reimbursement-status pending');
+            const badgeText = isPaid 
+              ? '✓ quitado' 
+              : (isPartial ? `pago ${money.format(status.paid)}` : 'em aberto');
+
+            return `
+              <tr>
+                <td>
+                  <div style="font-weight:800; color:var(--ink); font-size:.92rem; margin-bottom:2px;">
+                    ${t.desc}
+                  </div>
+                  ${t.installment ? `<span class="tx-chip tx-chip-muted" style="font-size:.68rem; padding:2px 6px;">🧾 ${t.installment}</span>` : ''}
+                </td>
+                <td>
+                  <span style="font-weight:700; font-size:.88rem;">
+                    ${d?.emoji || '🙋'} ${t.debtor}
+                  </span>
+                </td>
+                <td style="text-align:right; font-family:var(--font-display); font-weight:800; color:var(--peach-deep); font-size:.95rem;">
+                  ${money.format(Math.abs(t.amount))}
+                </td>
+                <td style="text-align:center; font-size:.82rem; color:var(--ink-soft); font-weight:600; white-space:nowrap;">
+                  ${dl}
+                </td>
+                <td style="text-align:center; white-space:nowrap;">
+                  <span class="${badgeClass}" style="font-size:.72rem;">${badgeText}</span>
+                </td>
+              </tr>
+            `;
+          }).join('')}
+        </tbody>
+      </table>
+    </div>
+  `;
 }
 
 function renderDebtors(){
