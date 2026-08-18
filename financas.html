@@ -749,9 +749,6 @@ function getCycleBounds(cycle){
   return { start: `${prefix}-${String(startDay).padStart(2,'0')}`, end: `${prefix}-${String(endDay).padStart(2,'0')}` };
 }
 
-/* ==========================================================================
-   ALTERAÇÃO 1: Abatimento de fatura (offset) agora debita do saldo da conta
-   ========================================================================== */
 function transactionCashImpact(t){
   if(t.category==='Vale-Refeição') return 0;
   if(t.type==='expense' && t.paymentMethod==='credito') return 0;
@@ -761,20 +758,29 @@ function transactionCashImpact(t){
 }
 
 function getCycleSummary(cycleName){
-  const cycle = state.cycles.find(c=>c.name===cycleName);
+  const cycle = state.cycles.find(c => c.name === cycleName);
   const bounds = getCycleBounds(cycle);
-  const cycleTx = state.tx.filter(t=>{
-    const belongs = t.cycle===cycleName || (cycleName&&cycleName.startsWith(t.cycle+' · ')) || (!t.cycle&&!t.date&&cycleName===cycle?.name);
-    return belongs && (!bounds || !t.date || (t.date>=bounds.start && t.date<=bounds.end));
+  
+  const cycleTx = state.tx.filter(t => {
+    const belongs = t.cycle === cycleName || (cycleName && cycleName.startsWith(t.cycle + ' · ')) || (!t.cycle && !t.date && cycleName === cycle?.name);
+    return belongs && (!bounds || !t.date || (t.date >= bounds.start && t.date <= bounds.end));
   });
-  const income = cycleTx.filter(t=>['income','withdrawal'].includes(t.type)).reduce((s,t)=>s+Math.abs(Number(t.amount||0)),0);
-  const bills = cycleTx.filter(t=>t.type==='expense'&&t.category==='Compromissos').reduce((s,t)=>s+Math.abs(Number(t.amount||0)),0);
-  const spend = cycleTx.filter(t=>t.type==='expense'&&t.category!=='Compromissos'&&!isThirdParty(t)).reduce((s,t)=>s+Math.abs(Number(t.amount||0)),0);
-  const invest = cycleTx.filter(t=>t.type==='investment').reduce((s,t)=>s+Math.abs(Number(t.amount||0)),0);
-  const offset = cycleTx.filter(t=>t.type==='offset').reduce((s,t)=>s+Math.abs(Number(t.amount||0)),0);
-  const thirdParty = cycleTx.filter(t=>isThirdParty(t)).reduce((s,t)=>s+Math.abs(Number(t.amount||0)),0);
-  const reimbursable = cycleTx.filter(t=>isReimbursable(t)).reduce((s,t)=>s+Math.abs(Number(t.amount||0)),0);
-  return {income, bills, spend, invest, offset, thirdParty, reimbursable, tx:cycleTx};
+  
+  const income = cycleTx.filter(t => ['income','withdrawal'].includes(t.type)).reduce((s,t) => s + Math.abs(Number(t.amount||0)), 0);
+  
+  const cashOutflow = cycleTx.filter(t => {
+    if (t.type === 'expense' && t.paymentMethod !== 'credito') return true;
+    if (t.type === 'invoice_payment' || t.type === 'offset') return true;
+    if (t.type === 'investment') return true;
+    return false;
+  }).reduce((s,t) => s + Math.abs(Number(t.amount||0)), 0);
+
+  const ownSpend = cycleTx.filter(isOwnSpend).reduce((s,t) => s + Math.abs(Number(t.amount||0)), 0);
+  const thirdParty = cycleTx.filter(isThirdParty).reduce((s,t) => s + Math.abs(Number(t.amount||0)), 0);
+  const reimbursable = cycleTx.filter(isReimbursable).reduce((s,t) => s + Math.abs(Number(t.amount||0)), 0);
+  const invest = cycleTx.filter(t => t.type === 'investment').reduce((s,t) => s + Math.abs(Number(t.amount||0)), 0);
+
+  return { income, cashOutflow, ownSpend, thirdParty, reimbursable, invest, tx: cycleTx };
 }
 
 function getCycleCarry(cycle){
@@ -817,10 +823,11 @@ function calcMood(){
   const now = new Date();
   const today = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}-${String(now.getDate()).padStart(2,'0')}`;
   const currentCycleName = getCycleForDate(today);
-  const {income,bills,spend,invest,offset} = getCycleSummary(currentCycleName);
+  const {income, cashOutflow} = getCycleSummary(currentCycleName);
   const currentCycle = state.cycles.find(c=>c.name===currentCycleName);
-  const available = getCycleCarry(currentCycle) + income - offset - bills - spend - invest;
-  const cycleScore = available>=0 ? 0.6 + 0.4*Math.min(1, available/Math.max(1,income)) : Math.max(0, 0.6*(1 + available/Math.max(1,income)));
+  const available = getCycleCarry(currentCycle) + income - cashOutflow;
+  const totalFunds = Math.max(1, getCycleCarry(currentCycle) + income);
+  const cycleScore = available>=0 ? 0.6 + 0.4*Math.min(1, available/totalFunds) : Math.max(0, 0.6*(1 + available/totalFunds));
   const overBudget = state.budgets.filter(b=>getBudgetSpent(b) > Number(b.cap||0)).length;
   const budgetScore = state.budgets.length ? 1 - overBudget/state.budgets.length : 1;
   return Math.max(0, Math.min(10, (cycleScore*0.65 + budgetScore*0.35)*10));
@@ -989,9 +996,6 @@ function renderVisuals(){
   document.getElementById('creditCardChart').innerHTML = `<div class="chart-legend"><span><i class="legend-dot" style="background:var(--sky-deep);"></i>seu gasto</span><span><i class="legend-dot" style="background:var(--butter-deep);"></i>reembolsável</span><span><i class="legend-dot" style="background:var(--peach-deep);"></i>de terceiros</span></div>${renderCardGroup('🗓️ fatura dia 01','01',buildCardBreakdown('01'))}${renderCardGroup('🗓️ fatura dia 15','15',buildCardBreakdown('15'))}`;
 }
 
-/* ==========================================================================
-   ALTERAÇÃO 3: Leitura rápida acompanha o mês selecionado no dashboard
-   ========================================================================== */
 function renderDashboardInsights(){
   const currentMonth = getDashboardMonth();
   const [year,month] = currentMonth.split('-').map(Number);
@@ -1074,13 +1078,74 @@ function getCycleLabel(cycle){
 }
 
 function cycleCard(c,i){
-  const {income,bills,spend,invest,offset,thirdParty,reimbursable,tx:cycleTx} = getCycleSummary(c.name);
+  const {income, cashOutflow, ownSpend, thirdParty, reimbursable, tx:cycleTx} = getCycleSummary(c.name);
   const carry = getCycleCarry(c);
-  const available = carry + income - offset - bills - spend - invest;
-  const ownSpend = cycleTx.filter(isOwnSpend).reduce((s,t)=>s+Math.abs(Number(t.amount||0)),0);
-  const p = pct(ownSpend, income);
-  const txPreview = cycleTx.slice(-3).map(t=>`<div class="tx-item"><div><div style="font-weight:700;font-size:.88rem;">${t.type==='income'?'✨':t.type==='offset'?'✂️':isThirdParty(t)?'🤝':'💸'} ${t.desc}</div><div class="muted" style="font-size:.74rem;">${t.date?new Date(`${t.date}T12:00:00`).toLocaleDateString('pt-BR'):'sem data'}</div></div><div style="font-weight:800;color:${t.type==='income'?'var(--mint-deep)':'var(--peach-deep)'};font-size:.88rem;">${t.type==='income'?'+':'-'}${money.format(Math.abs(t.amount))}</div></div>`).join('');
-  return `<div class="card"><div class="row between"><p class="display" style="margin:0;font-size:1.05rem;">${c.emoji||'🔁'} ${getCycleLabel(c)}</p><button class="btn-text" data-edit-cycle="${i}">editar ✏️</button></div><div class="row between" style="margin-top:10px;"><span class="muted">saldo do ciclo</span><strong style="color:${available>=0?'var(--mint-deep)':'var(--peach-deep)'}">${money.format(available)}</strong></div><div class="muted" style="margin-top:4px;font-size:.8rem;">veio do ciclo anterior: ${money.format(carry)}</div><div class="bar-track" style="margin-top:8px;"><div class="bar-fill ${fillClass(p)}" style="width:${p}%"></div></div><div class="row between" style="margin-top:10px;font-size:.8rem;color:var(--ink-soft);"><span>entradas: ${money.format(income)}</span><span>seu gasto: ${money.format(ownSpend)}</span></div><div class="cashflow-summary"><div class="mini-metric"><span class="small">🤝 terceiros</span><strong>${money.format(thirdParty)}</strong></div><div class="mini-metric"><span class="small">↩️ reembolsável</span><strong>${money.format(reimbursable)}</strong></div></div><div style="margin-top:12px;"><div class="eyebrow" style="margin-bottom:6px;">lançamentos recentes</div>${cycleTx.length?txPreview:'<div class="empty" style="padding:4px 0;">nenhum lançamento</div>'}</div><div class="edit-panel hidden" id="cycleEdit${i}"><div class="row between" style="gap:8px;flex-wrap:wrap;"><input data-cycle="${i}" data-field="name" value="${c.name}" placeholder="nome" style="max-width:60%;"/><input data-cycle="${i}" data-field="month" type="month" value="${c.month||''}" style="max-width:38%;min-width:130px;"/><button class="btn-text" style="color:var(--peach-deep)" data-del-cycle="${i}">remover 🗑️</button></div></div></div>`;
+  const available = carry + income - cashOutflow;
+  const totalFunds = Math.max(1, carry + income);
+  const p = pct(cashOutflow, totalFunds);
+
+  const txPreview = cycleTx.slice(-3).map(t => `
+    <div class="tx-item">
+      <div>
+        <div style="font-weight:700;font-size:.88rem;">
+          ${t.type==='income'?'✨':t.type==='offset'?'✂️':t.type==='invoice_payment'?'💳':isThirdParty(t)?'🤝':'💸'} ${t.desc}
+        </div>
+        <div class="muted" style="font-size:.74rem;">
+          ${t.date ? new Date(`${t.date}T12:00:00`).toLocaleDateString('pt-BR') : 'sem data'}
+        </div>
+      </div>
+      <div style="font-weight:800;color:${t.type==='income'?'var(--mint-deep)':'var(--peach-deep)'};font-size:.88rem;">
+        ${t.type==='income'?'+':'-'}${money.format(Math.abs(t.amount))}
+      </div>
+    </div>
+  `).join('');
+
+  return `
+    <div class="card">
+      <div class="row between">
+        <p class="display" style="margin:0;font-size:1.05rem;">${c.emoji||'🔁'} ${getCycleLabel(c)}</p>
+        <button class="btn-text" data-edit-cycle="${i}">editar ✏️</button>
+      </div>
+      
+      <div class="row between" style="margin-top:10px;">
+        <span class="muted">saldo do ciclo</span>
+        <strong style="color:${available>=0?'var(--mint-deep)':'var(--peach-deep)'}; font-size:1.1rem;">
+          ${money.format(available)}
+        </strong>
+      </div>
+      
+      <div class="muted" style="margin-top:4px;font-size:.8rem;">
+        veio do ciclo anterior: ${money.format(carry)}
+      </div>
+      
+      <div class="bar-track" style="margin-top:8px;">
+        <div class="bar-fill ${fillClass(p)}" style="width:${p}%"></div>
+      </div>
+      
+      <div class="row between" style="margin-top:10px;font-size:.8rem;color:var(--ink-soft);">
+        <span>entradas: ${money.format(income)}</span>
+        <span>saídas em conta: ${money.format(cashOutflow)}</span>
+      </div>
+      
+      <div class="cashflow-summary">
+        <div class="mini-metric"><span class="small">🤝 terceiros</span><strong>${money.format(thirdParty)}</strong></div>
+        <div class="mini-metric"><span class="small">↩️ reembolsável</span><strong>${money.format(reimbursable)}</strong></div>
+      </div>
+      
+      <div style="margin-top:12px;">
+        <div class="eyebrow" style="margin-bottom:6px;">lançamentos recentes</div>
+        ${cycleTx.length ? txPreview : '<div class="empty" style="padding:4px 0;">nenhum lançamento</div>'}
+      </div>
+      
+      <div class="edit-panel hidden" id="cycleEdit${i}">
+        <div class="row between" style="gap:8px;flex-wrap:wrap;">
+          <input data-cycle="${i}" data-field="name" value="${c.name}" placeholder="nome" style="max-width:60%;"/>
+          <input data-cycle="${i}" data-field="month" type="month" value="${c.month||''}" style="max-width:38%;min-width:130px;"/>
+          <button class="btn-text" style="color:var(--peach-deep)" data-del-cycle="${i}">remover 🗑️</button>
+        </div>
+      </div>
+    </div>
+  `;
 }
 
 function renderCycles(){
@@ -1150,14 +1215,52 @@ function renderCurrentCycle(){
   const now = new Date();
   const today = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}-${String(now.getDate()).padStart(2,'0')}`;
   const cycleName = getCycleForDate(today);
-  const cycle = state.cycles.find(c=>c.name===cycleName);
+  const cycle = state.cycles.find(c => c.name === cycleName);
   const target = document.getElementById('currentCycleCard');
-  if(!cycle){ target.innerHTML = '<div class="empty">nenhum ciclo identificado para hoje 🌱</div>'; return; }
-  const {income,bills,spend,invest,offset,thirdParty,reimbursable} = getCycleSummary(cycle.name);
+  
+  if(!cycle){ 
+    target.innerHTML = '<div class="empty">nenhum ciclo identificado para hoje 🌱</div>'; 
+    return; 
+  }
+  
+  const { income, cashOutflow, thirdParty, reimbursable } = getCycleSummary(cycle.name);
   const carry = getCycleCarry(cycle);
-  const available = carry + income - offset - bills - spend - invest;
-  const progress = pct(spend, income);
-  target.innerHTML = `<div class="row between"><p class="display" style="margin:0;font-size:1.1rem;">${cycle.emoji||'🔁'} ciclo atual: ${getCyclePeriod(today,cycle)}</p><span class="eyebrow">hoje</span></div><div class="row between" style="margin-top:8px;"><span class="muted">saldo do ciclo</span><strong style="color:${available>=0?'var(--mint-deep)':'var(--peach-deep)'};font-size:1.1rem;">${money.format(available)}</strong></div><div class="muted" style="margin-top:2px;font-size:.78rem;">saldo do ciclo anterior: ${money.format(carry)}</div><div class="bar-track" style="margin-top:8px;"><div class="bar-fill ${fillClass(progress)}" style="width:${progress}%"></div></div><div class="row between" style="margin-top:8px;font-size:.85rem;color:var(--ink-soft);"><span>entradas: ${money.format(income)}</span><span>seu gasto: ${money.format(spend)}</span></div><div class="cashflow-summary"><div class="mini-metric"><span class="small">🤝 terceiros</span><strong>${money.format(thirdParty)}</strong></div><div class="mini-metric"><span class="small">↩️ reembolsável</span><strong>${money.format(reimbursable)}</strong></div></div>`;
+  const available = carry + income - cashOutflow;
+  
+  const totalFunds = Math.max(1, carry + income);
+  const progress = pct(cashOutflow, totalFunds);
+
+  target.innerHTML = `
+    <div class="row between">
+      <p class="display" style="margin:0;font-size:1.1rem;">${cycle.emoji||'🔁'} ciclo atual: ${getCyclePeriod(today,cycle)}</p>
+      <span class="eyebrow">hoje</span>
+    </div>
+    
+    <div class="row between" style="margin-top:8px;">
+      <span class="muted">saldo do ciclo</span>
+      <strong style="color:${available>=0?'var(--mint-deep)':'var(--peach-deep)'};font-size:1.1rem;">
+        ${money.format(available)}
+      </strong>
+    </div>
+    
+    <div class="muted" style="margin-top:2px;font-size:.78rem;">
+      saldo do ciclo anterior: ${money.format(carry)}
+    </div>
+    
+    <div class="bar-track" style="margin-top:8px;">
+      <div class="bar-fill ${fillClass(progress)}" style="width:${progress}%"></div>
+    </div>
+    
+    <div class="row between" style="margin-top:8px;font-size:.85rem;color:var(--ink-soft);">
+      <span>entradas: ${money.format(income)}</span>
+      <span>saídas em conta: ${money.format(cashOutflow)}</span>
+    </div>
+    
+    <div class="cashflow-summary">
+      <div class="mini-metric"><span class="small">🤝 terceiros</span><strong>${money.format(thirdParty)}</strong></div>
+      <div class="mini-metric"><span class="small">↩️ reembolsável</span><strong>${money.format(reimbursable)}</strong></div>
+    </div>
+  `;
 }
 
 function budgetCard(b,i){
@@ -1253,7 +1356,6 @@ function renderDebtTable(){
             const dl = t.date ? new Date(`${t.date}T12:00:00`).toLocaleDateString('pt-BR') : 'sem data';
             const status = getReimbursementStatus(t);
             
-            // Badge de status
             const isPaid = status.paid >= status.gross && status.gross > 0;
             const isPartial = status.paid > 0 && !isPaid;
             
@@ -1358,9 +1460,6 @@ function txRow(t,idx,removable){
   return `<div class="tx-card"><div class="tx-meta"><div class="row gap8" style="flex-wrap:wrap;"><span class="tx-chip">${label}</span><span class="tx-chip tx-chip-muted">${t.category||'sem categoria'}</span>${isThirdParty(t)?'<span class="debt-tag">fora do seu orçamento</span>':''}</div><div class="tx-title">${t.desc}</div><div class="muted">${dateLabel}${ownerText}${t.cycle ? ' • '+t.cycle : ''}</div>${t.type==='expense'&&t.bank ? `<div class="muted">🏦 ${t.bank}</div>` : ''}${t.type==='expense' ? `<div class="muted">${t.paymentMethod==='credito' ? `💳 cartão · fatura dia ${t.faturaDay||'01'}` : '🏦 débito / conta'}</div>` : ''}${t.type==='expense'&&t.installment ? `<div class="muted">🧾 ${t.installment}</div>` : ''}${reimbursementBadge(t)}${isReimbursable(t)&&reimbursementInfo?.paid>0 ? `<div class="muted">↳ ${reimbursementInfo.paid>=reimbursementInfo.gross ? 'cobertura total' : 'reembolso parcial'}</div>` : ''}</div><div class="tx-actions"><div class="tx-amount" style="color:${color};">${sign}${money.format(Math.abs(t.amount))}</div>${removable ? `<div class="row gap8"><button class="btn-text" data-edit-tx="${idx}">editar</button><button class="btn-text" data-del="${idx}">remover</button></div>` : ''}</div></div>${removable ? `<div class="edit-panel hidden" id="txEdit${idx}"><div class="stat-row" style="grid-template-columns:1fr 1fr;"><label><span class="eyebrow">descrição</span><input data-edit-field="desc" value="${t.desc||''}" /></label><label><span class="eyebrow">valor</span><input data-edit-field="amount" type="number" step="0.01" value="${Math.abs(Number(t.amount||0))}" /></label><label><span class="eyebrow">tipo</span><select data-edit-field="type"><option value="expense" ${t.type==='expense'?'selected':''}>Gasto</option><option value="income" ${t.type==='income'?'selected':''}>Receita</option><option value="investment" ${t.type==='investment'?'selected':''}>Investimento</option><option value="withdrawal" ${t.type==='withdrawal'?'selected':''}>Saque</option><option value="offset" ${t.type==='offset'?'selected':''}>Abatimento</option><option value="invoice_payment" ${t.type==='invoice_payment'?'selected':''}>Pagamento de fatura</option></select></label><label><span class="eyebrow">data</span><input data-edit-field="date" type="date" value="${t.date||''}" /></label></div><label style="display:block;margin-top:8px;"><span class="eyebrow">categoria</span><select data-edit-field="category">${categoryOptions}</select></label><div class="stat-row" style="grid-template-columns:1fr 1fr;margin-top:8px;"><label><span class="eyebrow">banco / cartão</span><input data-edit-field="bank" value="${t.bank||''}" /></label><label><span class="eyebrow">parcela</span><input data-edit-field="installment" value="${t.installment||''}" placeholder="ex.: 1 de 12" /></label></div><div class="row" style="justify-content:flex-end;gap:10px;margin-top:12px;"><button class="btn-text" data-cancel-edit-tx="${idx}">cancelar</button><button class="btn btn-pink" data-save-tx="${idx}">salvar</button></div></div>` : ''}`;
 }
 
-/* ==========================================================================
-   ALTERAÇÃO 2: Pesquisa em Lançamentos por Nome e por Valor Numérico
-   ========================================================================== */
 function renderTx(){
   const recent = [...state.tx].map((t,idx)=>({t,idx})).reverse();
   const type = document.getElementById('txFilterType').value;
@@ -1370,8 +1469,6 @@ function renderTx(){
   
   const rawSearch = document.getElementById('txFilterSearch').value.trim();
   const normalizedQuery = rawSearch.normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase();
-  
-  // Limpa caracteres para testar valor numérico (ex: "R$ 50,00" ou "50.00" -> "50.00")
   const numericSearch = rawSearch.replace(/[^\d.,]/g,'').replace(',','.');
   
   const filtered = recent.filter(({t})=>{
@@ -1466,10 +1563,6 @@ function monthShortLabel(monthStr){
   return label.charAt(0).toUpperCase() + label.slice(1);
 }
 
-/* ==========================================================================
-   ALTERAÇÃO 4: Histórico de fatura em Análises exibe o valor emitido (grossTotal)
-   sem sumir após ser quitada
-   ========================================================================== */
 function computeMonthTotals(monthStr){
   const tx = state.tx.filter(t=>String(t.date||'').slice(0,7)===monthStr);
   return {
