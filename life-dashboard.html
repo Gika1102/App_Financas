@@ -44,7 +44,6 @@
 
     --shadow-soft: 0 4px 14px rgba(183, 156, 242, 0.08);
     --shadow-hover: 0 8px 20px rgba(183, 156, 242, 0.13);
-    --shadow-inset: inset 0 1px 2px rgba(140,120,180,0.08);
 
     --radius-lg: 18px;
     --radius-md: 14px;
@@ -84,7 +83,7 @@
     min-height: 100vh;
     transition: background var(--transition), color var(--transition);
     -webkit-font-smoothing: antialiased;
-    line-height: 1.4;
+    line-height: 1.45;
   }
 
   ::-webkit-scrollbar{ width:8px; height:8px; }
@@ -189,8 +188,7 @@
 
   .page-area{ padding: 22px 24px 50px; flex:1; }
   .page{ display:none; }
-  .page.active{ display:block; animation: fadeIn 250ms ease; }
-  @keyframes fadeIn{ from{ opacity:0; transform: translateY(6px);} to{ opacity:1; transform:translateY(0);} }
+  .page.active{ display:block; }
 
   .page-title{ font-family:var(--font-display); font-size:24px; font-weight:800; letter-spacing:-0.02em; margin-bottom:3px; }
   .page-subtitle{ font-size:13px; color:var(--text-muted); font-weight:600; margin-bottom:16px; }
@@ -199,11 +197,11 @@
     background: var(--card-bg);
     border: 1px solid var(--card-border);
     border-radius: var(--radius-lg);
-    padding: 16px;
+    padding: 18px;
     transition: box-shadow var(--transition);
   }
   .card:hover{ box-shadow: 0 5px 16px rgba(183,156,242,0.08); }
-  .card-title{ font-family:var(--font-display); font-size:14px; font-weight:700; display:flex; align-items:center; gap:8px; margin-bottom:10px; }
+  .card-title{ font-family:var(--font-display); font-size:14.5px; font-weight:700; display:flex; align-items:center; gap:8px; margin-bottom:12px; }
   .card-title .em{ font-size:18px; }
 
   .grid{ display:grid; gap:12px; }
@@ -223,22 +221,24 @@
   .progress-track{ width:100%; height:8px; border-radius:20px; background: #F1ECF9; overflow:hidden; }
   .progress-fill{ height:100%; border-radius:20px; background: linear-gradient(90deg, var(--lilac-deep), var(--pink-deep)); width:0%; transition: width 400ms ease; }
 
-  .priority-list{ display:flex; flex-direction:column; gap:6px; }
-  .priority-item{ display:flex; align-items:center; gap:10px; font-size:13px; padding:7px 10px; border-radius:12px; background: #F9F5FC; font-weight:600; }
-  .priority-num{ width:20px; height:20px; border-radius:50%; flex-shrink:0; background: var(--lilac); color:var(--text-primary); font-size:11px; font-weight:800; display:flex; align-items:center; justify-content:center; }
+  .priority-list{ display:flex; flex-direction:column; gap:8px; }
+  .priority-item{ display:flex; align-items:center; gap:10px; font-size:13px; padding:9px 12px; border-radius:12px; background: #F9F5FC; font-weight:600; }
+  .priority-num{ width:22px; height:22px; border-radius:50%; flex-shrink:0; background: var(--lilac); color:var(--text-primary); font-size:11px; font-weight:800; display:flex; align-items:center; justify-content:center; }
   
   .empty-state{ display:flex; flex-direction:column; align-items:center; justify-content:center; gap:4px; padding:20px 8px; text-align:center; color:var(--text-secondary); }
   .empty-state .em{ font-size:24px; }
-  .empty-state .msg{ font-size:12px; max-width:220px; }
+  .empty-state .msg{ font-size:12px; max-width:240px; }
 
   .mini-stat-row{ display:flex; justify-content:space-between; align-items:center; }
   .mini-stat-row + .mini-stat-row{ margin-top:8px; }
   .mini-stat-label{ font-size:12px; color:var(--text-secondary); display:flex; align-items:center; gap:6px; font-weight:600; }
-  .mini-stat-value{ font-size:12.5px; font-weight:700; font-family:var(--font-display); }
+  .mini-stat-value{ font-size:13px; font-weight:700; font-family:var(--font-display); }
+
+  .month-progress-wrap{ display:flex; flex-direction:column; gap:8px; }
 
   .btn{
     display:inline-flex; align-items:center; justify-content:center; gap:6px;
-    padding: 8px 14px; border-radius: 999px; font-family:var(--font-display);
+    padding: 9px 16px; border-radius: 999px; font-family:var(--font-display);
     font-size:13px; font-weight:700; transition: all var(--transition);
   }
   .btn-primary{ background: var(--pink-deep); color:#FFF; box-shadow: 0 3px 10px rgba(255,143,184,0.16); }
@@ -246,7 +246,7 @@
   .btn-secondary{ background: #F7F2FB; color:var(--text-primary); }
   .btn-secondary:hover{ background: var(--lilac); }
   .btn-danger{ background: #FFF0EA; color:#D97C6A; }
-  .btn-sm{ padding:5px 10px; font-size:11.5px; }
+  .btn-sm{ padding:6px 12px; font-size:11.5px; }
   .btn-row{ display:flex; gap:8px; flex-wrap:wrap; margin-top:14px; }
 
   .fab{
@@ -258,93 +258,95 @@
   }
   .fab:hover{ transform: scale(1.06); }
 
-  .field{ display:flex; flex-direction:column; gap:4px; margin-bottom:10px; }
-  .field label{ font-size:11px; font-weight:700; color:var(--text-secondary); text-transform:uppercase; letter-spacing:0.04em; }
+  /* CAMPOS DE FORMULÁRIO AMPLOS E ALINHADOS */
+  .field{ display:flex; flex-direction:column; gap:6px; margin-bottom:14px; }
+  .field label{ font-size:11.5px; font-weight:700; color:var(--text-secondary); text-transform:uppercase; letter-spacing:0.04em; }
   .field input[type="text"], .field input[type="number"], .field input[type="date"],
   .field textarea, .field select, .hour-input, .week-mini-textarea, .add-row input{
-    padding:8px 11px; border-radius:12px; border:2px solid rgba(87,79,107,0.08);
-    background: #FFF; font-size:13px; font-weight:600; color:var(--text-primary); outline:none; transition: all var(--transition);
+    padding:10px 14px; border-radius:12px; border:2px solid rgba(87,79,107,0.08);
+    background: #FFF; font-size:13.5px; font-weight:600; color:var(--text-primary); outline:none; transition: all var(--transition);
+    width:100%;
   }
   .field input:focus, .field textarea:focus, .field select:focus,
   .hour-input:focus, .week-mini-textarea:focus, .add-row input:focus{
     border-color: var(--lilac-deep); box-shadow: 0 0 0 3px rgba(183,156,242,0.10);
   }
-  .field textarea{ resize:vertical; min-height:60px; }
+  .field textarea, .week-mini-textarea{ resize:vertical; min-height:80px; line-height:1.45; }
 
   .checkbox-custom{
-    width:18px; height:18px; border-radius:6px; border:2px solid #D7C7F5;
+    width:20px; height:20px; border-radius:6px; border:2px solid #D7C7F5;
     display:flex; align-items:center; justify-content:center; flex-shrink:0; cursor:pointer;
     background: #FFF;
   }
-  .checkbox-custom.checked{ background: var(--pink-deep); border-color: var(--pink-deep); color:#fff; font-size:11px; font-weight:800; }
+  .checkbox-custom.checked{ background: var(--pink-deep); border-color: var(--pink-deep); color:#fff; font-size:12px; font-weight:800; }
 
-  .task-row{ display:flex; align-items:center; gap:8px; padding:6px 2px; border-bottom:1px solid var(--card-border); }
+  .task-row{ display:flex; align-items:center; gap:10px; padding:8px 4px; border-bottom:1px solid var(--card-border); }
   .task-row:last-child{ border-bottom:none; }
-  .task-row .task-text{ flex:1; font-size:12.5px; font-weight:600; }
+  .task-row .task-text{ flex:1; font-size:13.5px; font-weight:600; }
   .task-row.done .task-text{ text-decoration: line-through; color: var(--text-muted); }
-  .task-row .task-actions{ display:flex; gap:2px; opacity:0; }
+  .task-row .task-actions{ display:flex; gap:4px; opacity:0; }
   .task-row:hover .task-actions{ opacity:1; }
 
-  .add-row{ display:flex; gap:6px; margin-top:6px; }
+  .add-row{ display:flex; gap:8px; margin-top:8px; }
   .add-row input{ flex:1; }
 
-  .water-row, .mood-row{ display:flex; gap:5px; flex-wrap:wrap; align-items:center; }
+  .water-row, .mood-row{ display:flex; gap:6px; flex-wrap:wrap; align-items:center; }
   .water-drop{
-    width:32px; height:32px; border-radius:50%; display:flex; align-items:center; justify-content:center;
-    background: #FFF; border:1px solid rgba(87,79,107,0.08); font-size:14px; transition: all var(--transition);
+    width:34px; height:34px; border-radius:50%; display:flex; align-items:center; justify-content:center;
+    background: #FFF; border:1px solid rgba(87,79,107,0.08); font-size:15px; transition: all var(--transition);
   }
   .water-drop.filled{ background: linear-gradient(135deg,var(--sky),var(--lilac)); border-color:transparent; }
   .mood-btn{
-    font-size:18px; padding:6px 9px; border-radius:12px; background:#FFF; border:1px solid rgba(87,79,107,0.08);
+    font-size:20px; padding:8px 12px; border-radius:14px; background:#FFF; border:1px solid rgba(87,79,107,0.08);
     transition: all var(--transition);
   }
   .mood-btn.selected{ background: var(--lilac); transform: scale(1.06); }
 
-  .slider-wrap{ display:flex; align-items:center; gap:10px; }
+  .slider-wrap{ display:flex; align-items:center; gap:12px; }
   input[type=range]{ -webkit-appearance:none; flex:1; height:6px; border-radius:10px; background: #F1ECF9; outline:none; }
   input[type=range]::-webkit-slider-thumb{
-    -webkit-appearance:none; width:16px; height:16px; border-radius:50%;
+    -webkit-appearance:none; width:18px; height:18px; border-radius:50%;
     background: var(--pink-deep); cursor:pointer; border:2px solid #fff;
   }
-  .slider-value{ font-weight:800; font-size:15px; width:22px; text-align:center; font-family:var(--font-display); }
+  .slider-value{ font-weight:800; font-size:16px; width:24px; text-align:center; font-family:var(--font-display); }
 
-  .hour-row{ display:flex; align-items:center; gap:8px; padding:3px 0; }
-  .hour-label{ width:auto; min-width:55px; font-size:11px; font-weight:700; color:var(--text-secondary); }
+  .hour-row{ display:flex; align-items:center; gap:8px; padding:4px 0; }
+  .hour-label{ width:auto; min-width:65px; font-size:12px; font-weight:700; color:var(--text-secondary); }
 
   .weekly-days-grid{ grid-template-columns: repeat(4, minmax(0,1fr)); align-items: start; }
-  .week-day-card{ display:flex; flex-direction:column; gap:7px; min-height: 200px; }
+  .week-day-card{ display:flex; flex-direction:column; gap:8px; min-height: 240px; }
   .week-day-card.is-weekend{ background: rgba(255,215,230,0.22); }
   .week-day-card__head{ display:flex; justify-content:space-between; align-items:baseline; }
-  .week-day-card__name{ font-weight:800; font-size:13px; font-family:var(--font-display); }
-  .week-day-card__date{ font-size:10.5px; color:var(--text-secondary); }
-  .stars-row{ display:flex; gap:3px; }
-  .star{ font-size:18px; opacity:0.3; cursor:pointer; color:var(--butter-deep); }
+  .week-day-card__name{ font-weight:800; font-size:13.5px; font-family:var(--font-display); }
+  .week-day-card__date{ font-size:11px; color:var(--text-secondary); }
+  .stars-row{ display:flex; gap:4px; }
+  .star{ font-size:20px; opacity:0.3; cursor:pointer; color:var(--butter-deep); }
   .star.filled{ opacity:1; }
 
   @media (min-width: 1400px){ .weekly-days-grid{ grid-template-columns: repeat(7, minmax(0,1fr)); } }
   @media (max-width: 900px){ .weekly-days-grid{ grid-template-columns: repeat(2, minmax(0,1fr)); } }
 
   .pomodoro-ring{
-    width:180px; height:180px; border-radius:50%;
+    width:190px; height:190px; border-radius:50%;
     background: conic-gradient(var(--lilac-deep) calc(var(--progress, 0) * 1%), #F1ECF9 0);
     display:flex; align-items:center; justify-content:center; margin: 0 auto;
   }
   .pomodoro-ring-inner{
-    width:145px; height:145px; border-radius:50%; background: #FFF;
+    width:150px; height:150px; border-radius:50%; background: #FFF;
     display:flex; flex-direction:column; align-items:center; justify-content:center;
   }
-  .pomodoro-time{ font-size:2rem; font-weight:800; font-variant-numeric:tabular-nums; font-family:var(--font-display); }
-  .pomodoro-phase{ font-size:11.5px; color:var(--text-secondary); margin-top:2px; font-weight:700; }
+  .pomodoro-time{ font-size:2.2rem; font-weight:800; font-variant-numeric:tabular-nums; font-family:var(--font-display); }
+  .pomodoro-phase{ font-size:12px; color:var(--text-secondary); margin-top:2px; font-weight:700; }
 
   .cal-header{ display:flex; align-items:center; justify-content:space-between; margin-bottom:12px; }
-  .cal-title{ font-size:16px; font-weight:800; text-transform:capitalize; font-family:var(--font-display); }
-  .cal-weekdays{ display:grid; grid-template-columns: repeat(7,1fr); gap:5px; margin-bottom:5px; }
-  .cal-weekdays div{ text-align:center; font-size:10px; font-weight:700; color:var(--text-secondary); text-transform:uppercase; }
-  .cal-grid{ display:grid; grid-template-columns: repeat(7,1fr); gap:5px; }
+  .cal-title{ font-size:16.5px; font-weight:800; text-transform:capitalize; font-family:var(--font-display); }
+  .cal-weekdays{ display:grid; grid-template-columns: repeat(7,1fr); gap:6px; margin-bottom:6px; }
+  .cal-weekdays div{ text-align:center; font-size:10.5px; font-weight:700; color:var(--text-secondary); text-transform:uppercase; }
+  .cal-grid{ display:grid; grid-template-columns: repeat(7,1fr); gap:6px; }
   .cal-day{
-    aspect-ratio: 1/0.85; border-radius:10px; padding:5px; background: #FFF;
+    aspect-ratio: 1/0.85; border-radius:12px; padding:6px; background: #FFF;
     border:1px solid rgba(87,79,107,0.07); display:flex; flex-direction:column; justify-content:space-between;
-    font-size:11.5px; cursor:pointer; transition: all var(--transition);
+    font-size:12px; cursor:pointer; transition: all var(--transition);
   }
   .cal-day:hover{ background: #F7F2FB; }
   .cal-day.other-month{ opacity:0.35; }
@@ -356,26 +358,45 @@
   .dot-event{ background: var(--peach-deep); }
   .dot-workout{ background: var(--pink-deep); }
 
-  .tag-item{ display:flex; justify-content:space-between; align-items:center; font-size:11.5px; background:#F9F5FC; padding:6px 9px; border-radius:10px; font-weight:600; }
-  .gratitude-entry{ display:grid; grid-template-columns:105px 1fr; gap:10px; align-items:start; }
-  .gratitude-entry__date{ font-size:11px; font-weight:800; color:var(--text-secondary); }
-  .gratitude-entry__text{ font-size:13px; line-height:1.4; font-weight:600; }
-  .synced-event{ display:flex; align-items:flex-start; gap:6px; padding:7px 9px; border-radius:10px; background:rgba(255,221,201,0.5); font-size:11.5px; font-weight:700; color:var(--peach-deep); }
+  .tag-item{ display:flex; justify-content:space-between; align-items:center; font-size:12px; background:#F9F5FC; padding:8px 10px; border-radius:10px; font-weight:600; }
+  .gratitude-entry{ display:grid; grid-template-columns:110px 1fr; gap:12px; align-items:start; }
+  .gratitude-entry__date{ font-size:11.5px; font-weight:800; color:var(--text-secondary); }
+  .gratitude-entry__text{ font-size:13.5px; line-height:1.5; font-weight:600; }
+  .synced-event{ display:flex; align-items:flex-start; gap:6px; padding:8px 10px; border-radius:10px; background:rgba(255,221,201,0.5); font-size:12px; font-weight:700; color:var(--peach-deep); }
   .week-event-list{ display:flex; flex-direction:column; gap:4px; }
-  .week-event-item{ font-size:10.5px; padding:4px 6px; border-radius:8px; background:rgba(255,221,201,0.5); font-weight:700; color:var(--peach-deep); }
+  .week-event-item{ font-size:11px; padding:5px 8px; border-radius:8px; background:rgba(255,221,201,0.5); font-weight:700; color:var(--peach-deep); }
 
-  .habit-card{ padding:12px 14px; }
-  .habit-main-row{ display:grid; grid-template-columns:minmax(150px,1.5fr) minmax(170px,1fr) auto auto; align-items:center; gap:12px; }
+  /* HABIT TRACKER COM GRADE MENSAL EXPANSÍVEL */
+  .habit-card{ padding:14px 16px; }
+  .habit-main-row{ display:grid; grid-template-columns:minmax(160px,1.5fr) minmax(180px,1fr) auto auto; align-items:center; gap:14px; }
   .habit-identity{ display:flex; align-items:center; gap:8px; }
-  .habit-dot{ width:9px; height:9px; border-radius:50%; }
-  .habit-card__name{ font-weight:800; font-size:13px; }
-  .habit-cat{ font-size:9.5px; padding:2px 6px; border-radius:6px; background:#F7F2FB; color:var(--text-secondary); width:fit-content; }
-  .habit-week-strip{ display:grid; grid-template-columns:repeat(7,1fr); gap:4px; }
-  .habit-week-day{ display:flex; flex-direction:column; align-items:center; gap:2px; }
-  .habit-week-label{ font-size:8.5px; color:var(--text-muted); text-transform:uppercase; font-weight:700; }
-  .habit-week-dot{ width:19px; height:19px; border-radius:6px; background:#F7F2FB; border:1px solid transparent; cursor:pointer; }
+  .habit-dot{ width:10px; height:10px; border-radius:50%; }
+  .habit-card__name{ font-weight:800; font-size:13.5px; }
+  .habit-cat{ font-size:10px; padding:2px 6px; border-radius:6px; background:#F7F2FB; color:var(--text-secondary); width:fit-content; }
+  .habit-week-strip{ display:grid; grid-template-columns:repeat(7,1fr); gap:5px; }
+  .habit-week-day{ display:flex; flex-direction:column; align-items:center; gap:3px; }
+  .habit-week-label{ font-size:9px; color:var(--text-muted); text-transform:uppercase; font-weight:700; }
+  .habit-week-dot{ width:22px; height:22px; border-radius:6px; background:#F7F2FB; border:1px solid transparent; cursor:pointer; }
   .habit-week-dot.done{ background:var(--mint-deep) !important; }
-  .habit-percent{ font-size:11px; font-weight:800; padding:3px 7px; border-radius:999px; background:#F7F2FB; font-family:var(--font-display); }
+  .habit-percent{ font-size:11.5px; font-weight:800; padding:4px 8px; border-radius:999px; background:#F7F2FB; font-family:var(--font-display); }
+  .habit-actions{ display:flex; gap:4px; align-items:center; }
+  
+  .habit-expand{ margin-top:14px; padding-top:14px; border-top:1px solid var(--card-border); display:grid; grid-template-columns:minmax(240px,1fr) auto; gap:20px; align-items:start; }
+  .habit-expand.hidden{ display:none; }
+  .habit-month-title{ font-size:11.5px; font-weight:700; color:var(--text-secondary); margin-bottom:8px; }
+  .habit-weekdays{ display:grid; grid-template-columns:repeat(7,1fr); gap:4px; margin-bottom:4px; }
+  .habit-weekdays span{ text-align:center; font-size:9px; font-weight:700; color:var(--text-muted); }
+  .habit-grid{ display:grid; grid-template-columns:repeat(7,1fr); gap:4px; }
+  .habit-cell{
+    aspect-ratio:1; min-width:0; border-radius:6px; background:rgba(var(--lavender),0.08);
+    display:flex; align-items:center; justify-content:center; font-size:10px; color:var(--text-muted);
+    transition:all 150ms ease; border:1px solid transparent; cursor:pointer;
+  }
+  .habit-cell:hover{ transform:scale(1.08); border-color:var(--lilac-deep); }
+  .habit-cell.done{ color:#fff; font-weight:700; background:var(--mint-deep) !important; }
+  .habit-detail-stats{ min-width:140px; display:flex; flex-direction:column; gap:6px; }
+  .habit-detail-stat{ display:flex; justify-content:space-between; gap:12px; font-size:11.5px; color:var(--text-secondary); padding:6px 8px; border-radius:8px; background:rgba(var(--lavender),0.06); }
+  .habit-detail-stat b{ color:var(--text-primary); }
 
   .toast-container{ position:fixed; bottom:20px; left:50%; transform:translateX(-50%); z-index:200; display:flex; flex-direction:column; gap:6px; }
   .toast{ padding:9px 16px; border-radius:999px; background: #FFF; border:1px solid rgba(87,79,107,0.1); box-shadow: var(--shadow-hover); font-size:12.5px; font-weight:700; display:flex; align-items:center; gap:8px; }
@@ -390,8 +411,8 @@
   .flex-col{ display:flex; flex-direction:column; }
   .gap-8{ gap:8px; } .gap-12{ gap:12px; } .gap-16{ gap:16px; }
   .mt-8{ margin-top:8px; } .mt-16{ margin-top:16px; }
-  .text-sm{ font-size:11.5px; color:var(--text-secondary); font-weight:600; }
-  .badge{ font-size:10.5px; font-weight:700; padding:3px 8px; border-radius:20px; background:#F7F2FB; color:var(--text-secondary); }
+  .text-sm{ font-size:12px; color:var(--text-secondary); font-weight:600; }
+  .badge{ font-size:11px; font-weight:700; padding:4px 9px; border-radius:20px; background:#F7F2FB; color:var(--text-secondary); }
   .divider{ height:1px; background: rgba(87,79,107,0.07); margin:10px 0; }
   .color-swatch{ width:26px; height:26px; border-radius:8px; cursor:pointer; }
   .color-swatch.active{ outline:2px solid var(--text-primary); }
@@ -402,12 +423,13 @@
     .sidebar.open{ transform: translateX(0); }
     .sidebar-overlay.show{ display:block; position:fixed; inset:0; background:rgba(0,0,0,0.3); z-index:39; }
     .header__quote{ display:none; }
+    .habit-main-row{ grid-template-columns:1fr auto; }
+    .habit-week-strip{ grid-column:1/-1; }
+    .habit-expand{ grid-template-columns:1fr; }
   }
   @media (max-width:600px){
     .grid-2, .grid-3, .grid-4{ grid-template-columns:1fr; }
     .page-area{ padding:14px 10px 38px; }
-    .habit-main-row{ grid-template-columns:1fr auto; }
-    .habit-week-strip{ grid-column:1/-1; }
   }
 </style>
 </head>
@@ -444,7 +466,7 @@
       <a class="nav-item" href="financas.html"><span class="nav-icon">💰</span> Finanças</a>
     </nav>
 
-    <div class="sidebar__footer">Life Dashboard · v2.0</div>
+    <div class="sidebar__footer">Life Dashboard · v2.1</div>
   </aside>
 
   <!-- MAIN COLUMN -->
@@ -567,7 +589,7 @@
             <button class="btn btn-primary btn-sm" id="dailySaveBtnTop">💾 Salvar</button>
             <button class="icon-btn btn-sm" id="dailyPrevBtn">←</button>
             <span class="badge" id="dailyWeekdayLabel">-</span>
-            <input type="date" class="hour-input" id="dailyDateInput" style="width:auto; padding:5px 9px;">
+            <input type="date" class="hour-input" id="dailyDateInput" style="width:auto; padding:6px 10px;">
             <button class="icon-btn btn-sm" id="dailyNextBtn">→</button>
           </div>
         </div>
@@ -592,7 +614,7 @@
               <div class="card-title"><span class="em">🕐</span> Agenda</div>
               <div class="flex-col gap-8" id="dailyAgenda"></div>
               <div class="add-row">
-                <input type="text" id="dailyAgendaTime" placeholder="Horário (ex: 08:30)" style="max-width:110px;">
+                <input type="text" id="dailyAgendaTime" placeholder="Horário (ex: 08:30)" style="max-width:130px;">
                 <input type="text" id="dailyAgendaText" placeholder="Atividade...">
                 <button class="btn btn-primary btn-sm" id="dailyAgendaAddBtn">+</button>
               </div>
@@ -625,9 +647,9 @@
               </div>
               <div class="mini-stat-row">
                 <span class="mini-stat-label">🏃 Corrida (km)</span>
-                <input type="number" min="0" step="0.1" class="hour-input" id="dailyRunsKm" placeholder="0.0" style="max-width:90px; text-align:right;">
+                <input type="number" min="0" step="0.1" class="hour-input" id="dailyRunsKm" placeholder="0.0" style="max-width:100px; text-align:right;">
               </div>
-              <div class="text-sm mt-8">💡 Corridas $> 0\text{ km}$ contam automaticamente como treino concluído!</div>
+              <div class="text-sm mt-8">💡 Ao inserir km de corrida, ela conta automaticamente como treino do dia!</div>
             </div>
 
             <div class="grid grid-2" style="gap:10px;">
@@ -1543,16 +1565,21 @@ function renderWeekly(){
         <div class="week-day-card__name">${WEEKDAY_SHORT[d.getDay()]} ${isToday? '🌟':''}</div>
         <div class="week-day-card__date">${fmtDateBR(d)}</div>
       </div>
-      <label class="text-sm">Objetivos</label>
-      <textarea class="week-mini-textarea" data-field="objectives" placeholder="Foco do dia">${escapeHTML(dayRec.objectives)}</textarea>
       
-      <div class="flex-between mt-8">
+      <div class="field" style="margin-bottom:6px;">
+        <label>Objetivos</label>
+        <textarea class="week-mini-textarea" data-field="objectives" placeholder="Foco do dia">${escapeHTML(dayRec.objectives)}</textarea>
+      </div>
+      
+      <div class="flex-between mt-8" style="margin-bottom:6px;">
         <label class="text-sm">Treino Feito:</label>
         <span class="badge" style="background:var(--pink-deep); color:#fff;">${dayWorkoutsCount > 0 ? `🏋️ ${dayWorkoutsCount} treino(s)` : 'Nenhum'}</span>
       </div>
       
-      <label class="text-sm mt-8">Planejado</label>
-      <input type="text" class="hour-input" data-field="workout" value="${escapeHTML(dayRec.workout)}" placeholder="Ex: Corrida 5km">
+      <div class="field" style="margin-bottom:0;">
+        <label>Planejado</label>
+        <input type="text" class="hour-input" data-field="workout" value="${escapeHTML(dayRec.workout)}" placeholder="Ex: Corrida 5km">
+      </div>
       
       ${syncedEvents.length ? `
         <label class="text-sm mt-8">Eventos</label>
@@ -1747,7 +1774,7 @@ function renderMonthEvents(events){
   });
 }
 
-/* HABIT TRACKER */
+/* HABIT TRACKER COM GRADE MENSAL EXPANSÍVEL RESTAURADA */
 function habitStats(habit, refDate){
   const y = refDate.getFullYear(), m = refDate.getMonth();
   const total = daysInMonth(y,m);
@@ -1761,7 +1788,7 @@ function habitStats(habit, refDate){
     if(habit.completions && habit.completions[dk]) curStreak++; else break;
   }
   const pct = Math.round((done/refDate.getDate())*100) || 0;
-  return {done, total, pct: clamp(pct,0,100), currentStreak: curStreak, bestStreak};
+  return {done, total, pct: clamp(pct,0,100), currentStreak: curStreak, bestStreak, remaining: total-done};
 }
 
 function renderHabits(){
@@ -1787,13 +1814,27 @@ function renderHabits(){
     const habit = plannerData.habits[id];
     const cat = HABIT_CATEGORIES.find(c=>c.id===habit.category) || HABIT_CATEGORIES[0];
     const hStats = habitStats(habit, refDate);
-    
+    const isExpanded = appState.expandedHabits.has(id);
+    const y = refDate.getFullYear(), m = refDate.getMonth();
+    const total = daysInMonth(y,m);
+    const firstWeekdayOffset = new Date(y,m,1).getDay();
+
+    // Grade dos últimos 7 dias
     let weekCells = '';
     for(let i=6;i>=0;i--){
       const d = addDays(refDate,-i);
       const dk = dateKey(d);
       const done = habit.completions && habit.completions[dk];
       weekCells += `<div class="habit-week-day"><span class="habit-week-label">${WEEKDAY_SHORT[d.getDay()].slice(0,1)}</span><button class="habit-week-dot ${done?'done':''}" data-hid="${id}" data-date="${dk}"></button></div>`;
+    }
+
+    // Grade completa do mês
+    let gridCells = '';
+    for(let i=0;i<firstWeekdayOffset;i++) gridCells += `<div></div>`;
+    for(let d=1; d<=total; d++){
+      const dk = dateKey(new Date(y,m,d));
+      const done = habit.completions && habit.completions[dk];
+      gridCells += `<button class="habit-cell ${done?'done':''}" data-hid="${id}" data-date="${dk}" title="${pad2(d)}/${pad2(m+1)}">${d}</button>`;
     }
 
     return `
@@ -1808,19 +1849,44 @@ function renderHabits(){
           </div>
           <div class="habit-week-strip">${weekCells}</div>
           <div class="habit-percent">${hStats.pct}%</div>
-          <button class="icon-btn btn-sm" data-delete-habit="${id}">🗑️</button>
+          <div class="habit-actions">
+            <button class="icon-btn btn-sm" data-toggle-habit="${id}" title="${isExpanded?'Recolher':'Ver mês'}">⌄</button>
+            <button class="icon-btn btn-sm" data-delete-habit="${id}" title="Excluir">🗑️</button>
+          </div>
+        </div>
+
+        <div class="habit-expand ${isExpanded?'':'hidden'}">
+          <div>
+            <div class="habit-month-title">${MONTH_NAMES[m]} ${y} (clique para marcar qualquer dia)</div>
+            <div class="habit-weekdays"><span>D</span><span>S</span><span>T</span><span>Q</span><span>Q</span><span>S</span><span>S</span></div>
+            <div class="habit-grid">${gridCells}</div>
+          </div>
+          <div class="habit-detail-stats">
+            <div class="habit-detail-stat"><span>Feitos</span><b>${hStats.done}</b></div>
+            <div class="habit-detail-stat"><span>Melhor sequência</span><b>${hStats.bestStreak} dias</b></div>
+            <div class="habit-detail-stat"><span>Restantes</span><b>${hStats.remaining}</b></div>
+          </div>
         </div>
       </div>
     `;
   }).join('');
 
-  $all('.habit-week-dot', list).forEach(btn=>{
+  $all('.habit-week-dot, .habit-cell', list).forEach(btn=>{
     btn.addEventListener('click', ()=>{
       const hid = btn.dataset.hid;
       const dk = btn.dataset.date;
       if(!plannerData.habits[hid].completions) plannerData.habits[hid].completions = {};
       plannerData.habits[hid].completions[dk] = !plannerData.habits[hid].completions[dk];
       saveData(true);
+      renderHabits();
+    });
+  });
+
+  $all('[data-toggle-habit]', list).forEach(btn=>{
+    btn.addEventListener('click', ()=>{
+      const id = btn.dataset.toggleHabit;
+      if(appState.expandedHabits.has(id)) appState.expandedHabits.delete(id);
+      else appState.expandedHabits.add(id);
       renderHabits();
     });
   });
@@ -1966,20 +2032,14 @@ function resetAll(){
 function goToPage(pageId){
   const current = $('.page.active');
   const next = $('#page-'+pageId);
-  if(!next || current === next) return;
+  if(!next) return;
   appState.currentPage = pageId;
   $all('.nav-item').forEach(n=> n.classList.toggle('active', n.dataset.page===pageId));
-  if(current){
-    current.classList.add('fading-out');
-    setTimeout(()=>{
-      current.classList.remove('active','fading-out');
-      next.classList.add('active');
-      renderCurrentPageFor(pageId);
-    }, 150);
-  } else {
-    next.classList.add('active');
-    renderCurrentPageFor(pageId);
+  if(current && current !== next){
+    current.classList.remove('active');
   }
+  next.classList.add('active');
+  renderCurrentPageFor(pageId);
   $('#sidebar').classList.remove('open');
   $('#sidebarOverlay').classList.remove('show');
 }
@@ -2197,6 +2257,7 @@ function init(){
   setInterval(renderClock, 1000);
   setInterval(renderGreeting, 60000);
 
+  // Inicializa e renderiza diretamente o Dashboard
   goToPage('dashboard');
   setInterval(()=> saveData(true), 60000);
   window.addEventListener('beforeunload', ()=> saveData(true));
