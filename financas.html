@@ -477,6 +477,10 @@
 </div>
 <footer class="cute-footer"><span>feito com carinho para seus sonhos florescerem 🌷✨</span><span class="version-tag" id="appVersion"></span></footer>
 
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="js/supabase.js"></script>
+<script src="js/auth.js"></script>
+<script src="js/database.js"></script>
 <script>
 const money = new Intl.NumberFormat('pt-BR', { style:'currency', currency:'BRL' });
 const moneyCompact = new Intl.NumberFormat('pt-BR', { style:'currency', currency:'BRL', notation:'compact', maximumFractionDigits:1 });
@@ -674,20 +678,10 @@ function wireDebtPaymentForm(){
   });
 }
 
-async function storageGet(key, fallback){
-  try{ if(window.storage && typeof window.storage.get==='function'){ const res=await window.storage.get(key,fallback); if(res&&res.value) return res; } }catch(e){}
-  try{ const raw=localStorage.getItem(key); return raw?{value:raw}:fallback; }catch(e){ return fallback; }
-}
-async function storageSet(key, value, fallback){
-  try{ if(window.storage && typeof window.storage.set==='function'){ await window.storage.set(key,value,fallback); return; } }catch(e){}
-  try{ localStorage.setItem(key,value); }catch(e){}
-}
-
 async function loadState(){
   try{
-    const res = await storageGet(KEY, false);
-    if(res && res.value){
-      const p = JSON.parse(res.value);
+    const p = await AppDatabase.loadFinance();
+    if(p && Object.keys(p).length){
       state = {
         ...structuredClone(defaults), ...p,
         cycles: p.cycles?.length ? p.cycles.map(c=>({...c,name:normalizeCycleName(c.name)})) : structuredClone(defaults.cycles),
@@ -708,7 +702,7 @@ function save(){
   state.updatedAt = new Date().toISOString();
   renderLastUpdated();
   clearTimeout(saveTimer);
-  saveTimer = setTimeout(async()=>{ try{ await storageSet(KEY,JSON.stringify(state),false); }catch(e){ console.error(e); } }, 200);
+  saveTimer = setTimeout(async()=>{ try{ await AppDatabase.saveFinance(state); }catch(e){ console.error('Não foi possível salvar na nuvem.', e); alert('Não foi possível salvar na nuvem. Verifique sua conexão e tente novamente.'); } }, 200);
 }
 
 function renderLastUpdated(){
@@ -1898,8 +1892,7 @@ function wire(){
     if(!confirm('Restaurar para as configurações padrão? Todos os dados serão limpos. 🧹')) return;
     state = structuredClone(defaults);
     state.updatedAt = new Date().toISOString();
-    try{ localStorage.setItem(KEY, JSON.stringify(state)); }catch(e){}
-    try{ if(window.storage && typeof window.storage.set==='function') await window.storage.set(KEY,JSON.stringify(state),false); }catch(e){}
+    try{ await AppDatabase.saveFinance(state); }catch(e){ console.error(e); alert('Não foi possível resetar os dados na nuvem.'); return; }
     renderAll();
   });
 
@@ -1954,6 +1947,11 @@ function renderAll(){
 }
 
 (async function init(){
+  try {
+    const user = await AppAuth.requireUser();
+    await AppDatabase.migrateLegacy(user);
+  } catch (e) { return; }
+  AppAuth.mountLogoutButton();
   state = await loadState();
   const idsChanged = ensureTransactionIds();
   if(idsChanged) save();

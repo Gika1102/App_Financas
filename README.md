@@ -1,5 +1,32 @@
 # 🌷 Meu Espaço
 
+## Supabase: configuração obrigatória
+
+O frontend continua estático e compatível com GitHub Pages. A arquitetura é:
+
+```text
+GitHub Pages → Supabase Auth → PostgreSQL → Row Level Security
+```
+
+1. Crie um projeto em [Supabase](https://supabase.com/dashboard).
+2. No **SQL Editor**, execute [supabase/schema.sql](supabase/schema.sql). Ele cria as entidades de finanças e planner, índice, timestamps, RLS e policies por `auth.uid()`.
+3. Em **Project Settings → API**, copie a **Project URL** e a chave **Publishable** (ou `anon` legada). Preencha-as em [js/supabase.js](js/supabase.js). Essas duas credenciais podem estar no frontend; nunca use `service_role`, senha do banco ou tokens administrativos.
+4. Em **Authentication → URL Configuration**, defina a Site URL como `https://USUARIO.github.io/REPOSITORIO/` e adicione estas Redirect URLs:
+
+   - `https://USUARIO.github.io/REPOSITORIO/**`
+   - `http://localhost:8000/**`
+
+5. Em **Authentication → Providers → Email**, mantenha Email habilitado. Para testes simples, você pode desativar a confirmação de e-mail; em produção, mantenha-a ligada e configure o template de confirmação.
+6. Publique normalmente no GitHub Pages. Não há Node, build ou servidor próprio.
+
+Para testar localmente: execute `python -m http.server 8000` na pasta e acesse `http://localhost:8000/login.html`.
+
+Na primeira autenticação, o app detecta as chaves legadas `finance-state-cute` e `lifeDashboardData_v1`, envia tudo para o banco e só grava o marcador de migração quando o envio termina. Os dados locais não são apagados; portanto, não há perda em caso de falha ou interrupção. O marcador é específico da conta.
+
+As páginas privadas aguardam a validação de sessão antes de carregar dados e redirecionam para `login.html` quando necessário. As operações no banco são assíncronas e erros de salvamento são mostrados ao usuário e registrados no console.
+
+---
+
 Um ecossistema pessoal, leve e totalmente local para organizar **finanças, rotina, hábitos, foco e planejamento** em uma interface única.
 
 O projeto é composto por três páginas principais:

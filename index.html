@@ -200,6 +200,10 @@
   </footer>
 </div>
 
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="js/supabase.js"></script>
+<script src="js/auth.js"></script>
+<script src="js/database.js"></script>
 <script>
 (function(){
   'use strict';
@@ -215,10 +219,9 @@
   function applyTheme(theme){
     document.body.setAttribute('data-theme',theme);
     $('themeBtn').textContent=theme==='dark'?'☀️':'🌙';
-    try{localStorage.setItem(THEME_KEY,theme)}catch(e){}
+    // O tema visual é mantido apenas durante a página; dados pessoais ficam na nuvem.
   }
   let storedTheme='light';
-  try{storedTheme=localStorage.getItem(THEME_KEY)||'light'}catch(e){}
   applyTheme(storedTheme);
   $('themeBtn').addEventListener('click',()=>applyTheme(document.body.getAttribute('data-theme')==='dark'?'light':'dark'));
 
@@ -226,9 +229,7 @@
   const greet=hour<12?'Bom dia':hour<18?'Boa tarde':'Boa noite';
   $('heroGreeting').textContent=`${greet} ✨ aqui está um resuminho do seu ecossistema`;
 
-  function parseStorage(key){
-    try{const raw=localStorage.getItem(key);return raw?JSON.parse(raw):null}catch(e){return null}
-  }
+  let financeState=null, lifeState=null;
 
   /* SINCRONIA FINANCEIRA */
   function transactionCashImpact(t){
@@ -251,7 +252,7 @@
   }
 
   function renderFinance(){
-    const state=parseStorage(FINANCE_KEY);
+    const state=financeState;
     if(!state){
       $('homeBalance').textContent='—';
       $('homeInvoices').textContent='—';
@@ -275,7 +276,7 @@
 
   /* SINCRONIA LIFE DASHBOARD */
   function renderLife(){
-    const data=parseStorage(LIFE_KEY);
+    const data=lifeState;
     if(!data){
       $('homeTasks').textContent='—';
       $('homeHabits').textContent='—';
@@ -326,10 +327,12 @@
     renderLife();
   }
 
-  renderAll();
-
-  window.addEventListener('storage', renderAll);
-  window.addEventListener('focus', renderAll);
+  async function init(){
+    try { const user=await AppAuth.requireUser(); AppAuth.mountLogoutButton(); await AppDatabase.migrateLegacy(user); [financeState,lifeState]=await Promise.all([AppDatabase.loadFinance(),AppDatabase.loadPlanner()]); renderAll(); }
+    catch(e){ console.error(e); }
+  }
+  init();
+  window.addEventListener('focus', init);
 })();
 </script>
 </body>

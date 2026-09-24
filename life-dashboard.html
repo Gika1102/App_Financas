@@ -998,6 +998,10 @@
 <div class="toast-container" id="toastContainer"></div>
 <div class="modal-overlay" id="modalOverlay"><div class="modal-box" id="modalBox"></div></div>
 
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="js/supabase.js"></script>
+<script src="js/auth.js"></script>
+<script src="js/database.js"></script>
 <script>
 (function(){
 "use strict";
@@ -1073,11 +1077,10 @@ function defaultData(){
 let plannerData = defaultData();
 let saveDebounceTimer = null;
 
-function loadData(){
+async function loadData(){
   try{
-    const raw = localStorage.getItem(STORAGE_KEY);
-    if(raw){
-      const parsed = JSON.parse(raw);
+    const parsed = await AppDatabase.loadPlanner();
+    if(parsed && Object.keys(parsed).length){
       plannerData = Object.assign(defaultData(), parsed);
       ['daily','weekly','monthly','habits','review'].forEach(k=>{
         if(!plannerData[k] || typeof plannerData[k] !== 'object') plannerData[k] = {};
@@ -1089,14 +1092,15 @@ function loadData(){
       };
     }
   }catch(e){
+    console.error('Falha ao carregar dados do planner.', e);
     plannerData = defaultData();
   }
 }
 
-function saveData(silent){
+async function saveData(silent){
   try{
     plannerData.settings.lastBackup = new Date().toISOString();
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(plannerData));
+    await AppDatabase.savePlanner(plannerData);
     if(!silent) showToast('Dados salvos com sucesso!', 'success');
     return true;
   }catch(e){
@@ -2243,8 +2247,11 @@ function bindEvents(){
   });
 }
 
-function init(){
-  loadData();
+async function init(){
+  try { const user = await AppAuth.requireUser(); await AppDatabase.migrateLegacy(user); }
+  catch (e) { return; }
+  AppAuth.mountLogoutButton();
+  await loadData();
   applyThemeColors();
   document.body.setAttribute('data-theme', plannerData.settings.theme||'light');
   $('#themeToggleBtn').textContent = plannerData.settings.theme==='dark' ? '☀️' : '🌙';
@@ -2263,7 +2270,7 @@ function init(){
   window.addEventListener('beforeunload', ()=> saveData(true));
 }
 
-document.addEventListener('DOMContentLoaded', init);
+document.addEventListener('DOMContentLoaded', ()=>{ init().catch(e=>{ console.error(e); alert('Não foi possível carregar seus dados.'); }); });
 
 })();
 </script>

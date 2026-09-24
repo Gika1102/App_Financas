@@ -1,8 +1,9 @@
 /**
- * Camada de abstração para armazenamento (localStorage + futuras integrações)
- * Prepara para PWA e sincronização futura
+ * Cache em memória para preferências não persistentes.
+ * Dados pessoais são persistidos exclusivamente por AppDatabase/Supabase.
  */
 const Storage = (() => {
+  const memory = new Map();
   /**
    * Obter valor do armazenamento
    * @param {string} key - Chave de armazenamento
@@ -22,13 +23,7 @@ const Storage = (() => {
       console.warn(`Storage.get: External storage failed for "${key}"`, e);
     }
 
-    try {
-      const value = localStorage.getItem(key);
-      return value !== null ? value : fallback;
-    } catch (e) {
-      console.error(`Storage.get: localStorage unavailable for "${key}"`, e);
-      return fallback;
-    }
+    return memory.has(key) ? memory.get(key) : fallback;
   }
 
   /**
@@ -47,13 +42,8 @@ const Storage = (() => {
       console.warn(`Storage.set: External storage failed for "${key}"`, e);
     }
 
-    try {
-      localStorage.setItem(key, value);
-      return true;
-    } catch (e) {
-      console.error(`Storage.set: localStorage unavailable for "${key}"`, e);
-      return false;
-    }
+    memory.set(key, value);
+    return true;
   }
 
   /**
@@ -70,11 +60,7 @@ const Storage = (() => {
       console.warn(`Storage.remove: External storage failed for "${key}"`, e);
     }
 
-    try {
-      localStorage.removeItem(key);
-    } catch (e) {
-      console.error(`Storage.remove: localStorage unavailable for "${key}"`, e);
-    }
+    memory.delete(key);
   }
 
   /**
@@ -90,11 +76,7 @@ const Storage = (() => {
       console.warn('Storage.clear: External storage failed', e);
     }
 
-    try {
-      localStorage.clear();
-    } catch (e) {
-      console.error('Storage.clear: localStorage unavailable', e);
-    }
+    memory.clear();
   }
 
   return {

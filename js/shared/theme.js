@@ -14,11 +14,6 @@ const Theme = (() => {
   function apply(theme) {
     document.body.setAttribute('data-theme', theme);
     updateThemeButton(theme);
-    try {
-      localStorage.setItem(THEME_KEY, theme);
-    } catch (e) {
-      console.warn('localStorage unavailable for theme', e);
-    }
   }
 
   /**
@@ -26,11 +21,7 @@ const Theme = (() => {
    * @returns {string} 'light' ou 'dark'
    */
   function getCurrent() {
-    try {
-      return localStorage.getItem(THEME_KEY) || LIGHT;
-    } catch (e) {
-      return LIGHT;
-    }
+    return document.body.getAttribute('data-theme') || LIGHT;
   }
 
   /**
