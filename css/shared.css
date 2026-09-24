@@ -1,0 +1,348 @@
+/**
+ * Shared CSS — Design System Centralizado
+ * Usado por: index.html, financas.html, life-dashboard.html
+ *
+ * Contém:
+ * - Variáveis CSS (cores, tipografia, espaçamento)
+ * - Reset global
+ * - Tema claro/escuro
+ * - Tipografia base
+ */
+
+:root {
+  /* ========== CORES ========== */
+  --bg: #fbf5ff;
+  --bg2: #fef2f8;
+  --card: #ffffff;
+
+  --pink: #ffd7e6;
+  --pink-deep: #ff8fb8;
+
+  --lilac: #e6d9ff;
+  --lilac-deep: #b79cf2;
+
+  --mint: #d3f5e3;
+  --mint-deep: #2e9f6b;
+
+  --butter: #fff0c2;
+  --butter-deep: #d99a1e;
+
+  --peach: #ffddc9;
+  --peach-deep: #e66a29;
+
+  --sky: #d7ecff;
+  --sky-deep: #4a9be0;
+
+  --ink: #574f6b;
+  --ink-soft: #8e849f;
+  --line: rgba(87, 79, 107, 0.08);
+
+  /* ========== TIPOGRAFIA ========== */
+  --font-display: "Trebuchet MS", "Segoe UI", Arial, sans-serif;
+  --font-body: "Segoe UI", -apple-system, BlinkMacSystemFont, Roboto, sans-serif;
+
+  /* ========== ESPAÇAMENTO ========== */
+  --spacing-xs: 4px;
+  --spacing-sm: 8px;
+  --spacing-md: 12px;
+  --spacing-lg: 16px;
+  --spacing-xl: 20px;
+  --spacing-2xl: 24px;
+
+  /* ========== BORDER RADIUS ========== */
+  --radius-sm: 12px;
+  --radius-md: 14px;
+  --radius-lg: 18px;
+  --radius-full: 999px;
+
+  /* ========== SOMBRAS ========== */
+  --shadow: 0 4px 14px rgba(183, 156, 242, 0.08);
+  --shadow-lg: 0 8px 24px rgba(183, 156, 242, 0.12);
+  --shadow-hover: 0 6px 18px rgba(183, 156, 242, 0.12);
+
+  /* ========== TRANSIÇÕES ========== */
+  --transition: 200ms ease;
+  --transition-smooth: 250ms cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* ========== TEMA ESCURO ========== */
+[data-theme="dark"] {
+  --bg: #191623;
+  --bg2: #241f31;
+  --card: #211d2c;
+
+  --ink: #f0ecf8;
+  --ink-soft: #aaa0bd;
+  --line: rgba(255, 255, 255, 0.08);
+
+  --pink: #4d3341;
+  --lilac: #3d3454;
+  --mint: #284339;
+  --butter: #4a4026;
+  --peach: #4a332b;
+  --sky: #293e50;
+
+  --shadow: 0 8px 20px rgba(0, 0, 0, 0.22);
+  --shadow-lg: 0 12px 30px rgba(0, 0, 0, 0.3);
+  --shadow-hover: 0 10px 25px rgba(0, 0, 0, 0.25);
+}
+
+/* ========== RESET GLOBAL ========== */
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+  font-family: var(--font-body);
+  color: var(--ink);
+  background: var(--bg);
+  line-height: 1.45;
+  transition: background var(--transition), color var(--transition);
+  min-height: 100vh;
+}
+
+[data-theme="dark"] body {
+  background: var(--bg);
+}
+
+/* ========== TIPOGRAFIA ========== */
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  font-family: var(--font-display);
+  font-weight: 700;
+  line-height: 1.2;
+}
+
+h1 { font-size: 2rem; }
+h2 { font-size: 1.5rem; }
+h3 { font-size: 1.25rem; }
+h4 { font-size: 1.1rem; }
+h5 { font-size: 1rem; }
+h6 { font-size: 0.9rem; }
+
+p {
+  margin-bottom: var(--spacing-md);
+}
+
+small {
+  font-size: 0.85em;
+  color: var(--ink-soft);
+}
+
+code {
+  font-family: "Monaco", "Courier New", monospace;
+  background: rgba(87, 79, 107, 0.1);
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-size: 0.9em;
+}
+
+a {
+  color: var(--ink);
+  text-decoration: none;
+  transition: color var(--transition);
+}
+
+a:hover {
+  color: var(--pink-deep);
+}
+
+/* ========== BOTÕES ========== */
+button {
+  font: inherit;
+  cursor: pointer;
+  border: none;
+  background: none;
+  color: inherit;
+  transition: all var(--transition);
+}
+
+button:active {
+  transform: scale(0.98);
+}
+
+/* ========== INPUTS ========== */
+input,
+select,
+textarea {
+  font: inherit;
+  color: inherit;
+  width: 100%;
+  padding: var(--spacing-md);
+  border: 2px solid var(--line);
+  background: var(--input-bg, white);
+  border-radius: var(--radius-sm);
+  transition: border-color var(--transition), box-shadow var(--transition);
+}
+
+[data-theme="dark"] input,
+[data-theme="dark"] select,
+[data-theme="dark"] textarea {
+  background: #312a43;
+}
+
+input:focus,
+select:focus,
+textarea:focus {
+  outline: none;
+  border-color: var(--lilac-deep);
+  box-shadow: 0 0 0 3px rgba(183, 156, 242, 0.15);
+}
+
+input::placeholder {
+  color: var(--ink-soft);
+}
+
+/* ========== SCROLLBAR ========== */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--lilac-deep);
+  border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--pink-deep);
+}
+
+/* Firefox */
+* {
+  scrollbar-color: var(--lilac-deep) transparent;
+  scrollbar-width: thin;
+}
+
+/* ========== UTILIDADES ========== */
+.eyebrow {
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--ink-soft);
+}
+
+.muted {
+  color: var(--ink-soft);
+  font-size: 0.88rem;
+}
+
+.text-center {
+  text-align: center;
+}
+
+.text-right {
+  text-align: right;
+}
+
+.hidden {
+  display: none !important;
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border-width: 0;
+}
+
+/* ========== ANIMAÇÕES ========== */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes spin {
+  0%,
+  100% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes sway {
+  0%,
+  100% {
+    transform: rotate(-8deg);
+  }
+  50% {
+    transform: rotate(8deg);
+  }
+}
+
+.fade-in {
+  animation: fadeIn var(--transition);
+}
+
+.slide-up {
+  animation: slideUp var(--transition);
+}
+
+/* ========== IMPRESSÃO ========== */
+@media print {
+  body {
+    background: white;
+    color: black;
+  }
+
+  button,
+  .no-print {
+    display: none !important;
+  }
+}
+
+/* ========== REDUZ MOVIMENTO ========== */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
