@@ -17,7 +17,12 @@ window.AppDatabase = (() => {
     const settings=meta.find(x=>x.record_key==='settings')?.data || {};
     return {...settings, cycles:cycles.map(x=>x.data),budgets:budgets.map(x=>x.data),investments:investments.map(x=>x.data),debtors:debtors.map(x=>x.data),tx:tx.map(x=>x.data),recurringIncomes:recurring.map(x=>x.data)};
   }
-  async function saveFinance(s) { const t=tables.finance; const meta={...s}; ['cycles','budgets','investments','debtors','tx','recurringIncomes'].forEach(k=>delete meta[k]); await Promise.all([replace(t.meta,[{record_key:'settings',data:meta}]),replace(t.cycles,list(s.cycles)),replace(t.budgets,list(s.budgets)),replace(t.investments,list(s.investments)),replace(t.debtors,list(s.debtors)),replace(t.tx,list(s.tx)),replace(t.recurring,list(s.recurringIncomes))]); }
+  async function saveFinance(s) {
+    const meta={...s}; ['cycles','budgets','investments','debtors','tx','recurringIncomes'].forEach(k=>delete meta[k]);
+    const snapshot={settings:[{record_key:'settings',data:meta}],cycles:list(s.cycles),budgets:list(s.budgets),investments:list(s.investments),debtors:list(s.debtors),transactions:list(s.tx),recurring_incomes:list(s.recurringIncomes)};
+    const {error}=await sb().rpc('save_finance_snapshot',{p_snapshot:snapshot});
+    if(error) fail('Erro ao salvar finanças',error);
+  }
   async function loadPlanner() { const t=tables.planner; const result={}; for (const [name,table] of Object.entries(t)) { const r=await rows(table); result[name]= name==='settings'||name==='pomodoro' ? (r.find(x=>x.record_key==='settings')?.data || (name==='pomodoro'?{settings:{},log:{}}:{})) : Object.fromEntries(r.map(x=>[x.record_key,x.data])); } return result; }
   async function savePlanner(p) { const t=tables.planner; const keyed=(obj)=>Object.entries(obj||{}).map(([record_key,data])=>({record_key,data})); await Promise.all([replace(t.settings,[{record_key:'settings',data:p.settings}]),replace(t.daily,keyed(p.daily)),replace(t.weekly,keyed(p.weekly)),replace(t.monthly,keyed(p.monthly)),replace(t.habits,keyed(p.habits)),replace(t.review,keyed(p.review)),replace(t.pomodoro,[{record_key:'settings',data:p.pomodoro}])]); }
   async function migrateLegacy(user) {

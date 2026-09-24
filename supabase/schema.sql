@@ -31,3 +31,31 @@ begin
 end $$;
 grant select,insert,update,delete on all tables in schema public to authenticated;
 grant execute on function public.replace_entity(text,jsonb) to authenticated;
+
+-- One atomic save prevents a finance screen reload from seeing half-updated entities.
+create or replace function public.save_finance_snapshot(p_snapshot jsonb) returns void language plpgsql security invoker set search_path=public as $$
+declare p_table text; p_key text; p_records jsonb;
+begin
+  foreach p_key in array array['settings','cycles','budgets','investments','debtors','transactions','recurring_incomes'] loop
+    p_table := 'finance_' || p_key;
+    p_records := coalesce(p_snapshot->p_key, '[]'::jsonb);
+    execute format('delete from public.%I where user_id=auth.uid()',p_table);
+    execute format('insert into public.%I(user_id,record_key,data) select auth.uid(),x.record_key,x.data from jsonb_to_recordset($1) as x(record_key text,data jsonb)',p_table) using p_records;
+  end loop;
+end $$;
+grant execute on function public.save_finance_snapshot(jsonb) to authenticated;
+
+create table if not exists public.ai_conversations (
+ id uuid primary key default gen_random_uuid(), user_id uuid not null references auth.users(id) on delete cascade default auth.uid(),
+ role text not null check(role in ('user','assistant')), message text not null check(char_length(message)<=5000), created_at timestamptz not null default now(), updated_at timestamptz not null default now()
+);
+create index if not exists ai_conversations_user_created_idx on public.ai_conversations(user_id,created_at desc);
+alter table public.ai_conversations enable row level security; alter table public.ai_conversations force row level security;
+drop policy if exists "ai_owner_select" on public.ai_conversations; drop policy if exists "ai_owner_insert" on public.ai_conversations; drop policy if exists "ai_owner_update" on public.ai_conversations; drop policy if exists "ai_owner_delete" on public.ai_conversations;
+create policy "ai_owner_select" on public.ai_conversations for select using(auth.uid()=user_id);
+create policy "ai_owner_insert" on public.ai_conversations for insert with check(auth.uid()=user_id);
+create policy "ai_owner_update" on public.ai_conversations for update using(auth.uid()=user_id) with check(auth.uid()=user_id);
+create policy "ai_owner_delete" on public.ai_conversations for delete using(auth.uid()=user_id);
+drop trigger if exists set_ai_conversations_updated_at on public.ai_conversations;
+create trigger set_ai_conversations_updated_at before update on public.ai_conversations for each row execute function public.set_updated_at();
+grant select,insert,update,delete on public.ai_conversations to authenticated;

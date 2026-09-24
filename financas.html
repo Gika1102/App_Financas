@@ -166,6 +166,8 @@
   .reimbursement-status.paid{ background:rgba(211,245,227,.7); color:var(--mint-deep); }
   .reimbursement-status.partial{ background:rgba(255,240,194,.7); color:var(--butter-deep); }
   .reimbursement-status.pending{ background:rgba(255,221,201,.6); color:var(--peach-deep); }
+  .finance-modal{position:fixed;inset:0;z-index:10001;display:grid;place-items:center;padding:18px;background:rgba(38,28,48,.42)}
+  .finance-modal.hidden{display:none}.finance-modal-box{width:min(460px,100%);background:var(--card);border-radius:22px;padding:22px;box-shadow:0 20px 55px #0004}.finance-modal-actions{display:flex;justify-content:flex-end;gap:10px;margin-top:18px;flex-wrap:wrap}
 
   @media (min-width:850px){
     .wrap{ padding:24px 28px 48px; }
@@ -445,6 +447,12 @@
       </div>
 
       <div class="launch-card">
+        <div class="launch-card-header"><p class="eyebrow" style="margin:0;">receitas recorrentes</p><span class="launch-pill">🔁 automáticas</span></div>
+        <p class="muted" style="margin:0 0 10px;font-size:.82rem;">Crie uma receita recorrente ao marcar a opção no novo lançamento. Aqui você pode pausar ou excluir regras.</p>
+        <div id="recurringIncomeList"></div>
+      </div>
+
+      <div class="launch-card">
         <div class="launch-card-header"><p class="eyebrow" style="margin:0;">histórico</p><span class="launch-pill">🧾 filtros</span></div>
         <div class="launch-filters">
           <div class="row gap8">
@@ -465,22 +473,21 @@
   </section>
 
   <div style="text-align:center; margin-top:20px; display:flex; flex-wrap:wrap; justify-content:center; gap:8px;">
-    <button class="btn-text" id="btnExport">exportar backup 💾</button>
     <button class="btn-text" id="btnExportCsv">exportar CSV 📊</button>
-    <button class="btn-text" id="btnImport">importar backup 📂</button>
-    <input id="backupFile" type="file" accept="application/json,.json" class="hidden" />
     <button class="btn-text" id="btnClearTransactions">limpar movimentações 🧾</button>
     <button class="btn-text" id="btnReset" style="color:var(--peach-deep)">resetar tudo 🧹</button>
   </div>
 </main>
 </div>
 </div>
+<div id="financeModal" class="finance-modal hidden" role="dialog" aria-modal="true" aria-labelledby="financeModalTitle"><div class="finance-modal-box"><h2 class="display" id="financeModalTitle" style="margin:0 0 8px;font-size:1.25rem;"></h2><div id="financeModalBody"></div></div></div>
 <footer class="cute-footer"><span>feito com carinho para seus sonhos florescerem 🌷✨</span><span class="version-tag" id="appVersion"></span></footer>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="js/supabase.js"></script>
 <script src="js/auth.js"></script>
 <script src="js/database.js"></script>
+<script src="js/ai.js"></script>
 <script>
 const money = new Intl.NumberFormat('pt-BR', { style:'currency', currency:'BRL' });
 const moneyCompact = new Intl.NumberFormat('pt-BR', { style:'currency', currency:'BRL', notation:'compact', maximumFractionDigits:1 });
@@ -537,6 +544,22 @@ function ensureTransactionIds(){
     }
   });
   return changed;
+}
+
+function ensureEntityIds(){
+  let changed=false;
+  ['cycles','budgets','investments','debtors','recurringIncomes'].forEach(key=>(state[key]||[]).forEach((item,index)=>{ if(!item.id){ item.id=`${key}-${Date.now()}-${index}-${Math.random().toString(36).slice(2,8)}`; changed=true; } }));
+  state.tx.forEach(tx=>{ if(['investment','withdrawal'].includes(tx.type) && !tx.investmentId){ const inv=state.investments.find(i=>i.name===tx.investmentName); if(inv){ tx.investmentId=inv.id; changed=true; } } });
+  return changed;
+}
+
+function syncRecurringIncomes(){
+  const today=new Date(), month=`${today.getFullYear()}-${String(today.getMonth()+1).padStart(2,'0')}`; let changed=false;
+  (state.recurringIncomes||[]).forEach(rule=>{
+    if(rule.active===false || rule.startMonth>month || state.tx.some(t=>t.recurringIncomeId===rule.id && String(t.date||'').slice(0,7)===month)) return;
+    const day=Math.min(Number(rule.day||1),new Date(today.getFullYear(),today.getMonth()+1,0).getDate()), date=`${month}-${String(day).padStart(2,'0')}`;
+    state.tx.push({id:`tx-${Date.now()}-${Math.random().toString(36).slice(2,8)}`,desc:rule.desc,amount:Math.abs(Number(rule.amount||0)),type:'income',category:rule.category||'Receitas',ownerType:'own',bank:'',date,cycle:getCycleForDate(date,true),linkedTransactionIds:[],recurringIncomeId:rule.id}); changed=true;
+  }); return changed;
 }
 
 function getLinkedPayments(expenseId){
@@ -879,21 +902,14 @@ function payInvoice(faturaDay){
   const month = getDashboardMonth();
   const split = getFaturaSplit(month, faturaDay);
   if(split.total<=0){ alert('Essa fatura já está zerada ou paga! ✨'); return; }
-  const input = prompt(`Valor a pagar da fatura dia ${faturaDay}:`, split.total.toFixed(2).replace('.',','));
-  if(input===null) return;
-  const amount = Number(String(input).replace(/\./g,'').replace(',','.'));
-  if(!amount || amount<=0) return;
-  if(amount > split.total + 0.01){ alert(`O valor em aberto é de ${money.format(split.total)}.`); return; }
-  const today = new Date().toISOString().slice(0,10);
-  state.tx.push({
-    id: `tx-${Date.now()}-${Math.random().toString(36).slice(2,8)}`,
-    desc: `Pagamento fatura dia ${faturaDay} · ${month}`,
-    amount: Math.abs(amount), type: 'invoice_payment', category: 'Pagamento de fatura', ownerType: 'own',
-    bank: '', paymentMethod: 'conta', faturaDay, invoiceMonth: month,
-    installment: '', installmentCurrent: 0, installmentTotal: 0, investmentName: '', debtor: '',
-    date: today, cycle: getCycleForDate(today, true), linkedTransactionIds: []
-  });
-  save(); renderAll();
+  const modal=document.getElementById('financeModal'), body=document.getElementById('financeModalBody');
+  document.getElementById('financeModalTitle').textContent=`Pagar fatura dia ${faturaDay}`;
+  body.innerHTML=`<p class="muted">${month} · em aberto: <strong>${money.format(split.total)}</strong></p><label><span class="eyebrow">valor do pagamento</span><input id="invoicePaymentAmount" type="number" step="0.01" min="0.01" max="${split.total}" value="${split.total.toFixed(2)}"></label><label style="display:block;margin-top:10px;"><span class="eyebrow">conta de origem</span><input id="invoicePaymentAccount" placeholder="ex.: Conta Itaú"></label><p id="invoicePaymentPreview" class="muted" style="font-size:.82rem;"></p><div class="finance-modal-actions"><button class="btn btn-ghost" id="invoiceCancel" type="button">cancelar</button><button class="btn btn-pink" id="invoiceConfirm" type="button">confirmar pagamento</button></div>`;
+  const close=()=>modal.classList.add('hidden'); modal.classList.remove('hidden');
+  const amountInput=document.getElementById('invoicePaymentAmount'), preview=document.getElementById('invoicePaymentPreview');
+  const update=()=>{const value=Number(amountInput.value)||0;preview.textContent=value>0&&value<=split.total?`Restará ${money.format(Math.max(0,split.total-value))} nesta fatura.`:'Informe um valor válido, até o total em aberto.'}; update(); amountInput.addEventListener('input',update);
+  document.getElementById('invoiceCancel').onclick=close;
+  document.getElementById('invoiceConfirm').onclick=()=>{const amount=Number(amountInput.value);if(!amount||amount<=0||amount>split.total+0.01){update();return;}const today=new Date().toISOString().slice(0,10);state.tx.push({id:`tx-${Date.now()}-${Math.random().toString(36).slice(2,8)}`,desc:`Pagamento fatura dia ${faturaDay} · ${month}`,amount:Math.abs(amount),type:'invoice_payment',category:'Pagamento de fatura',ownerType:'own',bank:document.getElementById('invoicePaymentAccount').value.trim(),paymentMethod:'conta',faturaDay,invoiceMonth:month,installment:'',installmentCurrent:0,installmentTotal:0,investmentName:'',debtor:'',date:today,cycle:getCycleForDate(today,true),linkedTransactionIds:[]});close();save();renderAll();};
 }
 
 function renderStats(){
@@ -1023,12 +1039,13 @@ function renderDashboardInsights(){
 function getInstallmentGroups(){
   const installments = state.tx.filter(t=>t.type==='expense' && String(t.installment||'').trim());
   const groups = {};
+  const today=new Date().toISOString().slice(0,10);
   installments.forEach((t,index)=>{
     const match = String(t.installment||'').match(/^\s*(\d+)\s*(?:de|\/)\s*(\d+)\s*$/i);
     const current = Number(match?.[1]||t.installmentCurrent||0), total = Number(match?.[2]||t.installmentTotal||0);
     const key = t.installmentGroup || `legacy-${String(t.desc||'compra').trim()}-${total}-${String(t.bank||'').trim()}-${index}`;
-    if(!groups[key]) groups[key] = {desc:t.desc||'Compra parcelada', amountPerInstallment:Math.abs(Number(t.amount||0)), current:0, total, firstDate:t.date||''};
-    groups[key].current = Math.max(groups[key].current, current);
+    if(!groups[key]) groups[key] = {key,desc:t.desc||'Compra parcelada', amountPerInstallment:Math.abs(Number(t.amount||0)), current:0, total, firstDate:t.date||''};
+    if(t.date<=today) groups[key].current = Math.max(groups[key].current, current);
     groups[key].total = Math.max(groups[key].total, total);
     if(t.date && (!groups[key].firstDate || t.date<groups[key].firstDate)) groups[key].firstDate = t.date;
   });
@@ -1040,7 +1057,16 @@ function renderInstallmentTable(){
   const container = document.getElementById('installmentTable');
   if(!rows.length){ container.innerHTML = '<div class="empty">nenhuma compra parcelada ativa ✨</div>'; return; }
   const monthlyCommitment = rows.reduce((s,r)=>s+r.amountPerInstallment,0);
-  container.innerHTML = `<div class="cashflow-summary"><div class="mini-metric"><span class="small">compromisso mensal</span><strong>${money.format(monthlyCommitment)}</strong></div><div class="mini-metric"><span class="small">parcelamentos ativos</span><strong>${rows.length}</strong></div></div><div style="overflow-x:auto;margin-top:10px;"><table class="installment-table"><thead><tr><th>Compra</th><th>parcela</th><th>faltam</th></tr></thead><tbody>${rows.map(row=>`<tr><td><strong>${row.desc}</strong></td><td>${money.format(row.amountPerInstallment)} · ${row.installmentLabel}</td><td>${row.remaining}</td></tr>`).join('')}</tbody></table></div>`;
+  container.innerHTML = `<div class="cashflow-summary"><div class="mini-metric"><span class="small">compromisso mensal</span><strong>${money.format(monthlyCommitment)}</strong></div><div class="mini-metric"><span class="small">parcelamentos ativos</span><strong>${rows.length}</strong></div></div><div style="overflow-x:auto;margin-top:10px;"><table class="installment-table"><thead><tr><th>Compra</th><th>parcela</th><th>faltam</th><th></th></tr></thead><tbody>${rows.map(row=>`<tr><td><strong>${row.desc}</strong></td><td>${money.format(row.amountPerInstallment)} · ${row.installmentLabel}</td><td>${row.remaining}</td><td><button class="btn-text" data-cancel-installments="${row.key}">cancelar futuras</button></td></tr>`).join('')}</tbody></table></div>`;
+  container.querySelectorAll('[data-cancel-installments]').forEach(button=>button.addEventListener('click',()=>{const key=button.dataset.cancelInstallments;const count=state.tx.filter(t=>t.installmentGroup===key&&t.scheduled&&t.date>today).length;if(!count)return alert('Não há parcelas futuras para cancelar.');if(!confirm(`Cancelar ${count} parcela(s) futura(s)? O histórico já lançado será preservado.`))return;state.tx=state.tx.filter(t=>!(t.installmentGroup===key&&t.scheduled&&t.date>today));save();renderAll();}));
+}
+
+function renderRecurringIncomes(){
+  const target=document.getElementById('recurringIncomeList'); if(!target) return;
+  const rules=state.recurringIncomes||[];
+  target.innerHTML=rules.length?rules.map(rule=>`<div class="tx-card"><div class="tx-meta"><strong class="tx-title">${rule.desc}</strong><span class="muted">${money.format(rule.amount)} · dia ${rule.day} · ${rule.active===false?'pausada':'ativa'}</span></div><div class="row gap8"><button class="btn-text" data-toggle-recurring="${rule.id}">${rule.active===false?'retomar':'pausar'}</button><button class="btn-text" data-remove-recurring="${rule.id}">remover</button></div></div>`).join(''):'<div class="empty">nenhuma receita recorrente criada ainda ✨</div>';
+  target.querySelectorAll('[data-toggle-recurring]').forEach(b=>b.addEventListener('click',()=>{const rule=rules.find(r=>r.id===b.dataset.toggleRecurring);if(rule){rule.active=rule.active===false;save();renderRecurringIncomes();}}));
+  target.querySelectorAll('[data-remove-recurring]').forEach(b=>b.addEventListener('click',()=>{const rule=rules.find(r=>r.id===b.dataset.removeRecurring);if(rule&&confirm(`Remover a regra “${rule.desc}”? Os lançamentos já criados serão preservados.`)){state.recurringIncomes=rules.filter(r=>r!==rule);save();renderRecurringIncomes();}}));
 }
 
 function getCycleLabel(cycle){
@@ -1437,7 +1463,7 @@ function renderInvestmentOptions(){
   const select = document.getElementById('txInvestment');
   if(!select) return;
   const current = select.value;
-  select.innerHTML = state.investments.map(inv=>`<option value="${inv.name}">${inv.emoji||'💼'} ${inv.name}</option>`).join('') || '<option value="">adicione um investimento primeiro</option>';
+  select.innerHTML = state.investments.map(inv=>`<option value="${inv.id}">${inv.emoji||'💼'} ${inv.name}</option>`).join('') || '<option value="">adicione um investimento primeiro</option>';
   if(current && Array.from(select.options).some(o=>o.value===current)) select.value = current;
 }
 
@@ -1517,7 +1543,7 @@ function applyTransactionToInvestment(tx, delta){
   if(!tx || !['investment','withdrawal'].includes(tx.type)) return;
   const investmentName = String(tx.investmentName||'').trim(), amount = Math.abs(Number(tx.amount||0));
   if(!investmentName || !amount) return;
-  const index = state.investments.findIndex(inv=>String(inv.name||'').trim()===investmentName);
+  const index = state.investments.findIndex(inv=>tx.investmentId ? inv.id===tx.investmentId : String(inv.name||'').trim()===investmentName);
   if(index<0) return;
   const movement = tx.type==='investment' ? amount : -amount;
   state.investments[index].current = Math.max(0, Number(state.investments[index].current||0) + movement*delta);
@@ -1737,7 +1763,8 @@ function wire(){
     const installmentCurrent = Number(document.getElementById('txInstallmentCurrent').value);
     const installmentTotal = Number(document.getElementById('txInstallmentTotal').value);
     const scheduleInstallments = document.getElementById('txScheduleInstallments').checked;
-    const investmentName = document.getElementById('txInvestment').value.trim();
+    const investmentId = document.getElementById('txInvestment').value;
+    const investmentName = state.investments.find(i=>i.id===investmentId)?.name || '';
     const date = txDateInput.value || today;
     
     if(!desc || !amount) return;
@@ -1769,12 +1796,15 @@ function wire(){
       installment: txType==='expense'&&installmentInfo ? `${installmentInfo.current} de ${installmentInfo.total}` : '',
       installmentCurrent: installmentInfo?.current || 0,
       installmentTotal: installmentInfo?.total || 0,
-      investmentName: ['investment','withdrawal'].includes(txType) ? investmentName : '',
+      investmentName: ['investment','withdrawal'].includes(txType) ? investmentName : '', investmentId: ['investment','withdrawal'].includes(txType) ? investmentId : '',
       debtor, date, cycle, installmentGroup, linkedTransactionIds: []
     };
     
+    const recurringRule = txType==='income' && document.getElementById('txRecurringIncome').checked ? {id:`recurring-${Date.now()}-${Math.random().toString(36).slice(2,8)}`,desc,amount:Math.abs(amount),category:finalCategory,day:Number(date.slice(-2)),startMonth:date.slice(0,7),active:true} : null;
+    if(recurringRule) txEntry.recurringIncomeId = recurringRule.id;
     state.tx.push(txEntry);
     if(['investment','withdrawal'].includes(txType)) applyTransactionToInvestment(txEntry, 1);
+    if(recurringRule) state.recurringIncomes.push(recurringRule);
     
     if(installmentInfo && scheduleInstallments){
       for(let n = installmentInfo.current+1; n <= installmentInfo.total; n++){
@@ -1852,12 +1882,6 @@ function wire(){
     save(); renderMiles();
   });
 
-  document.getElementById('btnExport').addEventListener('click',()=>{
-    const blob = new Blob([JSON.stringify(state,null,2)], {type:'application/json'});
-    const url = URL.createObjectURL(blob), a = document.createElement('a');
-    a.href = url; a.download = 'financinhas-backup.json'; a.click(); URL.revokeObjectURL(url);
-  });
-
   document.getElementById('btnExportCsv').addEventListener('click',()=>{
     const cols = ['Data','Descrição','Tipo','Valor','Categoria','Banco/Cartão','Parcelamento','Ciclo','Pessoa'];
     const esc = v => `"${String(v??'').replace(/"/g,'""')}"`;
@@ -1866,21 +1890,6 @@ function wire(){
     const blob = new Blob([csv], {type:'text/csv;charset=utf-8'});
     const url = URL.createObjectURL(blob), a = document.createElement('a');
     a.href = url; a.download = 'financinhas-movimentacoes.csv'; a.click(); URL.revokeObjectURL(url);
-  });
-
-  document.getElementById('btnImport').addEventListener('click',()=>document.getElementById('backupFile').click());
-  document.getElementById('backupFile').addEventListener('change', async e=>{
-    const file = e.target.files[0];
-    if(!file) return;
-    try{
-      const imported = JSON.parse(await file.text());
-      if(!imported || typeof imported!=='object' || !Array.isArray(imported.tx)) throw new Error('formato inválido');
-      if(!confirm('Substituir os dados atuais pelos dados deste backup?')) return;
-      state = {...structuredClone(defaults), ...imported};
-      save(); renderAll();
-      alert('Backup importado com sucesso! 🌸');
-    }catch(err){ alert('Arquivo inválido.'); }
-    finally{ e.target.value = ''; }
   });
 
   document.getElementById('btnClearTransactions').addEventListener('click',()=>{
@@ -1943,6 +1952,7 @@ function renderAll(){
   renderInvestmentOptions();
   renderTx();
   renderInstallmentTable();
+  renderRecurringIncomes();
   renderOwnerTypeUI();
 }
 
@@ -1952,9 +1962,11 @@ function renderAll(){
     await AppDatabase.migrateLegacy(user);
   } catch (e) { return; }
   AppAuth.mountLogoutButton();
+  AIChat.mount();
   state = await loadState();
-  const idsChanged = ensureTransactionIds();
-  if(idsChanged) save();
+  const idsChanged = ensureTransactionIds() || ensureEntityIds();
+  const recurringChanged = syncRecurringIncomes();
+  if(idsChanged || recurringChanged) save();
   const scheduledChanged = syncScheduledInstallments();
   if(scheduledChanged) save();
   wire();

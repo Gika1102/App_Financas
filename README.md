@@ -1,5 +1,21 @@
 # 🌷 Meu Espaço
 
+## Assistente com Gemini via Supabase Edge Functions
+
+Arquitetura: `GitHub Pages → Supabase Auth/PostgreSQL (RLS) → Edge Function → Gemini API`.
+O navegador envia apenas a pergunta autenticada para a função `ai-assistant`; a chave Gemini nunca vai para o GitHub Pages. A função valida o JWT, consulta somente os registros autorizados pelo RLS do usuário, limita o contexto por assunto e salva no máximo o histórico recente usado na conversa.
+
+### Configuração manual da IA
+
+1. Execute novamente [supabase/schema.sql](supabase/schema.sql) no SQL Editor.
+2. Instale a CLI do Supabase e autentique-se: `npx supabase login`.
+3. Vincule o projeto: `npx supabase link --project-ref SEU_PROJECT_REF`.
+4. Defina o secret, sem incluí-lo no repositório: `npx supabase secrets set GEMINI_API_KEY=SUA_CHAVE`.
+5. Publique: `npx supabase functions deploy ai-assistant`.
+6. Em Authentication → URL Configuration, mantenha as URLs do GitHub Pages e de localhost já descritas abaixo.
+
+Credenciais públicas no frontend: Project URL e Publishable key. Secrets exclusivamente no Supabase: `GEMINI_API_KEY` (e qualquer service-role, caso seja usada futuramente). Nunca publique esses valores.
+
 ## Supabase: configuração obrigatória
 
 O frontend continua estático e compatível com GitHub Pages. A arquitetura é:
@@ -35,7 +51,7 @@ O projeto é composto por três páginas principais:
 - `financas.html` — controle financeiro pessoal
 - `life-dashboard.html` — planner pessoal, hábitos, foco e acompanhamento da rotina
 
-Tudo foi desenvolvido em **HTML, CSS e JavaScript puro**, sem frameworks ou dependências externas obrigatórias. Os dados ficam armazenados no próprio navegador com `localStorage`, permitindo uso offline depois que os arquivos estiverem disponíveis localmente.
+Tudo foi desenvolvido em **HTML, CSS e JavaScript puro**, sem framework ou backend próprio. Os dados privados ficam no Supabase e são protegidos por autenticação e RLS.
 
 ---
 
@@ -67,7 +83,7 @@ Principais recursos:
 - alternância entre tema claro e escuro;
 - resumo financeiro com saldo, faturas e investimentos;
 - resumo do Life Dashboard com tarefas, hábitos e tempo de foco;
-- leitura direta dos dados dos outros aplicativos via `localStorage`;
+- leitura dos resumos dos módulos pelo Supabase;
 - links para abrir os módulos de Finanças e Life Dashboard.
 
 ---
@@ -424,7 +440,7 @@ http://localhost:8000
 
 ## 💾 Persistência de dados
 
-Os aplicativos utilizam `localStorage` como principal mecanismo de persistência.
+Os aplicativos utilizam o Supabase como mecanismo principal de persistência.
 
 Consequências importantes:
 
@@ -513,7 +529,7 @@ Por isso, o aplicativo é adequado principalmente para uso pessoal em um disposi
 
 Alguns pontos importantes da arquitetura atual:
 
-- os dados dependem do `localStorage` do navegador;
+- exige conexão com o Supabase para sincronizar dados entre dispositivos;
 - não há sincronização em nuvem;
 - não há contas de usuário;
 - o backup precisa ser feito manualmente;

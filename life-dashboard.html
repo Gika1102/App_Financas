@@ -975,15 +975,10 @@
           </div>
 
           <div class="card">
-            <div class="card-title"><span class="em">💾</span> Dados & Backup</div>
-            <p class="text-sm">Exporte seus dados locais para manter seus registros seguros.</p>
-            <div class="btn-row">
-              <button class="btn btn-secondary" id="exportBtn">⬇️ Exportar JSON</button>
-              <button class="btn btn-secondary" id="importBtn">⬆️ Importar JSON</button>
-              <input type="file" id="importFileInput" accept="application/json" style="display:none;">
-            </div>
+            <div class="card-title"><span class="em">☁️</span> Sincronização</div>
+            <p class="text-sm">Seus dados são salvos automaticamente e sincronizados com segurança na nuvem.</p>
             <div class="divider"></div>
-            <p class="text-sm">Último backup: <b id="lastBackupLabel">nunca</b></p>
+            <p class="text-sm">Última sincronização: <b id="lastBackupLabel">nunca</b></p>
             <div class="divider"></div>
             <button class="btn btn-danger" id="resetAllBtn">🗑️ Resetar tudo</button>
           </div>
@@ -1002,6 +997,7 @@
 <script src="js/supabase.js"></script>
 <script src="js/auth.js"></script>
 <script src="js/database.js"></script>
+<script src="js/ai.js"></script>
 <script>
 (function(){
 "use strict";
@@ -2005,26 +2001,6 @@ function renderSettings(){
   $('#lastBackupLabel').textContent = plannerData.settings.lastBackup ? new Date(plannerData.settings.lastBackup).toLocaleString('pt-BR') : 'nunca';
 }
 
-function exportJSON(){
-  const blob = new Blob([JSON.stringify(plannerData, null, 2)], {type:'application/json'});
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
-  a.href = url; a.download = `life-dashboard-backup-${dateKey(new Date())}.json`;
-  a.click(); URL.revokeObjectURL(url);
-}
-
-function importJSON(file){
-  const reader = new FileReader();
-  reader.onload = e=>{
-    try{
-      plannerData = Object.assign(defaultData(), JSON.parse(e.target.result));
-      saveData(true); applyThemeColors(); switchTheme(plannerData.settings.theme||'light');
-      renderCurrentPage(); showToast('Backup importado com sucesso!');
-    }catch(err){ showToast('Arquivo inválido.', 'error'); }
-  };
-  reader.readAsText(file);
-}
-
 function resetAll(){
   showModal({
     title:'Resetar tudo?', text:'Todos os registros serão excluídos permanentemente.',
@@ -2235,9 +2211,6 @@ function bindEvents(){
   $('#reviewSaveBtnTop').addEventListener('click', saveReviewData);
 
   // Settings
-  $('#exportBtn').addEventListener('click', exportJSON);
-  $('#importBtn').addEventListener('click', ()=> $('#importFileInput').click());
-  $('#importFileInput').addEventListener('change', e=>{ if(e.target.files[0]) importJSON(e.target.files[0]); });
   $('#resetAllBtn').addEventListener('click', resetAll);
 
   // FAB
@@ -2251,6 +2224,7 @@ async function init(){
   try { const user = await AppAuth.requireUser(); await AppDatabase.migrateLegacy(user); }
   catch (e) { return; }
   AppAuth.mountLogoutButton();
+  AIChat.mount();
   await loadData();
   applyThemeColors();
   document.body.setAttribute('data-theme', plannerData.settings.theme||'light');
