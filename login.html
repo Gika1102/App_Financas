@@ -1,1 +1,76 @@
-<!doctype html><html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Entrar — Meu Espaço</title><style>body{margin:0;min-height:100vh;display:grid;place-items:center;background:#fbf5ff;color:#574f6b;font:16px "Segoe UI",sans-serif}.card{width:min(390px,calc(100% - 32px));background:#fff;padding:28px;border-radius:22px;box-shadow:0 8px 28px #b79cf233}h1{margin-top:0}input,button{box-sizing:border-box;width:100%;padding:12px;margin-top:10px;border-radius:12px;border:1px solid #e6d9ff;font:inherit}button{border:0;background:#ff8fb8;color:#fff;font-weight:700;cursor:pointer}.secondary{background:#e6d9ff;color:#574f6b}#message{min-height:22px;color:#a14b6c}</style></head><body><main class="card"><h1>Meu Espaço 🌸</h1><p>Entre para acessar seus dados com segurança.</p><form id="authForm"><input id="email" type="email" placeholder="seu e-mail" required><input id="password" type="password" minlength="6" placeholder="senha (mínimo 6 caracteres)" required><button id="submit" type="submit">Entrar</button></form><button class="secondary" id="mode" type="button">Criar uma conta</button><p id="message" role="status"></p></main><script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script><script src="js/supabase.js"></script><script>let signup=false;const q=id=>document.getElementById(id);if(!window.supabaseClient){q('message').textContent='Configure a URL e a chave pública do Supabase em js/supabase.js.'}q('mode').onclick=()=>{signup=!signup;q('submit').textContent=signup?'Criar conta':'Entrar';q('mode').textContent=signup?'Já tenho uma conta':'Criar uma conta'};q('authForm').onsubmit=async e=>{e.preventDefault();const email=q('email').value,password=q('password').value;q('message').textContent='Aguarde...';const r=signup?await supabaseClient.auth.signUp({email,password}):await supabaseClient.auth.signInWithPassword({email,password});if(r.error){console.error(r.error);q('message').textContent=r.error.message;return}if(signup&&!r.data.session){q('message').textContent='Conta criada. Confira seu e-mail para confirmar o cadastro.';return}location.replace('index.html')};</script></body></html>
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Entrar — Meu Espaço</title>
+  <style>
+    :root{--ink:#574f6b;--soft:#82788f;--pink:#ff8fb8;--pink-soft:#fff0f6;--lilac:#e6d9ff;--line:#eadff0;--danger:#b54c70}
+    *{box-sizing:border-box} body{margin:0;min-height:100vh;display:grid;place-items:center;padding:24px;background:radial-gradient(circle at 15% 15%,#ffe0ed 0,transparent 27%),radial-gradient(circle at 84% 88%,#e9defe 0,transparent 30%),#fbf5ff;color:var(--ink);font:16px "Segoe UI",sans-serif}
+    .card{width:min(440px,100%);background:#fff;border:1px solid #fff;border-radius:28px;padding:32px;box-shadow:0 18px 45px rgba(92,66,111,.14)}
+    .brand{display:flex;align-items:center;gap:11px;margin-bottom:26px;font-weight:800;font-size:18px}.flower{display:grid;place-items:center;width:38px;height:38px;border-radius:13px;background:var(--pink-soft);font-size:21px}
+    h1{margin:0 0 8px;font-size:27px;letter-spacing:-.5px} .intro{margin:0 0 24px;color:var(--soft);line-height:1.5}
+    .switcher{display:grid;grid-template-columns:1fr 1fr;gap:4px;padding:4px;background:#f7f2fa;border-radius:14px;margin-bottom:24px}.switcher button{border:0;border-radius:10px;padding:10px;background:transparent;color:var(--soft);font:700 14px inherit;cursor:pointer}.switcher button.active{background:#fff;color:var(--ink);box-shadow:0 2px 7px #574f6b18}
+    label{display:block;margin:16px 0 7px;font-size:14px;font-weight:700} input{width:100%;border:1px solid var(--line);border-radius:12px;padding:13px 14px;color:var(--ink);font:inherit;outline:none;transition:border .15s,box-shadow .15s}input:focus{border-color:var(--pink);box-shadow:0 0 0 3px #ff8fb82b}.password-row{position:relative}.password-row input{padding-right:50px}.reveal{position:absolute;right:8px;top:7px;width:auto;border:0;border-radius:8px;padding:6px 8px;background:transparent;color:var(--soft);font:700 12px inherit;cursor:pointer}
+    .hint{margin:7px 0 0;color:var(--soft);font-size:12px;line-height:1.4}.primary{width:100%;margin-top:24px;border:0;border-radius:13px;padding:13px 16px;background:var(--pink);color:#fff;font:800 16px inherit;cursor:pointer;box-shadow:0 7px 14px #ff8fb84f}.primary:hover{filter:brightness(.97)}.primary:disabled{opacity:.55;cursor:wait}
+    #message{min-height:22px;margin:16px 0 0;color:var(--danger);font-size:14px;line-height:1.45}.footer{margin:24px 0 0;text-align:center;color:var(--soft);font-size:12px}.footer a{color:var(--ink)}
+  </style>
+</head>
+<body>
+  <main class="card" aria-labelledby="title">
+    <div class="brand"><span class="flower">🌷</span><span>Meu Espaço</span></div>
+    <h1 id="title">Que bom te ver por aqui.</h1>
+    <p class="intro" id="intro">Entre para acessar seu espaço em qualquer dispositivo.</p>
+
+    <div class="switcher" aria-label="Escolha uma ação">
+      <button class="active" id="loginTab" type="button" aria-pressed="true">Entrar</button>
+      <button id="signupTab" type="button" aria-pressed="false">Criar conta</button>
+    </div>
+
+    <form id="authForm" novalidate>
+      <label for="email">E-mail</label>
+      <input id="email" type="email" autocomplete="email" inputmode="email" placeholder="voce@exemplo.com" required>
+      <label for="password">Senha</label>
+      <div class="password-row"><input id="password" type="password" autocomplete="current-password" placeholder="Digite sua senha" minlength="6" required><button class="reveal" id="reveal" type="button" aria-label="Mostrar senha">Mostrar</button></div>
+      <p class="hint" id="passwordHint">Use a senha cadastrada na sua conta.</p>
+      <button class="primary" id="submit" type="submit">Entrar no meu espaço</button>
+    </form>
+    <p id="message" role="status" aria-live="polite"></p>
+    <p class="footer">Seus dados são privados e protegidos pela sua conta.</p>
+  </main>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="js/supabase.js"></script>
+  <script>
+    (() => {
+      let signup = false;
+      const q = id => document.getElementById(id);
+      const setMessage = text => q('message').textContent = text;
+      function setMode(nextSignup) {
+        signup = nextSignup;
+        q('loginTab').classList.toggle('active', !signup); q('loginTab').setAttribute('aria-pressed', String(!signup));
+        q('signupTab').classList.toggle('active', signup); q('signupTab').setAttribute('aria-pressed', String(signup));
+        q('title').textContent = signup ? 'Crie seu espaço.' : 'Que bom te ver por aqui.';
+        q('intro').textContent = signup ? 'Leva menos de um minuto para começar a sincronizar seus dados.' : 'Entre para acessar seu espaço em qualquer dispositivo.';
+        q('submit').textContent = signup ? 'Criar minha conta' : 'Entrar no meu espaço';
+        q('passwordHint').textContent = signup ? 'Crie uma senha com pelo menos 6 caracteres.' : 'Use a senha cadastrada na sua conta.';
+        q('password').autocomplete = signup ? 'new-password' : 'current-password'; setMessage('');
+      }
+      q('loginTab').onclick = () => setMode(false); q('signupTab').onclick = () => setMode(true);
+      q('reveal').onclick = () => { const show=q('password').type==='password'; q('password').type=show?'text':'password'; q('reveal').textContent=show?'Ocultar':'Mostrar'; q('reveal').setAttribute('aria-label',show?'Ocultar senha':'Mostrar senha'); };
+      if (!window.supabaseClient) { setMessage('A conexão com o Supabase ainda não foi configurada.'); q('submit').disabled=true; return; }
+      q('authForm').onsubmit = async event => {
+        event.preventDefault(); const email=q('email').value.trim(), password=q('password').value;
+        if (!email || !q('email').checkValidity()) return setMessage('Informe um e-mail válido.');
+        if (password.length < 6) return setMessage('A senha deve ter ao menos 6 caracteres.');
+        q('submit').disabled=true; setMessage(signup?'Criando sua conta...':'Entrando...');
+        const result = signup ? await supabaseClient.auth.signUp({email,password}) : await supabaseClient.auth.signInWithPassword({email,password});
+        q('submit').disabled=false;
+        if (result.error) { console.error(result.error); return setMessage(result.error.message); }
+        if (signup && !result.data.session) return setMessage('Conta criada! Confira seu e-mail para confirmar o cadastro e depois entre.');
+        location.replace('index.html');
+      };
+    })();
+  </script>
+</body>
+</html>
