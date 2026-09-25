@@ -21,8 +21,8 @@
     --bg-grad-3: #FEF2F8;
 
     --text-primary: #574F6B;
-    --text-secondary: #8E849F;
-    --text-muted: #AAA0B9;
+    --text-secondary: #625A70;
+    --text-muted: #746A82;
 
     --card-bg: rgba(255,255,255,0.88);
     --card-bg-strong: #FFFFFF;
@@ -30,15 +30,15 @@
     --input-bg: #FFFFFF;
 
     --pink: #FFD7E6;
-    --pink-deep: #FF8FB8;
+    --pink-deep: #A94772;
     --lilac: #E6D9FF;
     --lilac-deep: #B79CF2;
     --mint: #D3F5E3;
-    --mint-deep: #2E9F6B;
+    --mint-deep: #167A4C;
     --butter: #FFF0C2;
-    --butter-deep: #D99A1E;
+    --butter-deep: #8A5A00;
     --peach: #FFDDC9;
-    --peach-deep: #E66A29;
+    --peach-deep: #B14A20;
     --sky: #D7ECFF;
     --sky-deep: #4A9BE0;
 
@@ -94,6 +94,9 @@
   }
 
   button{ font-family:inherit; cursor:pointer; border:none; background:none; color:inherit; }
+  button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visible, select:focus-visible{
+    outline:3px solid var(--lilac-deep); outline-offset:3px;
+  }
   input, textarea, select{ font-family:inherit; color:inherit; }
   a{ color:inherit; text-decoration:none; }
 
@@ -245,7 +248,7 @@
   .btn-primary:hover{ background:#FF7EAC; transform: translateY(-1px); }
   .btn-secondary{ background: #F7F2FB; color:var(--text-primary); }
   .btn-secondary:hover{ background: var(--lilac); }
-  .btn-danger{ background: #FFF0EA; color:#D97C6A; }
+  .btn-danger{ background: #FFF0EA; color:var(--peach-deep); }
   .btn-sm{ padding:6px 12px; font-size:11.5px; }
   .btn-row{ display:flex; gap:8px; flex-wrap:wrap; margin-top:14px; }
 
@@ -284,8 +287,7 @@
   .task-row:last-child{ border-bottom:none; }
   .task-row .task-text{ flex:1; font-size:13.5px; font-weight:600; }
   .task-row.done .task-text{ text-decoration: line-through; color: var(--text-muted); }
-  .task-row .task-actions{ display:flex; gap:4px; opacity:0; }
-  .task-row:hover .task-actions{ opacity:1; }
+  .task-row .task-actions{ display:flex; gap:4px; }
 
   .add-row{ display:flex; gap:8px; margin-top:8px; }
   .add-row input{ flex:1; }
@@ -430,10 +432,15 @@
   @media (max-width:600px){
     .grid-2, .grid-3, .grid-4{ grid-template-columns:1fr; }
     .page-area{ padding:14px 10px 38px; }
+    .monthly-layout{ grid-template-columns:1fr !important; }
+    .app-header{ margin:8px 10px 0; padding:11px 12px; }
+    .header__clockbox{ display:none; }
+    .search-input{ width:132px; }
+    .search-input:focus{ width:150px; }
   }
 </style>
 </head>
-<body data-theme="light">
+<body class="life-dashboard-page" data-theme="light">
 
 <div class="app">
   <div class="sidebar-overlay" id="sidebarOverlay"></div>
@@ -450,12 +457,12 @@
 
     <nav class="sidebar__nav">
       <button class="nav-item active" data-page="dashboard"><span class="nav-icon">🏠</span> Dashboard</button>
-      <button class="nav-item" data-page="daily"><span class="nav-icon">📅</span> Daily Planner</button>
-      <button class="nav-item" data-page="weekly"><span class="nav-icon">📆</span> Weekly Planner</button>
-      <button class="nav-item" data-page="monthly"><span class="nav-icon">🗓</span> Monthly Planner</button>
+      <button class="nav-item" data-page="daily"><span class="nav-icon">📅</span> Planejamento diário</button>
+      <button class="nav-item" data-page="weekly"><span class="nav-icon">📆</span> Planejamento semanal</button>
+      <button class="nav-item" data-page="monthly"><span class="nav-icon">🗓</span> Planejamento mensal</button>
       <button class="nav-item" data-page="gratitude"><span class="nav-icon">🙏</span> Diário Gratidão</button>
-      <button class="nav-item" data-page="review"><span class="nav-icon">📖</span> Monthly Review</button>
-      <button class="nav-item" data-page="habits"><span class="nav-icon">🌱</span> Habit Tracker</button>
+      <button class="nav-item" data-page="review"><span class="nav-icon">📖</span> Revisão mensal</button>
+      <button class="nav-item" data-page="habits"><span class="nav-icon">🌱</span> Hábitos</button>
       <button class="nav-item" data-page="pomodoro"><span class="nav-icon">🍅</span> Pomodoro</button>
       <button class="nav-item" data-page="settings"><span class="nav-icon">⚙️</span> Configurações</button>
     </nav>
@@ -473,7 +480,7 @@
   <div class="main-col">
     <header class="app-header">
       <div class="flex gap-12" style="align-items:center;">
-        <button class="header__menu-btn icon-btn" id="menuBtn">☰</button>
+        <button class="header__menu-btn icon-btn" id="menuBtn" aria-label="Abrir navegação">☰</button>
         <div class="header__left">
           <div class="header__greeting" id="headerGreeting">Olá! 👋</div>
           <div class="header__quote" id="headerQuote">Construindo consistência...</div>
@@ -487,7 +494,7 @@
           <div class="header__clock" id="headerClock">00:00:00</div>
           <div class="header__date" id="headerDate">-</div>
         </div>
-        <button class="icon-btn" id="themeToggleBtn" title="Alternar tema">🌙</button>
+        <button class="icon-btn" id="themeToggleBtn" aria-label="Alternar tema" title="Alternar tema">🌙</button>
       </div>
     </header>
 
@@ -582,7 +589,7 @@
       <section class="page" id="page-daily">
         <div class="flex-between" style="flex-wrap:wrap; gap:12px;">
           <div>
-            <div class="page-title">Daily Planner</div>
+            <div class="page-title">Planejamento diário</div>
             <div class="page-subtitle">Organize seu dia com carinho</div>
           </div>
           <div class="flex gap-8" style="align-items:center;">
@@ -699,7 +706,7 @@
       <section class="page" id="page-weekly">
         <div class="flex-between" style="flex-wrap:wrap; gap:12px;">
           <div>
-            <div class="page-title">Weekly Planner</div>
+            <div class="page-title">Planejamento semanal</div>
             <div class="page-subtitle">Sua semana integrada aos seus registros diários</div>
           </div>
           <div class="flex gap-8" style="align-items:center;">
@@ -816,10 +823,10 @@
 
       <!-- MONTHLY PLANNER -->
       <section class="page" id="page-monthly">
-        <div class="page-title">Monthly Planner</div>
+        <div class="page-title">Planejamento mensal</div>
         <div class="page-subtitle">Seu calendário mensal integrado aos treinos e eventos</div>
 
-        <div class="grid" style="grid-template-columns: 2.2fr 1fr; align-items:start; margin-top:14px;">
+        <div class="grid monthly-layout" style="grid-template-columns: 2.2fr 1fr; align-items:start; margin-top:14px;">
           <div class="card">
             <div class="cal-header">
               <button class="icon-btn btn-sm" id="calPrevBtn">←</button>
@@ -856,7 +863,7 @@
       <section class="page" id="page-habits">
         <div class="flex-between" style="flex-wrap:wrap; gap:12px;">
           <div>
-            <div class="page-title">Habit Tracker</div>
+        <div class="page-title">Hábitos</div>
             <div class="page-subtitle">Construa consistência dia a dia</div>
           </div>
           <button class="btn btn-primary" id="newHabitBtn">🌱 Novo hábito</button>
@@ -875,7 +882,7 @@
         <div class="flex-between" style="flex-wrap:wrap; gap:12px;">
           <div>
             <div class="page-title">Diário da Gratidão</div>
-            <div class="page-subtitle">Tudo o que você registrou no Daily Planner</div>
+          <div class="page-subtitle">Tudo o que você registrou no planejamento diário</div>
           </div>
           <button class="btn btn-secondary btn-sm" id="gratitudeTodayBtn">🌷 Ir para hoje</button>
         </div>
@@ -888,7 +895,7 @@
       <section class="page" id="page-review">
         <div class="flex-between" style="flex-wrap:wrap; gap:12px;">
           <div>
-            <div class="page-title">Monthly Review</div>
+            <div class="page-title">Revisão mensal</div>
             <div class="page-subtitle">Reflita sobre o mês que passou (com dados consolidados)</div>
           </div>
           <div class="flex gap-8" style="align-items:center;">
@@ -989,7 +996,7 @@
   </div>
 </div>
 
-<button class="fab" id="fabBtn" title="Nova tarefa">+</button>
+<button class="fab" id="fabBtn" aria-label="Nova tarefa" title="Nova tarefa">+</button>
 <div class="toast-container" id="toastContainer"></div>
 <div class="modal-overlay" id="modalOverlay"><div class="modal-box" id="modalBox"></div></div>
 
@@ -1320,7 +1327,7 @@ function renderDashboard(){
   const prioritiesEl = $('#dashPriorities');
   const priorities = rec.priorities.filter(p=>p && p.trim());
   if(priorities.length===0){
-    prioritiesEl.innerHTML = `<div class="empty-state"><div class="em">🌸</div><div class="msg">Defina suas prioridades de hoje no Daily Planner.</div></div>`;
+    prioritiesEl.innerHTML = `<div class="empty-state"><div class="em">🌸</div><div class="msg">Defina suas prioridades de hoje no planejamento diário.</div></div>`;
   }else{
     prioritiesEl.innerHTML = priorities.map((p,i)=>`<div class="priority-item"><div class="priority-num">${i+1}</div><div>${escapeHTML(p)}</div></div>`).join('');
   }
@@ -1444,13 +1451,16 @@ function renderDaily(){
   for(let i=1;i<=8;i++){
     const drop = document.createElement('button');
     drop.className = 'water-drop' + (i<=rec.water ? ' filled':'');
+    drop.type = 'button';
+    drop.setAttribute('aria-label', `Registrar ${i} copo${i>1?'s':''} de água`);
+    drop.setAttribute('aria-pressed', String(i<=rec.water));
     drop.textContent = '💧';
     drop.addEventListener('click', ()=>{ rec.water = (rec.water === i) ? i-1 : i; autoSave(); renderDaily(); });
     waterEl.appendChild(drop);
   }
 
   const moodEl = $('#dailyMood');
-  moodEl.innerHTML = MOODS.map(m=>`<button class="mood-btn ${rec.mood===m?'selected':''}" data-mood="${m}">${m}</button>`).join('');
+  moodEl.innerHTML = MOODS.map(m=>`<button type="button" class="mood-btn ${rec.mood===m?'selected':''}" data-mood="${m}" aria-label="Selecionar humor ${m}" aria-pressed="${rec.mood===m}">${m}</button>`).join('');
   $all('#dailyMood .mood-btn').forEach(btn=>{
     btn.addEventListener('click', ()=>{ rec.mood = btn.dataset.mood; autoSave(); renderDaily(); });
   });
@@ -1479,10 +1489,10 @@ function renderDailyChecklist(rec){
   }
   el.innerHTML = rec.tasks.map(t=>`
     <div class="task-row ${t.done?'done':''}" data-id="${t.id}">
-      <div class="checkbox-custom ${t.done?'checked':''}" data-action="toggle">${t.done?'✓':''}</div>
+      <button type="button" class="checkbox-custom ${t.done?'checked':''}" data-action="toggle" aria-label="${t.done?'Marcar':'Concluir'} tarefa: ${escapeHTML(t.text)}" aria-pressed="${t.done}">${t.done?'✓':''}</button>
       <div class="task-text" data-action="edit">${escapeHTML(t.text)}</div>
       <div class="task-actions">
-        <button data-action="delete" title="Excluir">🗑️</button>
+        <button type="button" data-action="delete" aria-label="Excluir tarefa: ${escapeHTML(t.text)}" title="Excluir">🗑️</button>
       </div>
     </div>`).join('');
 
@@ -1730,7 +1740,7 @@ function renderMonthly(){
     const hasWorkout = getDayTotalWorkouts(dailyRec) > 0;
     const dayEvents = !c.otherMonth ? (eventsByDate[dk]||[]) : [];
 
-    return `<div class="cal-day ${c.otherMonth?'other-month':''} ${isToday?'today':''}" data-date="${dk}">
+    return `<button type="button" class="cal-day ${c.otherMonth?'other-month':''} ${isToday?'today':''}" data-date="${dk}" aria-label="Abrir planejamento de ${pad2(c.dayNum)}/${pad2(c.dateObj.getMonth()+1)}">
       <div class="cal-day-num">${c.dayNum}</div>
       <div class="cal-dots">
         ${hasTasks? '<div class="cal-dot dot-task" title="Tarefas"></div>':''}
@@ -1738,7 +1748,7 @@ function renderMonthly(){
         ${hasWorkout? '<div class="cal-dot dot-workout" title="Treino realizado"></div>':''}
         ${dayEvents.length? '<div class="cal-dot dot-event" title="Eventos"></div>':''}
       </div>
-    </div>`;
+    </button>`;
   }).join('');
 
   $all('.cal-day', grid).forEach(cell=>{
@@ -1761,7 +1771,7 @@ function renderMonthEvents(events){
   el.innerHTML = events.map((ev,idx)=>`
     <div class="tag-item">
       <span><strong>${ev.date ? fmtDateBR(new Date(`${ev.date}T12:00:00`)) : 'Sem data'}</strong> — ${escapeHTML(ev.text)}</span>
-      <button data-idx="${idx}" data-action="remove-event">✕</button>
+      <button type="button" data-idx="${idx}" data-action="remove-event" aria-label="Excluir evento ${escapeHTML(ev.text)}">✕</button>
     </div>
   `).join('');
   $all('[data-action="remove-event"]', el).forEach(btn=>{
@@ -1825,7 +1835,7 @@ function renderHabits(){
       const d = addDays(refDate,-i);
       const dk = dateKey(d);
       const done = habit.completions && habit.completions[dk];
-      weekCells += `<div class="habit-week-day"><span class="habit-week-label">${WEEKDAY_SHORT[d.getDay()].slice(0,1)}</span><button class="habit-week-dot ${done?'done':''}" data-hid="${id}" data-date="${dk}"></button></div>`;
+      weekCells += `<div class="habit-week-day"><span class="habit-week-label">${WEEKDAY_SHORT[d.getDay()].slice(0,1)}</span><button type="button" class="habit-week-dot ${done?'done':''}" data-hid="${id}" data-date="${dk}" aria-label="${done?'Desmarcar':'Marcar'} ${escapeHTML(habit.name)} em ${fmtDateBR(d)}" aria-pressed="${done}"></button></div>`;
     }
 
     // Grade completa do mês
@@ -1834,7 +1844,7 @@ function renderHabits(){
     for(let d=1; d<=total; d++){
       const dk = dateKey(new Date(y,m,d));
       const done = habit.completions && habit.completions[dk];
-      gridCells += `<button class="habit-cell ${done?'done':''}" data-hid="${id}" data-date="${dk}" title="${pad2(d)}/${pad2(m+1)}">${d}</button>`;
+      gridCells += `<button type="button" class="habit-cell ${done?'done':''}" data-hid="${id}" data-date="${dk}" aria-label="${done?'Desmarcar':'Marcar'} ${escapeHTML(habit.name)} em ${pad2(d)}/${pad2(m+1)}" aria-pressed="${done}">${d}</button>`;
     }
 
     return `
@@ -1850,8 +1860,8 @@ function renderHabits(){
           <div class="habit-week-strip">${weekCells}</div>
           <div class="habit-percent">${hStats.pct}%</div>
           <div class="habit-actions">
-            <button class="icon-btn btn-sm" data-toggle-habit="${id}" title="${isExpanded?'Recolher':'Ver mês'}">⌄</button>
-            <button class="icon-btn btn-sm" data-delete-habit="${id}" title="Excluir">🗑️</button>
+            <button type="button" class="icon-btn btn-sm" data-toggle-habit="${id}" aria-label="${isExpanded?'Recolher':'Ver'} mês de ${escapeHTML(habit.name)}" title="${isExpanded?'Recolher':'Ver mês'}">⌄</button>
+            <button type="button" class="icon-btn btn-sm" data-delete-habit="${id}" aria-label="Excluir hábito ${escapeHTML(habit.name)}" title="Excluir">🗑️</button>
           </div>
         </div>
 

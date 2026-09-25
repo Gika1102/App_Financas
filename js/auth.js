@@ -21,6 +21,7 @@ window.AppAuth = (() => {
     const button=document.createElement('button'); button.id='appLogout'; button.type='button'; button.textContent='Sair';
     button.setAttribute('aria-label','Sair da conta');
     button.style.cssText='position:fixed;right:16px;bottom:16px;z-index:9999;border:0;border-radius:999px;padding:10px 16px;background:#574f6b;color:#fff;font:700 14px Segoe UI,sans-serif;cursor:pointer;box-shadow:0 4px 14px #0002';
+    if(document.body.classList.contains('life-dashboard-page')) button.style.bottom='82px';
     button.addEventListener('click',signOut); document.body.appendChild(button);
   }
   return { getUser, requireUser, signOut, mountLogoutButton };
