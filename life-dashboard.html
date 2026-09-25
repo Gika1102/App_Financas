@@ -20,9 +20,9 @@
     --bg-grad-2: #F7FAFF;
     --bg-grad-3: #FEF2F8;
 
-    --text-primary: #574F6B;
+    --text-primary: #483F5C;
     --text-secondary: #625A70;
-    --text-muted: #746A82;
+    --text-muted: #625A70;
 
     --card-bg: rgba(255,255,255,0.88);
     --card-bg-strong: #FFFFFF;
@@ -54,21 +54,24 @@
   }
 
   [data-theme="dark"]{
-    --bg-grad-1: #1B1826;
-    --bg-grad-2: #211B30;
-    --bg-grad-3: #251C2C;
-
-    --text-primary: #EDE9F7;
-    --text-secondary: #B7AEC8;
-    --text-muted: #827991;
-
-    --card-bg: rgba(39,34,55,0.92);
-    --card-bg-strong: #2C263D;
-    --card-border: rgba(255,255,255,0.075);
-    --input-bg: #312A43;
-
-    --shadow-soft: 0 8px 30px rgba(0,0,0,0.35);
-    --shadow-hover: 0 14px 40px rgba(0,0,0,0.45);
+    --bg-grad-1: #17151f;
+    --bg-grad-2: #1d1927;
+    --bg-grad-3: #241d2d;
+    --text-primary: #f4eff8;
+    --text-secondary: #c9bfd5;
+    --text-muted: #afa4bf;
+    --card-bg: #211d2b;
+    --card-bg-strong: #282332;
+    --card-border: rgba(231,222,244,0.12);
+    --input-bg: #2a2436;
+    --pink-deep: #d46f9c;
+    --lilac-deep: #b9a2f4;
+    --mint-deep: #65c995;
+    --butter-deep: #e4ba5a;
+    --peach-deep: #ef916b;
+    --sky-deep: #86bff4;
+    --shadow-soft: 0 8px 28px rgba(0,0,0,0.28);
+    --shadow-hover: 0 12px 32px rgba(0,0,0,0.38);
   }
 
   *,*::before,*::after{ box-sizing:border-box; margin:0; padding:0; }
@@ -76,15 +79,48 @@
   body{
     font-family: var(--font-body);
     color: var(--text-primary);
-    background:
-      radial-gradient(circle at 8% 0%, rgba(255,215,230,.34), transparent 32%),
-      radial-gradient(circle at 92% 8%, rgba(215,236,255,.42), transparent 34%),
-      linear-gradient(180deg,#FCF8FF 0%,#F7FAFF 100%);
+    background:linear-gradient(180deg,#FCF8FF 0%,#F7FAFF 100%);
     min-height: 100vh;
     transition: background var(--transition), color var(--transition);
     -webkit-font-smoothing: antialiased;
     line-height: 1.45;
   }
+  body[data-theme="dark"]{ background:linear-gradient(180deg,var(--bg-grad-1),var(--bg-grad-2)); }
+  [data-theme="dark"] .sidebar,
+  [data-theme="dark"] .app-header,
+  [data-theme="dark"] .icon-btn,
+  [data-theme="dark"] .search-input,
+  [data-theme="dark"] .field input[type="text"],
+  [data-theme="dark"] .field input[type="number"],
+  [data-theme="dark"] .field input[type="date"],
+  [data-theme="dark"] .field textarea,
+  [data-theme="dark"] .field select,
+  [data-theme="dark"] .hour-input,
+  [data-theme="dark"] .week-mini-textarea,
+  [data-theme="dark"] .add-row input,
+  [data-theme="dark"] .event-form input,
+  [data-theme="dark"] .event-form select,
+  [data-theme="dark"] .water-drop,
+  [data-theme="dark"] .mood-btn,
+  [data-theme="dark"] .cal-day,
+  [data-theme="dark"] .pomodoro-ring-inner,
+  [data-theme="dark"] .toast,
+  [data-theme="dark"] .modal-box{ background:var(--card-bg-strong); color:var(--text-primary); }
+  [data-theme="dark"] .app-header{ background:linear-gradient(120deg,#292234,#30233a,#202c35); border-color:var(--card-border); }
+  [data-theme="dark"] .nav-item:hover,
+  [data-theme="dark"] .btn-secondary,
+  [data-theme="dark"] .stat-card__icon,
+  [data-theme="dark"] .priority-item,
+  [data-theme="dark"] .event-item,
+  [data-theme="dark"] .habit-cat,
+  [data-theme="dark"] .habit-week-dot,
+  [data-theme="dark"] .habit-percent,
+  [data-theme="dark"] .badge{ background:#2d263a; color:var(--text-secondary); }
+  [data-theme="dark"] .progress-track,
+  [data-theme="dark"] input[type=range]{ background:#383044; }
+  [data-theme="dark"] .cal-day{ border-color:var(--card-border); }
+  [data-theme="dark"] .cal-day:hover,
+  [data-theme="dark"] .btn-secondary:hover{ background:#393046; }
 
   ::-webkit-scrollbar{ width:8px; height:8px; }
   ::-webkit-scrollbar-track{ background:transparent; }
@@ -100,21 +136,22 @@
   input, textarea, select{ font-family:inherit; color:inherit; }
   a{ color:inherit; text-decoration:none; }
 
-  .app{ display:flex; min-height:100vh; }
+  .app{ display:grid; grid-template-columns:220px minmax(0,1fr); gap:20px; max-width:1320px; min-height:100vh; margin:0 auto; padding:24px 28px 48px; }
 
   .sidebar{
-    width: var(--sidebar-w);
+    width:100%;
     flex-shrink:0;
     padding: 20px 12px;
     display:flex;
     flex-direction:column;
     gap: 4px;
     background: rgba(255,255,255,0.92);
-    border-right: 1px solid var(--card-border);
-    box-shadow: 3px 0 14px rgba(183,156,242,0.05);
+    border: 1px solid var(--card-border);
+    border-radius:18px;
+    box-shadow: 0 4px 14px rgba(183,156,242,0.08);
     position: sticky;
-    top:0;
-    height:100vh;
+    top:24px;
+    height:calc(100vh - 48px);
     overflow-y:auto;
     scrollbar-width: none;
     z-index: 40;
@@ -124,7 +161,7 @@
   .sidebar__brand{ display:flex; align-items:center; gap:10px; padding: 5px 9px 18px; }
   .sidebar__brand-logo{
     width:36px; height:36px; border-radius:13px;
-    background: linear-gradient(135deg, var(--lilac), var(--pink));
+    background: linear-gradient(135deg, var(--mint), var(--sky));
     display:flex; align-items:center; justify-content:center;
     font-size:18px;
   }
@@ -136,6 +173,7 @@
     padding: 9px 12px;
     border-radius: 999px;
     font-size: 13.5px;
+    font-family:var(--font-body);
     font-weight:700;
     color: var(--text-secondary);
     white-space:nowrap;
@@ -148,12 +186,12 @@
   .sidebar__footer{ margin-top:auto; padding: 14px 10px 4px; font-size:11px; color:var(--text-muted); text-align:center; }
   .sidebar-overlay{ display:none; }
 
-  .main-col{ flex:1; min-width:0; display:flex; flex-direction:column; }
+  .main-col{ min-width:0; display:flex; flex-direction:column; }
 
   .app-header{
     display:flex; align-items:center; justify-content:space-between;
     gap: 16px;
-    margin: 12px 18px 0;
+    margin: 0;
     padding: 13px 18px;
     position: sticky; top:10px; z-index:30;
     background: linear-gradient(120deg, rgba(255,255,255,0.96), rgba(255,239,246,0.90), rgba(235,246,255,0.90));
@@ -190,7 +228,7 @@
   .search-input:focus{ outline:none; width:210px; box-shadow: 0 0 0 3px rgba(183,156,242,0.10); border-color:var(--lilac-deep); }
   .search-wrap::before{ content:"🔎"; position:absolute; left:11px; top:50%; transform:translateY(-50%); font-size:12px; opacity:0.6; }
 
-  .page-area{ padding: 22px 24px 50px; flex:1; }
+  .page-area{ padding: 22px 0 50px; flex:1; }
   .page{ display:none; }
   .page.active{ display:block; }
 
@@ -433,7 +471,8 @@
   .color-swatch-row{ display:flex; gap:6px; flex-wrap:wrap; }
 
   @media (max-width:900px){
-    .sidebar{ position:fixed; left:0; top:0; transform: translateX(-100%); }
+    .app{ display:flex; padding:0; }
+    .sidebar{ width:var(--sidebar-w); position:fixed; left:0; top:0; height:100vh; border-radius:0; border:0; border-right:1px solid var(--card-border); transform: translateX(-100%); }
     .sidebar.open{ transform: translateX(0); }
     .sidebar-overlay.show{ display:block; position:fixed; inset:0; background:rgba(0,0,0,0.3); z-index:39; }
     .header__quote{ display:none; }
@@ -870,6 +909,7 @@
                 <label>Repetição
                   <select id="monthNewEventRecurrence">
                     <option value="none">Não se repete</option>
+                    <option value="weekly">Toda semana</option>
                     <option value="monthly">Todo mês</option>
                     <option value="yearly">Todo ano</option>
                   </select>
@@ -1202,6 +1242,7 @@ function getRecurringEventsForDate(dateKeyStr){
   return (plannerData.recurringEvents||[]).filter(ev=>{
     const start = new Date(`${ev.date}T12:00:00`);
     if(Number.isNaN(start.getTime()) || start > date || !ev.text) return false;
+    if(ev.recurrence==='weekly') return Math.floor((date-start)/(24*60*60*1000))%7===0;
     if(ev.recurrence==='monthly') return start.getDate()===date.getDate();
     if(ev.recurrence==='yearly') return start.getDate()===date.getDate() && start.getMonth()===date.getMonth();
     return false;
@@ -1210,13 +1251,17 @@ function getRecurringEventsForDate(dateKeyStr){
 
 function getRecurringEventsForMonth(date){
   const y = date.getFullYear(), m = date.getMonth();
-  return (plannerData.recurringEvents||[]).map(ev=>{
+  const lastDay = daysInMonth(y,m);
+  return (plannerData.recurringEvents||[]).flatMap(ev=>{
     const start = new Date(`${ev.date}T12:00:00`);
-    if(Number.isNaN(start.getTime()) || start > new Date(y,m,daysInMonth(y,m),23,59,59)) return null;
+    if(Number.isNaN(start.getTime()) || start > new Date(y,m,lastDay,23,59,59)) return [];
+    if(ev.recurrence==='weekly'){
+      return Array.from({length:lastDay},(_,i)=>new Date(y,m,i+1)).filter(day=>Math.floor((day-start)/(24*60*60*1000))%7===0).map(day=>({...ev,date:dateKey(day),recurring:true}));
+    }
     const applies = ev.recurrence==='monthly' || (ev.recurrence==='yearly' && start.getMonth()===m);
-    if(!applies || start.getDate()>daysInMonth(y,m)) return null;
-    return {...ev, date:dateKey(new Date(y,m,start.getDate())), recurring:true};
-  }).filter(Boolean);
+    if(!applies || start.getDate()>lastDay) return [];
+    return [{...ev, date:dateKey(new Date(y,m,start.getDate())), recurring:true}];
+  });
 }
 
 function getGratitudeEntries(){
@@ -1825,7 +1870,7 @@ function renderMonthEvents(events){
   el.innerHTML = visibleEvents.map(ev=>`
     <div class="event-item">
       <span class="event-date">${ev.date ? fmtDateBR(new Date(`${ev.date}T12:00:00`)) : 'Sem data'}</span>
-      <span class="event-copy">${escapeHTML(ev.text)}${ev.recurring ? `<small class="event-recurrence">${ev.recurrence==='monthly'?'repete todo mês':'repete todo ano'}</small>` : ''}</span>
+      <span class="event-copy">${escapeHTML(ev.text)}${ev.recurring ? `<small class="event-recurrence">${ev.recurrence==='weekly'?'repete toda semana':ev.recurrence==='monthly'?'repete todo mês':'repete todo ano'}</small>` : ''}</span>
       <button type="button" class="event-remove" data-event-id="${ev.id}" data-event-source="${ev.recurring?'recurring':'monthly'}" data-action="remove-event" aria-label="Excluir evento ${escapeHTML(ev.text)}">×</button>
     </div>
   `).join('');

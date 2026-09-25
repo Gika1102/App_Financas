@@ -277,8 +277,8 @@
     </div>
 
     <div id="dashboardDetails" class="hidden analysis-grid">
-      <div class="card"><p class="eyebrow" id="categoryChartTitle" style="margin-bottom:8px;">gastos por categoria</p><div id="categoryChart"></div></div>
-      <div class="card"><p class="eyebrow" id="bankChartTitle" style="margin-bottom:8px;">gastos por banco</p><div id="bankChart"></div></div>
+      <div class="card"><p class="eyebrow" id="categoryChartTitle" style="margin-bottom:8px;">gastos próprios por categoria</p><div id="categoryChart"></div></div>
+      <div class="card"><p class="eyebrow" id="bankChartTitle" style="margin-bottom:8px;">gastos próprios por banco</p><div id="bankChart"></div></div>
       <div class="card"><p class="eyebrow" id="creditCardChartTitle" style="margin-bottom:8px;">fatura por cartão</p><div id="creditCardChart"></div></div>
       <div class="card"><p class="eyebrow" style="margin-bottom:8px;">parcelas em andamento</p><div id="installmentTable"></div></div>
       <div class="card" style="grid-column:1/-1;"><p class="eyebrow" style="margin-bottom:8px;">últimos lançamentos</p><div id="recentTx"></div></div>
@@ -981,8 +981,8 @@ function renderVisuals(){
   const [year,month] = currentMonth.split('-').map(Number);
   const monthLabel = new Date(year, month-1, 1).toLocaleString('pt-BR',{month:'long',year:'numeric'});
   document.getElementById('dashboardMonthLabel').textContent = monthLabel;
-  document.getElementById('categoryChartTitle').textContent = `categorias — ${monthLabel}`;
-  document.getElementById('bankChartTitle').textContent = `bancos — ${monthLabel}`;
+  document.getElementById('categoryChartTitle').textContent = `gastos próprios por categoria — ${monthLabel}`;
+  document.getElementById('bankChartTitle').textContent = `gastos próprios por banco — ${monthLabel}`;
   
   const expenses = state.tx.filter(t=>t.type==='expense' && String(t.date||'').slice(0,7)===currentMonth);
   const ownExpenses = expenses.filter(isOwnSpend);
