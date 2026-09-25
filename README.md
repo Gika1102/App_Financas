@@ -2,8 +2,18 @@
 
 ## Assistente com Gemini via Supabase Edge Functions
 
-Arquitetura: `GitHub Pages → Supabase Auth/PostgreSQL (RLS) → Edge Function → Gemini API`.
+Arquitetura: `GitHub Pages → Supabase Auth/PostgreSQL (RLS) → Edge Function (orquestradora + especialistas) → Gemini API`.
 O navegador envia apenas a pergunta autenticada para a função `ai-assistant`; a chave Gemini nunca vai para o GitHub Pages. A função valida o JWT, consulta somente os registros autorizados pelo RLS do usuário, limita o contexto por assunto e salva no máximo o histórico recente usado na conversa.
+
+### Insights, não apenas respostas
+
+O assistente usa uma arquitetura de especialistas. Antes de chamar a IA, a função calcula sinais objetivos — fluxo do mês, comparação com o mês anterior, categorias relevantes, orçamento, concentração da carteira e médias de humor/energia. Depois, aciona apenas os especialistas necessários e uma orquestradora entrega um resumo priorizado, evidências, próxima melhor ação e o nível de confiança.
+
+- **Investimentos:** concentração, distribuição e aportes; não recomenda compra ou venda de ativos.
+- **Movimentações:** mudanças de gasto, orçamento e fluxo de caixa.
+- **Humor & rotina:** padrões prudentes entre humor, energia, hábitos e tarefas; não faz diagnóstico de saúde.
+
+No botão **Insights da Fadinha**, selecione uma dessas leituras ou use **Leitura completa** para combinar todas. Para publicar a evolução, execute novamente `npx supabase functions deploy ai-assistant` após atualizar os arquivos.
 
 ### Configuração manual da IA
 
