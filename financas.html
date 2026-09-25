@@ -50,6 +50,9 @@
   .app-header h1,.app-header p{ position:relative; z-index:1; }
   .app-header h1{ font-size:1.45rem; margin:0; }
   .app-header p{ margin:4px 0 0; color:var(--ink-soft); font-size:.88rem; font-weight:700; }
+  .finance-header-actions{ position:absolute; z-index:2; top:12px; right:12px; display:flex; gap:8px; }
+  .finance-icon-btn{ width:36px; height:36px; display:grid; place-items:center; border:1px solid var(--line); border-radius:50%; background:var(--card); color:var(--ink); font-size:16px; cursor:pointer; }
+  .finance-menu-overlay{ display:none; }
 
   .nav{ display:flex; gap:6px; overflow-x:auto; padding:6px; background:#fff; border-radius:999px; box-shadow:0 4px 14px rgba(180,150,200,.12); -ms-overflow-style:none; scrollbar-width:none; margin-bottom:14px; scroll-snap-type:x proximity; }
   .nav::-webkit-scrollbar{ display:none; }
@@ -63,6 +66,17 @@
   .nav-updated{ display:none; }
   .finance-nav-brand,.finance-nav-divider{ display:none; }
   .finance-nav-group{ display:contents; }
+
+  [data-theme="dark"]{
+    --bg:#17151f; --bg2:#262031; --card:#211d2b; --ink:#f4eff8; --ink-soft:#c9bfd5;
+    --line:rgba(231,222,244,.14); --pink-deep:#d46f9c; --lilac-deep:#b9a2f4; --mint-deep:#65c995; --butter-deep:#e4ba5a; --peach-deep:#ef916b; --sky-deep:#86bff4;
+  }
+  body[data-theme="dark"]{ background:linear-gradient(180deg,#17151f,#1d1927); }
+  [data-theme="dark"] .app-header{ background:linear-gradient(120deg,#292234,#30233a,#202c35); border-color:var(--line); }
+  [data-theme="dark"] .nav,[data-theme="dark"] .finance-icon-btn,[data-theme="dark"] input,[data-theme="dark"] select,[data-theme="dark"] .stat-pill,[data-theme="dark"] .mini-metric,[data-theme="dark"] .launch-card,[data-theme="dark"] .launch-surface,[data-theme="dark"] .installment-table td{ background:var(--card); color:var(--ink); }
+  [data-theme="dark"] .card.soft,[data-theme="dark"] .tx-chip-muted{ background:#282332; }
+  [data-theme="dark"] .bar-track{ background:#373042; }
+  [data-theme="dark"] .finance-modal{ background:rgba(10,8,15,.66); }
 
   .card{ background:var(--card); border:1px solid rgba(87,79,107,.07); border-radius:18px; padding:16px; margin-bottom:10px; box-shadow:0 2px 8px rgba(183,156,242,.04); }
   .card.soft{ background:rgba(255,255,255,.75); }
@@ -206,10 +220,26 @@
     #cycleCards .card, #budgetCards .card, #investmentCards .card{ margin:0; }
     .investment-charts, .analysis-grid{ grid-template-columns:repeat(2,minmax(0,1fr)); }
     .analysis-summary{ grid-template-columns:repeat(4,minmax(0,1fr)); }
+    .finance-menu-btn{ display:none; }
+  }
+  @media (max-width:849px){
+    .finance-nav-brand{ display:flex; align-items:center; gap:10px; padding:5px 9px 18px; }
+    .finance-nav-brand-icon{ width:36px; height:36px; border-radius:13px; display:grid; place-items:center; background:linear-gradient(135deg,var(--mint),var(--sky)); font-size:18px; }
+    .finance-nav-brand strong{ display:block; font-family:var(--font-display); font-size:17px; }
+    .finance-nav-brand small{ display:block; margin-top:1px; color:var(--ink-soft); font-size:11px; }
+    .finance-nav-group{ display:grid; gap:4px; }
+    .finance-nav-divider{ display:block; height:1px; margin:14px 0; background:var(--line); }
+    .nav{ position:fixed; z-index:100; left:0; top:0; width:220px; height:100vh; overflow-y:auto; flex-direction:column; align-items:stretch; gap:0; padding:20px 12px; border-radius:0; border:0; border-right:1px solid var(--line); margin:0; transform:translateX(-100%); transition:transform .2s ease; }
+    .nav.open{ transform:translateX(0); }
+    .nav button,.nav a{ width:100%; text-align:left; padding:9px 12px; border-radius:999px; font-family:var(--font-body); font-size:13.5px; font-weight:700; }
+    .nav .primary-action{ background:transparent; color:var(--ink-soft); box-shadow:none; }
+    .nav .primary-action.active{ background:var(--lilac); color:var(--ink); }
+    .nav-updated{ display:block; margin-top:auto; padding:14px 10px 4px; border-top:1px solid var(--line); color:var(--ink-soft); font-size:.72rem; }
+    .finance-menu-overlay.show{ display:block; position:fixed; inset:0; z-index:99; background:rgba(20,15,30,.38); }
   }
 </style>
 </head>
-<body>
+<body data-theme="light">
 
 <div id="loading"><div class="spin">🌸</div><div class="muted">abrindo suas financinhas…</div></div>
 
@@ -217,9 +247,14 @@
   <header class="app-header">
     <h1 class="display">Financinhas da Fadinha 💖</h1>
     <p>Cuidando dos seus sonhos, um passinho de cada vez ✨</p>
+    <div class="finance-header-actions">
+      <button class="finance-icon-btn" id="financeMenuBtn" type="button" aria-label="Abrir navegação">☰</button>
+      <button class="finance-icon-btn" id="financeThemeBtn" type="button" aria-label="Alternar tema" title="Alternar tema">🌙</button>
+    </div>
   </header>
 
   <div class="app-layout">
+  <div class="finance-menu-overlay" id="financeMenuOverlay"></div>
   <nav class="nav" id="nav" aria-label="Seções de finanças">
     <div class="finance-nav-brand">
       <div class="finance-nav-brand-icon">💰</div>
@@ -306,11 +341,8 @@
       <div class="card"><p class="eyebrow" style="margin-bottom:8px;">distribuição por banco</p><div id="investmentBankChart"></div></div>
     </div>
     <div id="investmentCards"></div>
-    <div class="row gap8" style="margin-top:10px; flex-wrap:wrap;">
-      <button class="btn btn-pink" id="saveInvestments" type="button">💾 salvar investimentos</button>
-      <button class="btn btn-ghost" id="addInvestment" type="button">➕ novo investimento</button>
-    </div>
-    <p class="muted" style="margin:8px 0 0; font-size:.78rem;">Salve para atualizar o total, os gráficos e o painel inicial imediatamente.</p>
+    <button class="btn btn-ghost" id="addInvestment" type="button" style="margin-top:10px;">➕ novo investimento</button>
+    <p class="muted" style="margin:8px 0 0; font-size:.78rem;">As alterações são salvas e refletem nos totais e gráficos automaticamente.</p>
   </section>
 
   <section id="dividas" class="tab hidden">
@@ -1347,7 +1379,7 @@ function renderInvestments(){
   document.getElementById('investmentCards').innerHTML = state.investments.map(investmentCard).join('') || `<div class="empty">nenhum investimento ainda 💼</div>`;
   openPanels.forEach(id=>document.getElementById(id)?.classList.remove('hidden'));
   document.querySelectorAll('[data-edit-investment]').forEach(b=>b.addEventListener('click',e=>document.getElementById('investmentEdit'+e.target.dataset.editInvestment).classList.toggle('hidden')));
-  document.querySelectorAll('[data-investment]').forEach(inp=>inp.addEventListener('input',e=>{ const idx=+e.target.dataset.investment, field=e.target.dataset.field; state.investments[idx][field]=(field==='name'||field==='bank'||field==='emoji')?e.target.value:Number(e.target.value||0); save(); }));
+  document.querySelectorAll('[data-investment]').forEach(inp=>inp.addEventListener('input',e=>{ const idx=+e.target.dataset.investment, field=e.target.dataset.field; state.investments[idx][field]=(field==='name'||field==='bank'||field==='emoji')?e.target.value:Number(e.target.value||0); save(); refreshInvestmentOverview(); }));
   document.querySelectorAll('[data-del-investment]').forEach(b=>b.addEventListener('click',e=>{ state.investments.splice(+e.target.dataset.delInvestment,1); save(); renderAll(); }));
 }
 
@@ -1752,6 +1784,16 @@ function renderAnalysis(){
 }
 
 function wire(){
+  const nav = document.getElementById('nav');
+  const menuOverlay = document.getElementById('financeMenuOverlay');
+  const closeMenu = ()=>{ nav.classList.remove('open'); menuOverlay.classList.remove('show'); };
+  document.getElementById('financeMenuBtn').addEventListener('click',()=>{ nav.classList.toggle('open'); menuOverlay.classList.toggle('show'); });
+  menuOverlay.addEventListener('click', closeMenu);
+  document.querySelectorAll('#nav button').forEach(button=>button.addEventListener('click', closeMenu));
+  const themeButton = document.getElementById('financeThemeBtn');
+  const applyTheme = theme=>{ document.body.setAttribute('data-theme',theme); themeButton.textContent=theme==='dark'?'☀️':'🌙'; };
+  applyTheme(localStorage.getItem('financeTheme')||'light');
+  themeButton.addEventListener('click',()=>{ const next=document.body.getAttribute('data-theme')==='dark'?'light':'dark'; localStorage.setItem('financeTheme',next); applyTheme(next); });
   const txDateInput = document.getElementById('txDate');
   const today = new Date().toISOString().slice(0,10);
   
@@ -1948,13 +1990,6 @@ function wire(){
     state.investments.push({name:'Novo investimento', emoji:'💼', bank:'', target:0, current:0});
     save(); renderAll();
   });
-  document.getElementById('saveInvestments').addEventListener('click',()=>{
-    save();
-    renderAll();
-    const button = document.getElementById('saveInvestments');
-    button.textContent = '✓ investimentos salvos';
-    setTimeout(()=>{ button.textContent = '💾 salvar investimentos'; }, 1800);
-  });
   document.getElementById('addDebtor').addEventListener('click',()=>{
     state.debtors.push({name:'Nova pessoa', emoji:'🙋'});
     save(); renderAll();
@@ -1992,6 +2027,17 @@ function renderAll(){
   renderInstallmentTable();
   renderRecurringIncomes();
   renderOwnerTypeUI();
+}
+
+function refreshInvestmentOverview(){
+  const total = state.investments.reduce((sum,i)=>sum+Math.max(0,Number(i.current||0)),0);
+  const goal = state.investments.reduce((sum,i)=>sum+Math.max(0,Number(i.target||0)),0);
+  const totalEl = document.getElementById('investmentTotal');
+  const goalEl = document.getElementById('investmentTotalGoal');
+  if(totalEl) totalEl.textContent = money.format(total);
+  if(goalEl) goalEl.textContent = goal ? `meta: ${money.format(goal)}` : '';
+  renderInvestmentVisuals();
+  renderDashboard();
 }
 
 (async function init(){
