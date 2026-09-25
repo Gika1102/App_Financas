@@ -138,6 +138,7 @@
     font-size: 13.5px;
     font-weight:700;
     color: var(--text-secondary);
+    white-space:nowrap;
     transition: all var(--transition);
   }
   .nav-item .nav-icon{ font-size:16px; }
@@ -360,7 +361,18 @@
   .dot-event{ background: var(--peach-deep); }
   .dot-workout{ background: var(--pink-deep); }
 
-  .tag-item{ display:flex; justify-content:space-between; align-items:center; font-size:12px; background:#F9F5FC; padding:8px 10px; border-radius:10px; font-weight:600; }
+  .event-list{ display:grid; gap:8px; }
+  .event-item{ display:grid; grid-template-columns:auto minmax(0,1fr) auto; align-items:center; gap:8px; padding:9px 10px; border-radius:12px; background:#F9F5FC; }
+  .event-date{ font-size:11.5px; font-weight:800; color:var(--text-primary); white-space:nowrap; }
+  .event-copy{ min-width:0; font-size:12.5px; font-weight:700; overflow-wrap:anywhere; }
+  .event-recurrence{ display:block; margin-top:2px; color:var(--text-secondary); font-size:10.5px; font-weight:600; }
+  .event-remove{ width:28px; height:28px; border-radius:50%; color:var(--text-secondary); font-size:18px; }
+  .event-remove:hover{ background:var(--pink); color:var(--text-primary); }
+  .event-form{ display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-top:12px; }
+  .event-form label{ display:grid; gap:4px; min-width:0; font-size:11px; font-weight:700; color:var(--text-secondary); }
+  .event-form input,.event-form select{ min-width:0; width:100%; padding:9px 10px; border:2px solid rgba(87,79,107,0.08); border-radius:10px; background:#fff; color:var(--text-primary); font:inherit; }
+  .event-form .event-description{ grid-column:1/-1; }
+  .event-form .btn{ grid-column:1/-1; width:100%; }
   .gratitude-entry{ display:grid; grid-template-columns:110px 1fr; gap:12px; align-items:start; }
   .gratitude-entry__date{ font-size:11.5px; font-weight:800; color:var(--text-secondary); }
   .gratitude-entry__text{ font-size:13.5px; line-height:1.5; font-weight:600; }
@@ -437,6 +449,8 @@
     .header__clockbox{ display:none; }
     .search-input{ width:132px; }
     .search-input:focus{ width:150px; }
+    .event-form{ grid-template-columns:1fr; }
+    .event-form .event-description,.event-form .btn{ grid-column:auto; }
   }
 </style>
 </head>
@@ -848,11 +862,22 @@
           <div class="flex-col gap-16">
             <div class="card">
               <div class="card-title"><span class="em">📌</span> Datas importantes</div>
-              <div id="monthEvents" class="tag-list"></div>
-              <div class="add-row" style="flex-wrap:wrap; margin-top:10px;">
-                <input type="date" id="monthNewEventDate" style="flex:none; width:auto;">
-                <input type="text" id="monthNewEvent" placeholder="Evento / compromisso...">
-                <button class="btn btn-primary btn-sm" id="monthAddImportantDateBtn">+</button>
+              <div id="monthEvents" class="event-list"></div>
+              <div class="event-form">
+                <label>Data
+                  <input type="date" id="monthNewEventDate">
+                </label>
+                <label>Repetição
+                  <select id="monthNewEventRecurrence">
+                    <option value="none">Não se repete</option>
+                    <option value="monthly">Todo mês</option>
+                    <option value="yearly">Todo ano</option>
+                  </select>
+                </label>
+                <label class="event-description">Evento
+                  <input type="text" id="monthNewEvent" placeholder="Ex.: Vale-refeição">
+                </label>
+                <button class="btn btn-primary btn-sm" id="monthAddImportantDateBtn" type="button">Adicionar evento</button>
               </div>
             </div>
           </div>
@@ -1071,6 +1096,7 @@ function defaultData(){
     daily: {},
     weekly: {},
     monthly: {},
+    recurringEvents: [],
     habits: {},
     review: {},
     pomodoro: { settings: { work:25, shortBreak:5, longBreak:15, cyclesBeforeLong:4 }, log:{} }
@@ -1085,9 +1111,10 @@ async function loadData(){
     const parsed = await AppDatabase.loadPlanner();
     if(parsed && Object.keys(parsed).length){
       plannerData = Object.assign(defaultData(), parsed);
-      ['daily','weekly','monthly','habits','review'].forEach(k=>{
+      ['daily','weekly','monthly','recurringEvents','habits','review'].forEach(k=>{
         if(!plannerData[k] || typeof plannerData[k] !== 'object') plannerData[k] = {};
       });
+      if(!Array.isArray(plannerData.recurringEvents)) plannerData.recurringEvents = [];
       plannerData.settings = Object.assign(defaultData().settings, parsed.settings||{});
       plannerData.pomodoro = {
         settings: Object.assign(defaultData().pomodoro.settings, (parsed.pomodoro && parsed.pomodoro.settings) || {}),
@@ -1164,7 +1191,32 @@ function getMonthly(key){
 function getEventsForDate(dateKeyStr){
   const mk = dateKeyStr.slice(0,7);
   const mrec = getMonthly(mk);
-  return (mrec.events||[]).filter(ev=> ev.date===dateKeyStr && ev.text && String(ev.text).trim());
+  const oneOff = (mrec.events||[]).filter(ev=> ev.date===dateKeyStr && ev.text && String(ev.text).trim());
+  const recurring = getRecurringEventsForDate(dateKeyStr);
+  return [...oneOff, ...recurring];
+}
+
+function getRecurringEventsForDate(dateKeyStr){
+  const date = new Date(`${dateKeyStr}T12:00:00`);
+  if(Number.isNaN(date.getTime())) return [];
+  return (plannerData.recurringEvents||[]).filter(ev=>{
+    const start = new Date(`${ev.date}T12:00:00`);
+    if(Number.isNaN(start.getTime()) || start > date || !ev.text) return false;
+    if(ev.recurrence==='monthly') return start.getDate()===date.getDate();
+    if(ev.recurrence==='yearly') return start.getDate()===date.getDate() && start.getMonth()===date.getMonth();
+    return false;
+  }).map(ev=>({...ev, recurring:true}));
+}
+
+function getRecurringEventsForMonth(date){
+  const y = date.getFullYear(), m = date.getMonth();
+  return (plannerData.recurringEvents||[]).map(ev=>{
+    const start = new Date(`${ev.date}T12:00:00`);
+    if(Number.isNaN(start.getTime()) || start > new Date(y,m,daysInMonth(y,m),23,59,59)) return null;
+    const applies = ev.recurrence==='monthly' || (ev.recurrence==='yearly' && start.getMonth()===m);
+    if(!applies || start.getDate()>daysInMonth(y,m)) return null;
+    return {...ev, date:dateKey(new Date(y,m,start.getDate())), recurring:true};
+  }).filter(Boolean);
 }
 
 function getGratitudeEntries(){
@@ -1706,7 +1758,7 @@ function renderMonthly(){
   const mk = monthKey(appState.monthlyDate);
   const mrec = getMonthly(mk);
   const eventsByDate = {};
-  (mrec.events||[]).forEach(ev=>{
+  [...(mrec.events||[]), ...getRecurringEventsForMonth(appState.monthlyDate)].forEach(ev=>{
     if(ev.date){
       if(!eventsByDate[ev.date]) eventsByDate[ev.date] = [];
       eventsByDate[ev.date].push(ev.text);
@@ -1764,20 +1816,26 @@ function renderMonthly(){
 
 function renderMonthEvents(events){
   const el = $('#monthEvents');
-  if(!events || events.length===0){
+  const visibleEvents = [...(events||[]).map(ev=>({...ev, recurring:false})), ...getRecurringEventsForMonth(appState.monthlyDate)]
+    .sort((a,b)=>String(a.date||'').localeCompare(String(b.date||'')));
+  if(!visibleEvents.length){
     el.innerHTML = `<div class="empty-state" style="padding:10px;"><div class="msg">Nenhum evento adicionado.</div></div>`;
     return;
   }
-  el.innerHTML = events.map((ev,idx)=>`
-    <div class="tag-item">
-      <span><strong>${ev.date ? fmtDateBR(new Date(`${ev.date}T12:00:00`)) : 'Sem data'}</strong> — ${escapeHTML(ev.text)}</span>
-      <button type="button" data-idx="${idx}" data-action="remove-event" aria-label="Excluir evento ${escapeHTML(ev.text)}">✕</button>
+  el.innerHTML = visibleEvents.map(ev=>`
+    <div class="event-item">
+      <span class="event-date">${ev.date ? fmtDateBR(new Date(`${ev.date}T12:00:00`)) : 'Sem data'}</span>
+      <span class="event-copy">${escapeHTML(ev.text)}${ev.recurring ? `<small class="event-recurrence">${ev.recurrence==='monthly'?'repete todo mês':'repete todo ano'}</small>` : ''}</span>
+      <button type="button" class="event-remove" data-event-id="${ev.id}" data-event-source="${ev.recurring?'recurring':'monthly'}" data-action="remove-event" aria-label="Excluir evento ${escapeHTML(ev.text)}">×</button>
     </div>
   `).join('');
   $all('[data-action="remove-event"]', el).forEach(btn=>{
     btn.addEventListener('click', ()=>{
-      const mrec = getMonthly(monthKey(appState.monthlyDate));
-      mrec.events.splice(Number(btn.dataset.idx),1);
+      if(btn.dataset.eventSource==='recurring') plannerData.recurringEvents = plannerData.recurringEvents.filter(ev=>ev.id!==btn.dataset.eventId);
+      else {
+        const mrec = getMonthly(monthKey(appState.monthlyDate));
+        mrec.events = mrec.events.filter(ev=>ev.id!==btn.dataset.eventId);
+      }
       renderMonthly();
       saveData(true);
     });
@@ -2183,9 +2241,12 @@ function bindEvents(){
   $('#monthAddImportantDateBtn').addEventListener('click', ()=>{
     const date = $('#monthNewEventDate').value;
     const text = $('#monthNewEvent').value.trim();
+    const recurrence = $('#monthNewEventRecurrence').value;
     if(!date || !text) return;
-    getMonthly(monthKey(appState.monthlyDate)).events.push({ id: uid(), date, text });
-    $('#monthNewEventDate').value=''; $('#monthNewEvent').value='';
+    const event = { id: uid(), date, text, recurrence };
+    if(recurrence==='none') getMonthly(monthKey(appState.monthlyDate)).events.push(event);
+    else plannerData.recurringEvents.push(event);
+    $('#monthNewEventDate').value=''; $('#monthNewEvent').value=''; $('#monthNewEventRecurrence').value='none';
     renderMonthly(); saveData(true);
   });
 

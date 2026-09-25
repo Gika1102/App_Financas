@@ -61,6 +61,8 @@
   .nav a{ flex:none; border:none; background:transparent; padding:9px 14px; border-radius:999px; font-family:var(--font-display); font-weight:700; font-size:.9rem; color:var(--ink-soft); cursor:pointer; transition:.18s ease; white-space:nowrap; text-decoration:none; display:inline-block; }
   .nav a:hover{ background:var(--lilac); color:var(--ink); }
   .nav-updated{ display:none; }
+  .finance-nav-brand,.finance-nav-divider{ display:none; }
+  .finance-nav-group{ display:contents; }
 
   .card{ background:var(--card); border:1px solid rgba(87,79,107,.07); border-radius:18px; padding:16px; margin-bottom:10px; box-shadow:0 2px 8px rgba(183,156,242,.04); }
   .card.soft{ background:rgba(255,255,255,.75); }
@@ -180,11 +182,18 @@
     .wrap{ padding:24px 28px 48px; }
     .app-header{ text-align:left; padding:18px 24px; }
     .app-header h1{ font-size:1.7rem; }
-    .app-layout{ display:grid; grid-template-columns:200px minmax(0,1fr); gap:20px; align-items:start; }
-    .nav{ flex-direction:column; align-items:stretch; padding:10px; border-radius:20px; margin:0; }
-    .nav button, .nav a{ width:100%; text-align:left; padding:10px 14px; }
-    .nav .primary-action{ text-align:center; }
-    .nav-updated{ display:block; margin-top:auto; padding:14px 10px 6px; border-top:1px solid var(--line); color:var(--ink-soft); font-size:.72rem; }
+    .app-layout{ display:grid; grid-template-columns:220px minmax(0,1fr); gap:20px; align-items:start; }
+    .nav{ position:sticky; top:24px; max-height:calc(100vh - 48px); overflow-y:auto; flex-direction:column; align-items:stretch; gap:0; padding:20px 12px; border-radius:18px; margin:0; background:rgba(255,255,255,.92); border:1px solid var(--line); box-shadow:0 4px 14px rgba(183,156,242,.08); }
+    .finance-nav-brand{ display:flex; align-items:center; gap:10px; padding:5px 9px 18px; }
+    .finance-nav-brand-icon{ width:36px; height:36px; border-radius:13px; display:grid; place-items:center; background:linear-gradient(135deg,var(--mint),var(--sky)); font-size:18px; }
+    .finance-nav-brand strong{ display:block; font-family:var(--font-display); font-size:17px; }
+    .finance-nav-brand small{ display:block; margin-top:1px; color:var(--ink-soft); font-size:11px; }
+    .finance-nav-group{ display:grid; gap:4px; }
+    .finance-nav-divider{ display:block; height:1px; margin:14px 0; background:var(--line); }
+    .nav button, .nav a{ width:100%; text-align:left; padding:9px 12px; border-radius:999px; font-family:var(--font-body); font-size:13.5px; font-weight:700; }
+    .nav .primary-action{ text-align:left; background:var(--lilac); color:var(--ink); box-shadow:none; }
+    .nav .primary-action:hover{ background:var(--pink); color:var(--ink); }
+    .nav-updated{ display:block; margin-top:auto; padding:14px 10px 4px; border-top:1px solid var(--line); color:var(--ink-soft); font-size:.72rem; }
     .nav-updated strong{ display:block; margin-top:4px; color:var(--ink); font-size:.8rem; }
     .stat-row{ grid-template-columns:repeat(4,1fr); }
     #dashboard{ display:grid; grid-template-columns:repeat(12,minmax(0,1fr)); gap:12px; }
@@ -212,16 +221,25 @@
 
   <div class="app-layout">
   <nav class="nav" id="nav" aria-label="Seções de finanças">
-    <button class="active" data-tab="dashboard" aria-current="page">🏡 Visão geral</button>
-    <button data-tab="ciclos">🔁 Ciclos</button>
-    <button data-tab="orcamento">📊 Orçamento</button>
-    <button data-tab="investimentos">💼 Investimentos</button>
-    <button data-tab="dividas">🤝 Dívidas</button>
-    <button data-tab="analises">🔎 Análises</button>
-    <button data-tab="milhas">✈️ Milhas</button>
-    <button class="primary-action" data-tab="lancamentos">🧾 Novo lançamento</button>
-    <a href="index.html">🏠 Página inicial</a>
-    <a href="life-dashboard.html">🌸 Life Dashboard</a>
+    <div class="finance-nav-brand">
+      <div class="finance-nav-brand-icon">💰</div>
+      <div><strong>Finanças</strong><small>seu espaço financeiro ✨</small></div>
+    </div>
+    <div class="finance-nav-group">
+      <button class="active" data-tab="dashboard" aria-current="page">🏡 Visão geral</button>
+      <button class="primary-action" data-tab="lancamentos">🧾 Lançamentos</button>
+      <button data-tab="orcamento">📊 Orçamento</button>
+      <button data-tab="investimentos">💼 Investimentos</button>
+      <button data-tab="ciclos">🔁 Ciclos</button>
+      <button data-tab="dividas">🤝 Dívidas</button>
+      <button data-tab="analises">🔎 Análises</button>
+      <button data-tab="milhas">✈️ Milhas</button>
+    </div>
+    <div class="finance-nav-divider"></div>
+    <div class="finance-nav-group">
+      <a href="index.html">🏠 Início</a>
+      <a href="life-dashboard.html">🌸 Life Dashboard</a>
+    </div>
     <div class="nav-updated"><span>última atualização</span><strong id="lastUpdated">—</strong></div>
   </nav>
 
