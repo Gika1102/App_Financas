@@ -550,6 +550,7 @@
 <script src="js/auth.js"></script>
 <script src="js/database.js"></script>
 <script src="js/ai.js"></script>
+<script src="js/ai-actions.js"></script>
 <script>
 const money = new Intl.NumberFormat('pt-BR', { style:'currency', currency:'BRL' });
 const moneyCompact = new Intl.NumberFormat('pt-BR', { style:'currency', currency:'BRL', notation:'compact', maximumFractionDigits:1 });
@@ -576,6 +577,7 @@ const defaults = {
   investments: [],
   debtors: [ { name:'Irmão', emoji:'👦' }, { name:'Mãe', emoji:'👩' } ],
   miles: { goal:0, current:0, balances:{ XP:0, Livelo:0, Smiles:0, Outros:0 } },
+  milesHistory: [],
   recurringIncomes: [],
   tx: []
 };
@@ -1622,7 +1624,8 @@ function renderMiles(){
   document.getElementById('milesPercent').textContent = `${progress.toFixed(0)}%`;
   document.getElementById('milesProgress').style.width = `${progress}%`;
   document.getElementById('milesGoal').value = goal || '';
-  document.getElementById('milesBreakdown').innerHTML = Object.entries(balances).filter(([s,v])=>s!=='Outros'||Number(v)>0).map(([s,v])=>`<div class="row between" style="margin:6px 0;font-size:.82rem;"><span class="muted">${s}</span><strong>${fmt(v)} milhas</strong></div>`).join('');
+  const history = Array.isArray(state.milesHistory) ? state.milesHistory : [];
+  document.getElementById('milesBreakdown').innerHTML = `${Object.entries(balances).filter(([s,v])=>s!=='Outros'||Number(v)>0).map(([s,v])=>`<div class="row between" style="margin:6px 0;font-size:.82rem;"><span class="muted">${s}</span><strong>${fmt(v)} milhas</strong></div>`).join('')}<div style="margin-top:16px"><p class="eyebrow">histórico recente</p>${history.slice(0,8).map(item=>`<div class="row between" style="margin:6px 0;font-size:.8rem"><span class="muted">${item.date||'sem data'} · ${item.source||'Outros'}</span><strong>${item.operation==='remove'?'−':'+'}${fmt(item.amount)} milhas</strong></div>`).join('') || '<div class="muted" style="margin-top:6px;font-size:.8rem">nenhuma movimentação registrada</div>'}</div>`;
 }
 
 function renderVersion(){
@@ -1950,6 +1953,8 @@ function wire(){
     if(!miles) return;
     state.miles.balances = {XP:0, Livelo:0, Smiles:0, Outros:0, ...(state.miles?.balances||{})};
     state.miles.balances[source] = operation==='remove' ? Math.max(0, Number(state.miles.balances[source]||0) - miles) : Number(state.miles.balances[source]||0) + miles;
+    state.milesHistory = Array.isArray(state.milesHistory) ? state.milesHistory : [];
+    state.milesHistory.unshift({id:`miles-${Date.now()}`,date:today,source,operation,amount:miles});
     document.getElementById('milesAdd').value = '';
     save(); renderMiles();
   });

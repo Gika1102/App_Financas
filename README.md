@@ -576,3 +576,17 @@ Se o projeto for publicado em um repositório público, adicione uma licença ap
 <p align="center">
   feito com carinho para sua vida florescer 🌷✨
 </p>
+## Assistente com ações confirmadas
+
+O chat pode preparar três registros: gasto, tarefa e hábito. Ele nunca grava no primeiro passo: mostra um cartão de confirmação e a Edge Function valida novamente os campos antes de salvar usando a sessão do usuário e as políticas RLS.
+
+Exemplos: `registre R$ 32 de almoço hoje`, `me lembre de pagar a internet amanhã`, `acumulei 2.500 milhas na Livelo`, `corri 5 km hoje`, `recebi R$ 4.000 de salário`, `caiu R$ 800 de VR`, `bebi 2 litros de água hoje` e `concluí o hábito de ler`.
+
+Além de gasto, tarefa e hábito, o assistente pode confirmar: acúmulo/resgate de milhas, treino de força, pilates, corrida, receita avulsa ou recorrente, crédito de VR, conclusão de tarefa/hábito, água e check-in de humor/energia. As milhas guardam saldo por programa e um histórico de movimentações.
+
+Para publicar esta etapa, mantenha `GEMINI_API_KEY` configurada nas Edge Functions e faça o deploy das duas funções:
+
+```bash
+npx supabase functions deploy ai-assistant
+npx supabase functions deploy ai-actions
+```
