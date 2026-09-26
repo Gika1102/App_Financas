@@ -162,5 +162,5 @@ Deno.serve(async req => {
     const answer = synthesis || `Resumo: ainda não há dados suficientes para uma análise confiável.\nPróxima melhor ação: registre movimentações e ao menos alguns dias de humor/energia para eu identificar padrões.`;
     await client.from('ai_conversations').insert({ user_id:user.id, role:'assistant', message:answer });
     return json({ answer, specialists:selected });
-  } catch (error) { console.error(error); return json({ error:'Erro inesperado no assistente.' }, 500); }
+  } catch (error) { console.error(error); return json({ error:error instanceof Error ? error.message : 'Erro inesperado no assistente.' }, 500); }
 });
